@@ -7,7 +7,39 @@ export const EXPAND = 250; // A* bounding-box expansion (px)
 const BEND = 4; // bend penalty (step units)
 const DIAG = Math.SQRT2; // diagonal step cost
 const HOP_R = 5; // crossing hop radius (px)
-const CHAMFER = 8; // corner chamfer length (px)
+
+// ---------- wire occupancy helpers (for sequential routing §6.5) ----------
+// dirType: 'H' = horizontal, 'V' = vertical, 'D1' = NE/SW diagonal, 'D2' = NW/SE diagonal
+export function getDirType(dx, dy) {
+  if (Math.abs(dy) < 0.5) return 'H';
+  if (Math.abs(dx) < 0.5) return 'V';
+  return dx * dy > 0 ? 'D1' : 'D2';
+}
+
+// Mark the lattice cells along a routed wire's inner path (excluding port/stub
+// endpoints) into wireOccupied so subsequent wires avoid parallel overlap.
+// wireOccupied: Map<"gx,gy", Set<dirType>>  (global grid keys)
+export function markWirePath(points, cell, wireOccupied) {
+  // Skip first 2 and last 2 points (port position + stub tip at each end).
+  const start = Math.min(2, points.length);
+  const end = Math.max(points.length - 2, start);
+  for (let i = start; i < end - 1; i++) {
+    const a = points[i];
+    const b = points[i + 1];
+    const dx = b.x - a.x;
+    const dy = b.y - a.y;
+    const len = Math.hypot(dx, dy);
+    if (len < 0.5) continue;
+    const dirType = getDirType(dx, dy);
+    const steps = Math.max(1, Math.round(len / cell));
+    for (let s = 0; s <= steps; s++) {
+      const t = s / steps;
+      const k = `${Math.round((a.x + dx * t) / cell)},${Math.round((a.y + dy * t) / cell)}`;
+      if (!wireOccupied.has(k)) wireOccupied.set(k, new Set());
+      wireOccupied.get(k).add(dirType);
+    }
+  }
+}
 
 // ---------- geometry helpers ----------
 export function inflate(rect, pad) {
@@ -34,9 +66,10 @@ export function stubTip(p) {
 
 // ---------- A* over a uniform lattice ----------
 // source/target: {x, y, side}. obstacles: array of {x,y,w,h} (already inflated).
+// wireOccupied: Map<"gx,gy", Set<dirType>> — cells blocked for parallel travel.
 // Returns array of lattice points {x,y} (excluding the port/stub endpoints), or
 // null when no path is found.
-function astar(start, goal, obstacles, cell, bounds) {
+function astar(start, goal, obstacles, cell, bounds, wireOccupied = null) {
   const cols = Math.ceil((bounds.maxX - bounds.minX) / cell) + 1;
   const rows = Math.ceil((bounds.maxY - bounds.minY) / cell) + 1;
   const toXY = (ix, iy) => ({ x: bounds.minX + ix * cell, y: bounds.minY + iy * cell });
@@ -45,6 +78,19 @@ function astar(start, goal, obstacles, cell, bounds) {
     if (ix < 0 || iy < 0 || ix >= cols || iy >= rows) return false;
     const { x, y } = toXY(ix, iy);
     for (const o of obstacles) if (pointInRect(x, y, o)) return false;
+    return true;
+  };
+
+  // Returns true when moving in direction (dx,dy) into cell (ix,iy) is allowed:
+  // cell must be obstacle-free AND not occupied by a parallel wire.
+  const freeForDir = (ix, iy, dx, dy) => {
+    if (!free(ix, iy)) return false;
+    if (wireOccupied) {
+      const { x, y } = toXY(ix, iy);
+      const k = `${Math.round(x / cell)},${Math.round(y / cell)}`;
+      const occ = wireOccupied.get(k);
+      if (occ?.has(getDirType(dx, dy))) return false;
+    }
     return true;
   };
 
@@ -143,10 +189,10 @@ function astar(start, goal, obstacles, cell, bounds) {
       const [dx, dy] = DIRS[di];
       const nix = cur.ix + dx;
       const niy = cur.iy + dy;
-      if (!free(nix, niy)) continue;
+      if (!freeForDir(nix, niy, dx, dy)) continue;
       const diagonal = dx !== 0 && dy !== 0;
       // no corner cutting: both adjacent orthogonals must be free
-      if (diagonal && (!free(cur.ix + dx, cur.iy) || !free(cur.ix, cur.iy + dy))) continue;
+      if (diagonal && (!freeForDir(cur.ix + dx, cur.iy, dx, 0) || !freeForDir(cur.ix, cur.iy + dy, 0, dy))) continue;
       const nk = key(nix, niy);
       if (closed.has(nk)) continue;
       const prevDir = dirIn.get(ck);
@@ -221,7 +267,7 @@ export function chamferCorners(points, amount = CHAMFER) {
 
 // Compute a full polyline for one edge (port → stub → A* → stub → port).
 // Returns { points, fallback }. On A* failure returns a straight 2-point line.
-export function computeRoute({ source, target, obstacles, gridSize = 16 }) {
+export function computeRoute({ source, target, obstacles, gridSize = 16, wireOccupied = null }) {
   const sStub = stubTip(source);
   const tStub = stubTip(target);
   const cell = Math.max(8, gridSize / 2);
@@ -231,7 +277,7 @@ export function computeRoute({ source, target, obstacles, gridSize = 16 }) {
   const maxX = Math.max(sStub.x, tStub.x) + EXPAND;
   const maxY = Math.max(sStub.y, tStub.y) + EXPAND;
 
-  const lattice = astar(sStub, tStub, obstacles, cell, { minX, minY, maxX, maxY });
+  const lattice = astar(sStub, tStub, obstacles, cell, { minX, minY, maxX, maxY }, wireOccupied);
 
   if (!lattice) {
     return { points: [{ x: source.x, y: source.y }, { x: target.x, y: target.y }], fallback: true };
@@ -245,7 +291,7 @@ export function computeRoute({ source, target, obstacles, gridSize = 16 }) {
     { x: target.x, y: target.y },
   ];
   pts = simplifyCollinear(pts);
-  pts = chamferCorners(pts);
+  // No chamfer — keep crisp 45°/90° PCB-style corners.
   return { points: pts, fallback: false };
 }
 

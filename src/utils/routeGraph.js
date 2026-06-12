@@ -11,6 +11,7 @@ import {
   inflate,
   stubTip,
   PAD,
+  markWirePath,
 } from './routingUtils';
 
 // Cheap live-drag route: stub → straight → stub (no A*).
@@ -40,10 +41,14 @@ export function computeAllRoutes({
     return inflate(nodeRect(n, def ?? { width: 120, height: 70 }), PAD);
   });
 
-  // First pass: compute polylines for every visible edge (in array z-order).
+  // First pass: compute polylines for every visible edge in array order.
+  // Each routed wire is added to wireOccupied so subsequent wires avoid
+  // running parallel over the same path (perpendicular crossings are fine).
   const ordered = [];
   const meta = new Map();
   const fallbacks = [];
+  const wireOccupied = new Map(); // sequential routing occupancy map
+  const cell = Math.max(8, gridSize / 2);
 
   for (const e of edges) {
     if (!visibleLayers.has(e.data.layerId)) continue;
@@ -64,10 +69,11 @@ export function computeAllRoutes({
     if (dragging.has(e.source) || dragging.has(e.target)) {
       points = cheapRoute(source, target);
     } else {
-      const r = computeRoute({ source, target, obstacles, gridSize });
+      const r = computeRoute({ source, target, obstacles, gridSize, wireOccupied });
       points = r.points;
       fallback = r.fallback;
       if (fallback) fallbacks.push({ id: e.id, label: e.data.label });
+      if (!fallback) markWirePath(points, cell, wireOccupied);
     }
     ordered.push({ id: e.id, points });
     meta.set(e.id, {

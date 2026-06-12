@@ -64,14 +64,20 @@ function ComponentNode({ id, data, selected }) {
         boxShadow: selected ? '0 0 0 2px #ffffff55' : 'none',
       }}
     >
-      {/* header */}
-      <div className="flex h-7 items-center gap-1.5 rounded-t-[5px] border-b border-edge bg-surface-1 px-2">
+      {/* centered icon + label */}
+      <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-0.5 px-2">
         <Icon size={20} />
-        <span className="flex-1 truncate font-heading text-[12px] font-semibold tracking-wide text-silver">
+        <span className="w-full truncate text-center font-heading text-[11px] font-semibold tracking-wide text-silver">
           {data.label}
         </span>
-        {data.locked && <Lock size={12} className="text-neutral-400" />}
       </div>
+
+      {/* lock indicator — top-right corner */}
+      {data.locked && (
+        <div className="pointer-events-none absolute right-1 top-1">
+          <Lock size={10} className="text-neutral-400" />
+        </div>
+      )}
 
       {/* port labels */}
       {showPortLabels &&

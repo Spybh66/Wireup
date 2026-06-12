@@ -78,6 +78,8 @@ function Flow({ onOpenNodeConfig }) {
   }, [fitView]);
 
   // ---- sync store → RF nodes (preserve RF-measured dimensions) ----
+  // Note: locked nodes stay draggable=true at RF level so RF still fires
+  // onNodeDoubleClick. Position resets for locked nodes happen in onNodeDragStop.
   useEffect(() => {
     setRfNodes((prev) => {
       const byId = new Map(prev.map((n) => [n.id, n]));
@@ -85,7 +87,7 @@ function Flow({ onOpenNodeConfig }) {
         const old = byId.get(n.id);
         return {
           ...n,
-          draggable: !n.data.locked,
+          draggable: true,
           selected: selection.nodes.includes(n.id),
           measured: old?.measured,
           width: old?.width,
@@ -144,7 +146,10 @@ function Flow({ onOpenNodeConfig }) {
     const baseline = baselineRef.current ?? useDiagramStore.getState().nodes;
     const next = useDiagramStore
       .getState()
-      .nodes.map((n) => (moved.has(n.id) ? { ...n, position: moved.get(n.id) } : n));
+      // Locked nodes keep their original position — dragging is a no-op for them.
+      .nodes.map((n) =>
+        n.data.locked ? n : moved.has(n.id) ? { ...n, position: moved.get(n.id) } : n
+      );
     useDiagramStore.setState({ nodes: baseline });
     useDiagramStore.temporal.getState().resume();
     useDiagramStore.setState({ nodes: next, dirty: true });
@@ -159,10 +164,24 @@ function Flow({ onOpenNodeConfig }) {
     useDiagramStore.getState().reconnectEdge(oldEdge.id, conn);
   }, []);
 
-  const onEdgesChange = useCallback(() => {
-    // Edges are controlled by the store; selection is mirrored via
-    // onSelectionChange and deletion is handled by our keyboard logic.
-  }, []);
+  // Handle edge selection changes from RF so the store selection stays in sync.
+  const onEdgesChange = useCallback(
+    (changes) => {
+      const selChanges = changes.filter((c) => c.type === 'select');
+      if (!selChanges.length) return;
+      const cur = useDiagramStore.getState().selection;
+      let edgeIds = [...cur.edges];
+      for (const c of selChanges) {
+        if (c.selected) {
+          if (!edgeIds.includes(c.id)) edgeIds.push(c.id);
+        } else {
+          edgeIds = edgeIds.filter((id) => id !== c.id);
+        }
+      }
+      setSelection({ nodes: cur.nodes, edges: edgeIds });
+    },
+    [setSelection]
+  );
 
   const onSelectionChange = useCallback(
     ({ nodes: ns, edges: es }) => {
@@ -230,13 +249,14 @@ function Flow({ onOpenNodeConfig }) {
           multiSelectionKeyCode={['Shift', 'Meta', 'Control']}
           selectionOnDrag
           panOnDrag={[1, 2]}
+          zoomOnDoubleClick={false}
           fitView
           minZoom={0.1}
           maxZoom={2.5}
           proOptions={{ hideAttribution: true }}
         >
           {settings.gridVisible && (
-            <Background variant="dots" gap={settings.gridSize} size={1} color="#2a2a2e" />
+            <Background variant="dots" gap={settings.gridSize} size={1.5} color="#4a4a55" />
           )}
           <Controls />
         </ReactFlow>

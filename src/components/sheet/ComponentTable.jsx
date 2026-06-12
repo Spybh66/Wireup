@@ -1,4 +1,4 @@
-// §10 Table 1 — Components (read-only, sortable).
+// §10 Table 1 — Components (sortable, inline-editable for CAN ID / IP / notes).
 import { useMemo, useState } from 'react';
 import { ArrowUp, ArrowDown } from 'lucide-react';
 import useDiagramStore from '../../store/diagramStore';
@@ -12,6 +12,46 @@ const COLUMNS = [
   { key: 'ipAddress', label: 'IP Address' },
   { key: 'notes', label: 'Notes' },
 ];
+
+// Inline editable cell for a single field
+function EditableCell({ value, nodeId, field, placeholder }) {
+  const updateNodeData = useDiagramStore((s) => s.updateNodeData);
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(value ?? '');
+
+  const commit = () => {
+    const trimmed = draft.trim();
+    updateNodeData(nodeId, { [field]: trimmed === '' ? null : trimmed });
+    setEditing(false);
+  };
+
+  if (editing) {
+    return (
+      <input
+        autoFocus
+        value={draft}
+        onChange={(e) => setDraft(e.target.value)}
+        onBlur={commit}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') commit();
+          if (e.key === 'Escape') { setDraft(value ?? ''); setEditing(false); }
+        }}
+        placeholder={placeholder}
+        className="w-full rounded border border-edge bg-surface-0 px-1 py-0.5 text-sm text-silver outline-none focus:border-silver"
+      />
+    );
+  }
+
+  return (
+    <span
+      onClick={() => { setDraft(value ?? ''); setEditing(true); }}
+      title="Click to edit"
+      className="block w-full cursor-text rounded px-1 py-0.5 hover:bg-surface-2"
+    >
+      {value ?? <span className="text-neutral-600">{placeholder}</span>}
+    </span>
+  );
+}
 
 export default function ComponentTable() {
   const nodes = useDiagramStore((s) => s.nodes);
@@ -62,9 +102,15 @@ export default function ComponentTable() {
               <td className="px-3 py-1.5 font-heading">{r.name}</td>
               <td className="px-3 py-1.5">{r.type}</td>
               <td className="px-3 py-1.5 text-neutral-400">{r.category}</td>
-              <td className="px-3 py-1.5">{r.canId ?? ''}</td>
-              <td className="px-3 py-1.5">{r.ipAddress ?? ''}</td>
-              <td className="px-3 py-1.5 text-neutral-400">{r.notes}</td>
+              <td className="px-3 py-1.5">
+                <EditableCell value={r.canId} nodeId={r.id} field="canId" placeholder="—" />
+              </td>
+              <td className="px-3 py-1.5">
+                <EditableCell value={r.ipAddress} nodeId={r.id} field="ipAddress" placeholder="—" />
+              </td>
+              <td className="px-3 py-1.5 text-neutral-400">
+                <EditableCell value={r.notes || null} nodeId={r.id} field="notes" placeholder="Add note…" />
+              </td>
             </tr>
           ))}
           {sorted.length === 0 && (

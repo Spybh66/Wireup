@@ -19,36 +19,52 @@ function canvasElement() {
   return document.querySelector('.react-flow__viewport')?.closest('.react-flow') || document.querySelector('.react-flow');
 }
 
+// Temporarily hide UI overlay panels (controls, layer panel, wire config) so
+// they don't appear in the exported image.
+async function withHiddenOverlays(fn) {
+  const overlays = document.querySelectorAll(
+    '.react-flow__controls, .react-flow__panel, [class*="pointer-events-auto absolute"]'
+  );
+  const hidden = [];
+  for (const el of overlays) {
+    hidden.push({ el, prev: el.style.visibility });
+    el.style.visibility = 'hidden';
+  }
+  try {
+    return await fn();
+  } finally {
+    for (const { el, prev } of hidden) el.style.visibility = prev;
+  }
+}
+
 const RASTER_OPTS = { backgroundColor: '#1a1a1c', pixelRatio: 2 };
 
 // ---- canvas exports ----
 export async function exportCanvasPNG(name) {
   const el = canvasElement();
   if (!el) return;
-  const url = await toPng(el, RASTER_OPTS);
+  const url = await withHiddenOverlays(() => toPng(el, RASTER_OPTS));
   downloadDataUrl(url, `${sanitizeFilename(name)}.png`);
 }
 
 export async function exportCanvasJPEG(name) {
   const el = canvasElement();
   if (!el) return;
-  const url = await toJpeg(el, { ...RASTER_OPTS, quality: 0.95 });
+  const url = await withHiddenOverlays(() => toJpeg(el, { ...RASTER_OPTS, quality: 0.95 }));
   downloadDataUrl(url, `${sanitizeFilename(name)}.jpg`);
 }
 
 export async function exportCanvasSVG(name) {
   const el = canvasElement();
   if (!el) return;
-  // NOTE: html-to-image's toSvg embeds the HTML via <foreignObject>; this is not
-  // a clean vector export (accepted limitation per §11 / decision 26).
-  const url = await toSvg(el, RASTER_OPTS);
+  const url = await withHiddenOverlays(() => toSvg(el, RASTER_OPTS));
   downloadDataUrl(url, `${sanitizeFilename(name)}.svg`);
 }
 
 export async function exportCanvasPDF(name) {
   const el = canvasElement();
   if (!el) return;
-  const url = await toPng(el, RASTER_OPTS);
+  const url = await withHiddenOverlays(() => toPng(el, RASTER_OPTS));
   const img = new Image();
   await new Promise((res, rej) => {
     img.onload = res;
