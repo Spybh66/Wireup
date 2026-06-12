@@ -70,7 +70,7 @@ export default function LayerPanel() {
   const [open, setOpen] = useState(true);
 
   return (
-    <div className="pointer-events-auto absolute bottom-4 right-4 z-10 w-56 rounded-lg border border-edge bg-surface-1/95 shadow-xl backdrop-blur">
+    <div className="pointer-events-auto absolute bottom-4 right-4 z-10 w-56 rounded-lg border border-edge bg-surface-1 shadow-xl">
       <button
         onClick={() => setOpen((o) => !o)}
         className="flex w-full items-center gap-2 rounded-t-lg border-b border-edge px-3 py-2 text-left text-xs font-semibold uppercase tracking-wide text-neutral-300"

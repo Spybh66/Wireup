@@ -22,7 +22,7 @@ export default function WireConfigPanel({ edgeId, onClose }) {
   const toNode = nodes.find((n) => n.id === edge.target);
 
   return (
-    <div className="pointer-events-auto absolute right-4 top-4 z-10 w-64 rounded-lg border border-edge bg-surface-1/95 shadow-xl backdrop-blur">
+    <div className="pointer-events-auto absolute right-4 top-4 z-10 w-64 rounded-lg border border-edge bg-surface-1 shadow-xl">
       <div className="flex items-center justify-between border-b border-edge px-3 py-2">
         <span className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-neutral-300">
           <span className="inline-block h-3 w-3 rounded-full" style={{ background: d.color ?? typeColor(d.type) }} />
