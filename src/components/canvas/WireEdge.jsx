@@ -13,6 +13,7 @@ function WireEdge({ id, selected }) {
 
   const color = route.color;
   const showLabel = showWireLabels || selected;
+  const labelPos = route.labelPos ?? route.midpoint;
 
   return (
     <>
@@ -45,13 +46,15 @@ function WireEdge({ id, selected }) {
           <div
             className="nodrag nopan pointer-events-none absolute font-heading"
             style={{
-              transform: `translate(-50%, -50%) translate(${route.midpoint.x}px, ${route.midpoint.y}px)`,
+              transform: `translate(-50%, -50%) translate(${labelPos.x}px, ${labelPos.y}px)`,
               fontSize: 10,
+              lineHeight: '13px',
               color,
-              background: '#111113cc',
+              background: '#111113e6',
               padding: '1px 4px',
               borderRadius: 4,
               whiteSpace: 'nowrap',
+              border: `1px solid ${color}55`,
             }}
           >
             {edge.data.label}

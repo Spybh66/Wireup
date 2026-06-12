@@ -1,26 +1,27 @@
-﻿// §6 Wire routing engine — visibility-graph any-angle routing + crossing hops.
-// Pure functions; no React/DOM. Unit-tested in routingUtils.test.js.
+// §6 Wire routing engine — octilinear (45°) grid router, KiCAD-style.
+// Wires run in H/V/45° segments, prefer 45° over square corners, avoid
+// overlapping straight runs (occupancy lanes → spaced bundles), and only cross
+// perpendicular (rendered with a jump-over hop). Pure functions; no React/DOM.
+// Unit-tested in routingUtils.test.js.
 
 export const STUB = 16;         // perpendicular exit stub length (px)
-export const PAD  = 10;         // obstacle inflation (px)
-const HOP_R       = 5;          // crossing hop arc radius (px)
-const BEND_COST   = 80;         // A* cost penalty per direction change
-const WIRE_PROX_PENALTY = 0.5;  // extra cost per pixel running close to an existing wire
-const PROX_DIST   = 8;          // px — "too close" proximity threshold
-const CORNER_EPS  = 0.5;        // nudge vis-graph corners just off rect edges
+export const PAD  = 12;         // obstacle inflation (px)
+export const STEP = 8;          // routing lattice resolution (px)
+
+const HOP_R    = 5;             // crossing hop arc radius (px)
+const DIAG     = Math.SQRT2;
+const BEND_45  = STEP * 0.7;    // mild penalty — keep paths straight-ish
+const BEND_90  = STEP * 6;      // strong penalty — discourage square corners
+const BEND_135 = STEP * 16;     // very strong — discourage sharp turns
+const OVERLAP_PENALTY = STEP * 50; // running ON an existing wire's edge → relane
+const CROSS_PENALTY   = STEP * 2;  // crossing a perpendicular wire → a hop
+const MAX_CELLS = 240000;          // grid-size guard (coarsen step if exceeded)
 
 // Kept for backward compatibility.
 export function getDirType(dx, dy) {
   if (Math.abs(dy) < 0.5) return 'H';
   if (Math.abs(dx) < 0.5) return 'V';
   return dx * dy > 0 ? 'D1' : 'D2';
-}
-
-// Sequential path tracking — wirePolylines is an array of already-routed
-// point-arrays. markWirePath pushes the new wire in so later wires can apply a
-// proximity cost when passing near it.
-export function markWirePath(points, _cell, wirePolylines) {
-  if (Array.isArray(wirePolylines)) wirePolylines.push(points);
 }
 
 // ---------- geometry helpers ----------
@@ -42,7 +43,7 @@ export function stubTip(p) {
   }
 }
 
-// ---------- visibility-graph helpers ----------
+const clamp = (v, lo, hi) => (v < lo ? lo : v > hi ? hi : v);
 
 // Strict segment–segment intersection (touching endpoints not counted).
 function segsIntersectStrict(ax, ay, bx, by, cx, cy, dx, dy) {
@@ -70,40 +71,134 @@ function segClear(a, b, obstacles) {
   return true;
 }
 
-// Squared distance from point to segment.
-function ptSegDistSq(px, py, ax, ay, bx, by) {
-  const dx = bx - ax, dy = by - ay;
-  const lenSq = dx * dx + dy * dy;
-  if (lenSq < 1e-9) return (px - ax) ** 2 + (py - ay) ** 2;
-  const t = Math.max(0, Math.min(1, ((px - ax) * dx + (py - ay) * dy) / lenSq));
-  return (ax + t * dx - px) ** 2 + (ay + t * dy - py) ** 2;
-}
+// ---------- routing lattice ----------
+// Build a shared octilinear lattice covering all obstacles. Occupancy (occ /
+// cellOrient) accumulates as wires are routed so later wires lane-shift off
+// existing straight runs and only cross perpendicular wires.
+export function buildRoutingGrid(obstacles, extraPoints = [], step = STEP) {
+  let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+  for (const r of obstacles) {
+    minX = Math.min(minX, r.x);        minY = Math.min(minY, r.y);
+    maxX = Math.max(maxX, r.x + r.w);  maxY = Math.max(maxY, r.y + r.h);
+  }
+  for (const p of extraPoints) {
+    minX = Math.min(minX, p.x); minY = Math.min(minY, p.y);
+    maxX = Math.max(maxX, p.x); maxY = Math.max(maxY, p.y);
+  }
+  if (!isFinite(minX)) { minX = 0; minY = 0; maxX = step; maxY = step; }
 
-// Additional A* cost for a segment that runs close to already-routed wires.
-function wireProxCost(a, b, wirePolylines) {
-  if (!wirePolylines || wirePolylines.length === 0) return 0;
-  const len = Math.hypot(b.x - a.x, b.y - a.y);
-  if (len < 1e-9) return 0;
-  const proxSq = PROX_DIST * PROX_DIST;
-  const steps = Math.max(2, Math.ceil(len / 12));
-  const segLen = len / steps;
-  let cost = 0;
-  for (let s = 0; s < steps; s++) {
-    const t = (s + 0.5) / steps;
-    const px = a.x + (b.x - a.x) * t;
-    const py = a.y + (b.y - a.y) * t;
-    let near = false;
-    outer: for (const poly of wirePolylines) {
-      for (let i = 0; i < poly.length - 1; i++) {
-        if (ptSegDistSq(px, py, poly[i].x, poly[i].y, poly[i + 1].x, poly[i + 1].y) < proxSq) {
-          near = true;
-          break outer;
+  const margin = step * 8;
+  minX -= margin; minY -= margin; maxX += margin; maxY += margin;
+
+  let s = step;
+  let cols = Math.ceil((maxX - minX) / s) + 1;
+  let rows = Math.ceil((maxY - minY) / s) + 1;
+  while (cols * rows > MAX_CELLS) {
+    s *= 2;
+    cols = Math.ceil((maxX - minX) / s) + 1;
+    rows = Math.ceil((maxY - minY) / s) + 1;
+  }
+
+  const origin = { x: minX, y: minY };
+  const blocked = new Uint8Array(cols * rows);
+  for (let j = 0; j < rows; j++) {
+    const wy = minY + j * s;
+    for (let i = 0; i < cols; i++) {
+      const wx = minX + i * s;
+      for (const r of obstacles) {
+        if (wx >= r.x && wx <= r.x + r.w && wy >= r.y && wy <= r.y + r.h) {
+          blocked[j * cols + i] = 1;
+          break;
         }
       }
     }
-    if (near) cost += WIRE_PROX_PENALTY * segLen;
+  }
+  return { origin, step: s, cols, rows, blocked, occ: new Map(), cellOrient: new Map() };
+}
+
+function worldToCell(grid, p) {
+  return {
+    i: clamp(Math.round((p.x - grid.origin.x) / grid.step), 0, grid.cols - 1),
+    j: clamp(Math.round((p.y - grid.origin.y) / grid.step), 0, grid.rows - 1),
+  };
+}
+function cellToWorld(grid, c) {
+  return { x: grid.origin.x + c.i * grid.step, y: grid.origin.y + c.j * grid.step };
+}
+
+function nearestFreeCell(grid, p) {
+  const { cols, rows, blocked } = grid;
+  const start = worldToCell(grid, p);
+  if (!blocked[start.j * cols + start.i]) return start;
+  const maxR = Math.max(cols, rows);
+  for (let r = 1; r < maxR; r++) {
+    for (let dj = -r; dj <= r; dj++) {
+      for (let di = -r; di <= r; di++) {
+        if (Math.max(Math.abs(di), Math.abs(dj)) !== r) continue;
+        const i = start.i + di, j = start.j + dj;
+        if (i < 0 || j < 0 || i >= cols || j >= rows) continue;
+        if (!blocked[j * cols + i]) return { i, j };
+      }
+    }
+  }
+  return start;
+}
+
+// 8 lattice directions: E W S N SE NE SW NW (y grows downward).
+const DIRS = [
+  [1, 0], [-1, 0], [0, 1], [0, -1],
+  [1, 1], [1, -1], [-1, 1], [-1, -1],
+];
+const DIR_ANG = DIRS.map(([dx, dy]) => Math.atan2(dy, dx));
+
+function bendCost(prev, next) {
+  if (prev === next) return 0;
+  let a = Math.abs(DIR_ANG[prev] - DIR_ANG[next]);
+  if (a > Math.PI) a = 2 * Math.PI - a;
+  const deg = (a * 180) / Math.PI;
+  if (deg < 1) return 0;
+  if (deg <= 46) return BEND_45;
+  if (deg <= 91) return BEND_90;
+  if (deg <= 136) return BEND_135;
+  return BEND_135 * 1.5;
+}
+
+function orientOf(di, dj) {
+  if (dj === 0) return 'H';
+  if (di === 0) return 'V';
+  return di * dj > 0 ? 'D1' : 'D2';
+}
+function edgeKey(ci, cj, ni, nj) {
+  return ci < ni || (ci === ni && cj < nj)
+    ? `${ci},${cj}|${ni},${nj}`
+    : `${ni},${nj}|${ci},${cj}`;
+}
+
+function occCost(grid, ci, cj, ni, nj) {
+  let cost = 0;
+  if (grid.occ.has(edgeKey(ci, cj, ni, nj))) cost += OVERLAP_PENALTY;
+  const set = grid.cellOrient.get(nj * grid.cols + ni);
+  if (set) {
+    const o = orientOf(Math.sign(ni - ci), Math.sign(nj - cj));
+    if (!set.has(o)) cost += CROSS_PENALTY; // perpendicular crossing → a hop
   }
   return cost;
+}
+
+// Record a routed lattice path so later wires avoid overlapping it.
+function markCells(grid, cells) {
+  if (!grid || !cells) return;
+  for (let k = 0; k < cells.length - 1; k++) {
+    const a = cells[k], b = cells[k + 1];
+    grid.occ.set(edgeKey(a.i, a.j, b.i, b.j), true);
+    const o = orientOf(Math.sign(b.i - a.i), Math.sign(b.j - a.j));
+    for (const c of [a, b]) {
+      const ci = c.j * grid.cols + c.i;
+      let s = grid.cellOrient.get(ci);
+      if (!s) { s = new Set(); grid.cellOrient.set(ci, s); }
+      s.add(o);
+    }
+  }
 }
 
 // Tiny binary min-heap.
@@ -132,89 +227,86 @@ function makeHeap() {
   };
 }
 
-// Visibility-graph A* from stub s to stub t.
-// Returns the intermediate waypoints (obstacle corners to route through),
-// or null when no path exists.
-function visgraphRoute(s, t, obstacles, wirePolylines) {
-  // Node 0 = s (source stub tip), Node 1 = t (target stub tip),
-  // then the 4 epsilon-nudged corners of every obstacle.
-  const nodes = [s, t];
-  for (const r of obstacles) {
-    const e = CORNER_EPS;
-    const candidates = [
-      { x: r.x - e,        y: r.y - e        },
-      { x: r.x + r.w + e,  y: r.y - e        },
-      { x: r.x - e,        y: r.y + r.h + e  },
-      { x: r.x + r.w + e,  y: r.y + r.h + e  },
-    ];
-    // Skip corners that fall inside another obstacle.
-    for (const c of candidates) {
-      if (!obstacles.some((o) => pointInRect(c.x, c.y, o))) nodes.push(c);
-    }
-  }
-  const N = nodes.length;
-  const S = 0, T = 1;
+// Octilinear A* over the lattice from start cell to goal cell.
+// Returns an array of lattice cells, or null when no path exists.
+function aStarGrid(grid, start, goal) {
+  const { cols, rows, blocked, step } = grid;
+  const N = cols * rows;
+  const idx = (i, j) => j * cols + i;
+  const sId = idx(start.i, start.j), gId = idx(goal.i, goal.j);
 
-  // Precompute pairwise line-of-sight — O(N² × |obstacles|).
-  const vis = new Uint8Array(N * N);
-  for (let i = 0; i < N; i++)
-    for (let j = i + 1; j < N; j++)
-      if (segClear(nodes[i], nodes[j], obstacles))
-        vis[i * N + j] = vis[j * N + i] = 1;
+  const g = new Float64Array(N).fill(Infinity);
+  const came = new Int32Array(N).fill(-1);
+  const inDir = new Int8Array(N).fill(-1);
+  const closed = new Uint8Array(N);
+  g[sId] = 0;
 
-  const gScore   = new Float64Array(N).fill(Infinity);
-  const cameFrom = new Int32Array(N).fill(-1);
-  gScore[S] = 0;
+  const h = (i, j) => {
+    const dx = Math.abs(i - goal.i), dy = Math.abs(j - goal.j);
+    const dm = Math.min(dx, dy);
+    return (dm * DIAG + (Math.max(dx, dy) - dm)) * step;
+  };
 
   const heap = makeHeap();
-  heap.push({ i: S, f: Math.hypot(t.x - s.x, t.y - s.y) });
-  const closed = new Uint8Array(N);
+  heap.push({ id: sId, f: h(start.i, start.j) });
 
   while (heap.length) {
-    const { i: ci } = heap.pop();
-    if (closed[ci]) continue;
-    closed[ci] = 1;
-    if (ci === T) break;
+    const { id: cur } = heap.pop();
+    if (closed[cur]) continue;
+    closed[cur] = 1;
+    if (cur === gId) break;
 
-    for (let j = 0; j < N; j++) {
-      if (!vis[ci * N + j] || closed[j]) continue;
-      const d = Math.hypot(nodes[j].x - nodes[ci].x, nodes[j].y - nodes[ci].y);
-
-      // Bend penalty for any direction change from the incoming segment.
-      let bendCost = 0;
-      const prev = cameFrom[ci];
-      if (prev >= 0) {
-        const ax = nodes[ci].x - nodes[prev].x, ay = nodes[ci].y - nodes[prev].y;
-        const bx = nodes[j].x  - nodes[ci].x,  by = nodes[j].y  - nodes[ci].y;
-        const la = Math.hypot(ax, ay), lb = Math.hypot(bx, by);
-        if (la > 0 && lb > 0 && (ax * bx + ay * by) / (la * lb) < 0.9999) bendCost = BEND_COST;
+    const ci = cur % cols, cj = (cur - ci) / cols;
+    const pdir = inDir[cur];
+    for (let d = 0; d < 8; d++) {
+      const di = DIRS[d][0], dj = DIRS[d][1];
+      const ni = ci + di, nj = cj + dj;
+      if (ni < 0 || nj < 0 || ni >= cols || nj >= rows) continue;
+      const nid = idx(ni, nj);
+      if (blocked[nid] || closed[nid]) continue;
+      if (d >= 4) {
+        // no diagonal corner-cutting past a blocked cell
+        if (blocked[idx(ci + di, cj)] || blocked[idx(ci, cj + dj)]) continue;
       }
+      let cost = d >= 4 ? DIAG * step : step;
+      if (pdir >= 0) cost += bendCost(pdir, d);
+      cost += occCost(grid, ci, cj, ni, nj);
 
-      const proxCost = wireProxCost(nodes[ci], nodes[j], wirePolylines);
-      const tentative = gScore[ci] + d + bendCost + proxCost;
-      if (tentative < gScore[j]) {
-        gScore[j] = tentative;
-        cameFrom[j] = ci;
-        heap.push({ i: j, f: tentative + Math.hypot(nodes[T].x - nodes[j].x, nodes[T].y - nodes[j].y) });
+      const tentative = g[cur] + cost;
+      if (tentative < g[nid]) {
+        g[nid] = tentative;
+        came[nid] = cur;
+        inDir[nid] = d;
+        heap.push({ id: nid, f: tentative + h(ni, nj) });
       }
     }
   }
 
-  if (gScore[T] === Infinity) return null;
-
-  // Reconstruct: walk cameFrom from T back to S, build forward path.
-  const path = [];
-  const seen = new Set();
-  let k = T;
-  while (k >= 0 && !seen.has(k)) {
-    seen.add(k);
-    path.unshift(k);
-    if (k === S) break;
-    k = cameFrom[k];
+  if (g[gId] === Infinity) return null;
+  const cells = [];
+  let k = gId;
+  while (k !== -1) {
+    const i = k % cols, j = (k - i) / cols;
+    cells.unshift({ i, j });
+    if (k === sId) break;
+    k = came[k];
   }
-  if (path[0] !== S) return null;
-  // Return intermediate waypoints only (not S=sStub nor T=tStub).
-  return path.slice(1, -1).map((idx) => nodes[idx]);
+  return cells;
+}
+
+// A clear 2-segment octilinear connector (45° diagonal + axis run), or null.
+function octilinearDirect(a, b, obstacles) {
+  const dx = b.x - a.x, dy = b.y - a.y;
+  const adx = Math.abs(dx), ady = Math.abs(dy);
+  if (adx < 0.5 && ady < 0.5) return [a, b];
+  const sx = Math.sign(dx), sy = Math.sign(dy);
+  const diag = Math.min(adx, ady);
+  const m1 = { x: a.x + sx * diag, y: a.y + sy * diag }; // diagonal first
+  const m2 = { x: b.x - sx * diag, y: b.y - sy * diag }; // axis first
+  for (const m of [m1, m2]) {
+    if (segClear(a, m, obstacles) && segClear(m, b, obstacles)) return [a, m, b];
+  }
+  return null;
 }
 
 // Remove middle point of any 3 collinear consecutive points.
@@ -253,38 +345,40 @@ export function chamferCorners(points, amount = 8) {
   return out;
 }
 
-// Compute a full polyline for one edge (port → stub → route → stub → port).
-// wireOccupied is now an array of already-routed polylines (kept as param name
-// to avoid changing routeGraph.js call-sites).
-export function computeRoute({ source, target, obstacles, gridSize = 16, wireOccupied = null }) {
+// Compute a full polyline for one edge (port → stub → octilinear route → stub →
+// port). When `grid` is supplied it is shared across wires: occupancy is read
+// for lane spacing and updated with this wire's path.
+export function computeRoute({ source, target, obstacles, gridSize = 16, grid = null }) {
   const sStub = stubTip(source);
   const tStub = stubTip(target);
-  const wirePolylines = wireOccupied;
 
-  // Fast path: direct line when stubs have clear line-of-sight.
-  if (segClear(sStub, tStub, obstacles)) {
-    return {
-      points: simplifyCollinear([
-        { x: source.x, y: source.y },
-        sStub,
-        tStub,
-        { x: target.x, y: target.y },
-      ]),
-      fallback: false,
-    };
+  // Standalone (no shared grid): try a clean direct octilinear connector first.
+  if (!grid) {
+    const direct = octilinearDirect(sStub, tStub, obstacles);
+    if (direct) {
+      return {
+        points: simplifyCollinear([{ x: source.x, y: source.y }, ...direct, { x: target.x, y: target.y }]),
+        fallback: false,
+      };
+    }
   }
 
-  // Visibility-graph route around obstacles.
-  const waypoints = visgraphRoute(sStub, tStub, obstacles, wirePolylines);
-  if (!waypoints) {
+  const lattice = grid || buildRoutingGrid(obstacles, [sStub, tStub]);
+  const start = nearestFreeCell(lattice, sStub);
+  const goal = nearestFreeCell(lattice, tStub);
+  const cells = aStarGrid(lattice, start, goal);
+
+  if (!cells) {
     return { points: [{ x: source.x, y: source.y }, { x: target.x, y: target.y }], fallback: true };
   }
+  if (grid) markCells(grid, cells);
 
+  const world = cells.map((c) => cellToWorld(lattice, c));
   return {
     points: simplifyCollinear([
       { x: source.x, y: source.y },
       sStub,
-      ...waypoints,
+      ...world,
       tStub,
       { x: target.x, y: target.y },
     ]),
@@ -365,7 +459,6 @@ export function buildSvgPath(points, hops = []) {
     const len = Math.hypot(b.x - a.x, b.y - a.y) || 1;
     const ux = (b.x - a.x) / len;
     const uy = (b.y - a.y) / len;
-    let cursor = a;
     for (const h of segHops) {
       // skip hops too close to the segment ends to fit the arc
       if (h.dist < HOP_R || h.dist > len - HOP_R) continue;
@@ -374,7 +467,6 @@ export function buildSvgPath(points, hops = []) {
       d += ` L ${round(entry.x)} ${round(entry.y)}`;
       // sweep=1 gives a consistent bulge to one side of travel
       d += ` A ${HOP_R} ${HOP_R} 0 0 1 ${round(exit.x)} ${round(exit.y)}`;
-      cursor = exit;
     }
     d += ` L ${round(b.x)} ${round(b.y)}`;
   }
@@ -387,10 +479,16 @@ function round(n) {
 
 // Midpoint of a polyline (for label placement).
 export function polylineMidpoint(points) {
-  if (points.length === 0) return { x: 0, y: 0 };
-  if (points.length === 1) return points[0];
-  let total = 0;
+  return labelAnchor(points);
+}
+
+// Midpoint of a polyline plus the unit perpendicular to the wire there — used to
+// place / nudge labels clear of the wire and of each other.
+export function labelAnchor(points) {
+  if (points.length === 0) return { x: 0, y: 0, nx: 0, ny: -1 };
+  if (points.length === 1) return { x: points[0].x, y: points[0].y, nx: 0, ny: -1 };
   const segs = [];
+  let total = 0;
   for (let i = 0; i < points.length - 1; i++) {
     const len = Math.hypot(points[i + 1].x - points[i].x, points[i + 1].y - points[i].y);
     segs.push(len);
@@ -398,14 +496,17 @@ export function polylineMidpoint(points) {
   }
   let half = total / 2;
   for (let i = 0; i < segs.length; i++) {
-    if (half <= segs[i]) {
+    if (half <= segs[i] || i === segs.length - 1) {
       const f = segs[i] === 0 ? 0 : half / segs[i];
-      return {
-        x: points[i].x + (points[i + 1].x - points[i].x) * f,
-        y: points[i].y + (points[i + 1].y - points[i].y) * f,
-      };
+      const x = points[i].x + (points[i + 1].x - points[i].x) * f;
+      const y = points[i].y + (points[i + 1].y - points[i].y) * f;
+      const len = segs[i] || 1;
+      const dx = (points[i + 1].x - points[i].x) / len;
+      const dy = (points[i + 1].y - points[i].y) / len;
+      return { x, y, nx: -dy, ny: dx };
     }
     half -= segs[i];
   }
-  return points[points.length - 1];
+  const last = points[points.length - 1];
+  return { x: last.x, y: last.y, nx: 0, ny: -1 };
 }

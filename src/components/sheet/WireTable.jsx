@@ -5,16 +5,16 @@ import useDiagramStore from '../../store/diagramStore';
 import { buildWireRows } from '../../utils/sheetData';
 
 const COLUMNS = [
-  { key: 'label', label: 'Wire Label' },
-  { key: 'group', label: 'Type' },
-  { key: 'from', label: 'From' },
-  { key: 'to', label: 'To' },
-  { key: 'gauge', label: 'Gauge' },
-  { key: 'fitting', label: 'Fitting' },
-  { key: 'color', label: 'Color' },
-  { key: 'length', label: 'Length (in)' },
-  { key: 'notes', label: 'Notes' },
-  { key: 'layer', label: 'Layer' },
+  { key: 'label', label: 'Wire Label', width: '12%' },
+  { key: 'group', label: 'Type', width: '8%' },
+  { key: 'from', label: 'From', width: '13%' },
+  { key: 'to', label: 'To', width: '13%' },
+  { key: 'gauge', label: 'Gauge', width: '7%' },
+  { key: 'fitting', label: 'Fitting', width: '9%' },
+  { key: 'color', label: 'Color', width: '6%' },
+  { key: 'length', label: 'Length (in)', width: '9%' },
+  { key: 'notes', label: 'Notes', width: '15%' },
+  { key: 'layer', label: 'Layer', width: '8%' },
 ];
 
 function TemplateEditor() {
@@ -64,9 +64,22 @@ function TemplateEditor() {
   );
 }
 
-function EditableCell({ value, onCommit, type = 'text' }) {
+function EditableCell({ value, onCommit, type = 'text', multiline = false }) {
   const [draft, setDraft] = useState(value ?? '');
   const commit = () => onCommit(draft);
+  const cls =
+    'block w-full min-w-0 box-border rounded border border-transparent bg-transparent px-1 py-0.5 text-silver hover:border-edge focus:border-silver focus:bg-surface-0 focus:outline-none';
+  if (multiline) {
+    return (
+      <textarea
+        rows={2}
+        value={draft}
+        onChange={(e) => setDraft(e.target.value)}
+        onBlur={commit}
+        className={`${cls} resize-none whitespace-pre-wrap break-words`}
+      />
+    );
+  }
   return (
     <input
       type={type}
@@ -75,7 +88,7 @@ function EditableCell({ value, onCommit, type = 'text' }) {
       onChange={(e) => setDraft(e.target.value)}
       onBlur={commit}
       onKeyDown={(e) => e.key === 'Enter' && e.currentTarget.blur()}
-      className="w-full rounded border border-transparent bg-transparent px-1 py-0.5 text-silver hover:border-edge focus:border-silver focus:bg-surface-0 focus:outline-none"
+      className={cls}
     />
   );
 }
@@ -135,12 +148,17 @@ export default function WireTable() {
         />
       </div>
       <div className="overflow-x-auto rounded-lg border border-edge">
-        <table className="w-full text-sm">
+        <table className="w-full table-fixed text-sm">
+          <colgroup>
+            {COLUMNS.map((c) => (
+              <col key={c.key} style={{ width: c.width }} />
+            ))}
+          </colgroup>
           <thead className="bg-surface-2 text-left text-neutral-300">
             <tr>
               {COLUMNS.map((c) => (
-                <th key={c.key} className="whitespace-nowrap px-3 py-2 font-semibold">
-                  <button onClick={() => toggleSort(c.key)} className="flex items-center gap-1 hover:text-silver">
+                <th key={c.key} className="px-3 py-2 font-semibold">
+                  <button onClick={() => toggleSort(c.key)} className="flex items-center gap-1 text-left hover:text-silver">
                     {c.label}
                     {sort.key === c.key &&
                       (sort.dir === 'asc' ? <ArrowUp size={12} /> : <ArrowDown size={12} />)}
@@ -151,17 +169,17 @@ export default function WireTable() {
           </thead>
           <tbody>
             {filtered.map((r) => (
-              <tr key={r.id} className="border-t border-edge text-silver">
-                <td className="whitespace-nowrap px-3 py-1.5 font-heading">{r.label}</td>
+              <tr key={r.id} className="border-t border-edge align-top text-silver">
+                <td className="px-3 py-1.5 font-heading break-words">{r.label}</td>
                 <td className="px-3 py-1.5">{r.group}</td>
-                <td className="whitespace-nowrap px-3 py-1.5">{r.from}</td>
-                <td className="whitespace-nowrap px-3 py-1.5">{r.to}</td>
+                <td className="px-3 py-1.5 break-words">{r.from}</td>
+                <td className="px-3 py-1.5 break-words">{r.to}</td>
                 <td className="px-3 py-1.5">{r.gauge}</td>
                 <td className="px-3 py-1.5">{r.fitting}</td>
                 <td className="px-3 py-1.5">
                   <span className="inline-block h-4 w-4 rounded border border-edge align-middle" style={{ background: r.color }} />
                 </td>
-                <td className="px-3 py-1 w-24">
+                <td className="px-3 py-1">
                   <EditableCell
                     type="number"
                     value={r.length ?? ''}
@@ -170,10 +188,10 @@ export default function WireTable() {
                     }
                   />
                 </td>
-                <td className="px-3 py-1 min-w-[10rem]">
-                  <EditableCell value={r.notes} onCommit={(v) => updateEdgeData(r.id, { notes: v })} />
+                <td className="px-3 py-1">
+                  <EditableCell value={r.notes} multiline onCommit={(v) => updateEdgeData(r.id, { notes: v })} />
                 </td>
-                <td className="px-3 py-1.5 text-neutral-400">{r.layer}</td>
+                <td className="px-3 py-1.5 text-neutral-400 break-words">{r.layer}</td>
               </tr>
             ))}
             {filtered.length === 0 && (

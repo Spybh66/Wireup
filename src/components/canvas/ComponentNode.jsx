@@ -35,7 +35,19 @@ function handleStyle(node, port) {
 // Port label offset so it sits just inside the body, away from the dot.
 function labelStyle(port, f) {
   const pct = `${f * 100}%`;
-  const common = { position: 'absolute', fontSize: 10, lineHeight: '10px', color: '#a3a3a3', pointerEvents: 'none', whiteSpace: 'nowrap' };
+  const common = {
+    position: 'absolute',
+    fontSize: 10,
+    lineHeight: '10px',
+    color: '#c5c5cd',
+    pointerEvents: 'none',
+    whiteSpace: 'nowrap',
+    maxWidth: 56,
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    textShadow: '0 0 3px #1b1b1f, 0 0 3px #1b1b1f',
+    zIndex: 3,
+  };
   if (port.side === 'left') return { ...common, left: 6, top: pct, transform: 'translateY(-50%)' };
   if (port.side === 'right')
     return { ...common, right: 6, top: pct, transform: 'translateY(-50%)', textAlign: 'right' };
@@ -54,6 +66,18 @@ function ComponentNode({ id, data, selected }) {
   // node object shape needed by geometry helpers
   const node = { id, data };
 
+  // Keep the centered icon/name clear of the port labels that sit just inside
+  // each side that carries ports (only matters when port labels are visible).
+  const sides = new Set(data.ports.map((p) => p.side));
+  const namePad = showPortLabels
+    ? {
+        paddingLeft: sides.has('left') ? 30 : 8,
+        paddingRight: sides.has('right') ? 30 : 8,
+        paddingTop: sides.has('top') ? 14 : 4,
+        paddingBottom: sides.has('bottom') ? 14 : 4,
+      }
+    : { padding: 8 };
+
   return (
     <div
       className="relative rounded-md bg-surface-2 font-body"
@@ -65,7 +89,10 @@ function ComponentNode({ id, data, selected }) {
       }}
     >
       {/* centered icon + label */}
-      <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-0.5 px-2">
+      <div
+        className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-0.5"
+        style={namePad}
+      >
         <Icon size={20} />
         <span className="w-full truncate text-center font-heading text-[11px] font-semibold tracking-wide text-silver">
           {data.label}
