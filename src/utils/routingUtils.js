@@ -116,27 +116,21 @@ function astar(start, goal, obstacles, cell, bounds, wireOccupied = null) {
   const startK = key(s.ix, s.iy);
   const goalK = key(g.ix, g.iy);
 
+  // Orthogonal-only moves (no diagonals). Diagonal paths look messy in
+  // electrical diagrams and prevent hop-arc detection at crossings.
   const DIRS = [
     [1, 0],
     [-1, 0],
     [0, 1],
     [0, -1],
-    [1, 1],
-    [1, -1],
-    [-1, 1],
-    [-1, -1],
   ];
 
   const gScore = new Map([[startK, 0]]);
   const cameFrom = new Map();
   const dirIn = new Map(); // incoming direction index per node
 
-  // octile heuristic (in step units)
-  const heur = (ix, iy) => {
-    const dx = Math.abs(ix - g.ix);
-    const dy = Math.abs(iy - g.iy);
-    return dx + dy + (DIAG - 2) * Math.min(dx, dy);
-  };
+  // Manhattan heuristic (exact for orthogonal-only routing)
+  const heur = (ix, iy) => Math.abs(ix - g.ix) + Math.abs(iy - g.iy);
 
   // binary heap with deterministic tie-break (f, then x, then y)
   const heap = [];
@@ -188,14 +182,11 @@ function astar(start, goal, obstacles, cell, bounds, wireOccupied = null) {
       const nix = cur.ix + dx;
       const niy = cur.iy + dy;
       if (!free(nix, niy)) continue;
-      const diagonal = dx !== 0 && dy !== 0;
-      // no corner cutting: both adjacent orthogonals must be free
-      if (diagonal && (!free(cur.ix + dx, cur.iy) || !free(cur.ix, cur.iy + dy))) continue;
       const nk = key(nix, niy);
       if (closed.has(nk)) continue;
       const prevDir = dirIn.get(ck);
       const turn = prevDir !== undefined && prevDir !== di;
-      const step = (diagonal ? DIAG : 1) + (turn ? BEND : 0) + occupyCost(nix, niy, dx, dy);
+      const step = 1 + (turn ? BEND : 0) + occupyCost(nix, niy, dx, dy);
       const tentative = gScore.get(ck) + step;
       if (!gScore.has(nk) || tentative < gScore.get(nk)) {
         gScore.set(nk, tentative);
@@ -270,15 +261,21 @@ export function computeRoute({ source, target, obstacles, gridSize = 16, wireOcc
   const tStub = stubTip(target);
   const cell = Math.max(8, gridSize / 2);
 
-  // Snap stub tips to the A* lattice grid. Port positions depend on node
-  // dimensions (e.g. height * fraction) which are rarely on a cell boundary;
-  // snapping eliminates the sub-cell offset that causes staircase zigzags.
+  // Snap ONLY the axis perpendicular to each stub's exit direction so the
+  // stub→grid alignment segment is always a clean orthogonal step.
+  // • Left/right ports exit horizontally → snap y only (x is already on-grid
+  //   because port.x ± STUB inherits the component's snapped position).
+  // • Top/bottom ports exit vertically → snap x only.
   const snapC = (v) => Math.round(v / cell) * cell;
-  const sSnapped = { x: snapC(sStub.x), y: snapC(sStub.y) };
-  const tSnapped = { x: snapC(tStub.x), y: snapC(tStub.y) };
+  const snapStub = (stub, side) =>
+    side === 'left' || side === 'right'
+      ? { x: stub.x, y: snapC(stub.y) }
+      : { x: snapC(stub.x), y: stub.y };
+  const sSnapped = snapStub(sStub, source.side);
+  const tSnapped = snapStub(tStub, target.side);
 
   // Align the A* bounding box to the global cell grid so snapped stub tips
-  // always fall exactly on lattice nodes (no rounding error in snap()).
+  // always land exactly on a lattice node (eliminates snap() rounding drift).
   const rawMinX = Math.min(sSnapped.x, tSnapped.x) - EXPAND;
   const rawMinY = Math.min(sSnapped.y, tSnapped.y) - EXPAND;
   const minX = Math.floor(rawMinX / cell) * cell;
@@ -292,18 +289,21 @@ export function computeRoute({ source, target, obstacles, gridSize = 16, wireOcc
     return { points: [{ x: source.x, y: source.y }, { x: target.x, y: target.y }], fallback: true };
   }
 
-  // Build the full path. Include the original (un-snapped) stub tips so the
-  // wire exits the port perfectly perpendicular; simplifyCollinear then merges
-  // any collinear triplets produced by the near-identical stub + snapped stub.
+  // Full path: port → stub (perpendicular exit) → snapped-stub (grid alignment,
+  // tiny orthogonal jog ≤ cell/2 px) → A* lattice → snapped target stub →
+  // target stub → target port.
+  // simplifyCollinear merges any consecutive collinear triplets so the path has
+  // no redundant interior points (e.g. when the jog is collinear with the route).
   let pts = [
     { x: source.x, y: source.y },
     sStub,
+    sSnapped,
     ...lattice,
+    tSnapped,
     tStub,
     { x: target.x, y: target.y },
   ];
   pts = simplifyCollinear(pts);
-  // No chamfer — keep crisp 45°/90° PCB-style corners.
   return { points: pts, fallback: false };
 }
 
