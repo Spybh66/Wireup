@@ -14,6 +14,7 @@ import useDiagramStore from './store/diagramStore';
 import { readAutosave } from './utils/saveLoadUtils';
 
 const SheetView = lazy(() => import('./components/sheet/SheetView'));
+const AboutView = lazy(() => import('./components/about/AboutView'));
 
 const uuid = () => crypto.randomUUID();
 const deepCopy = (o) => JSON.parse(JSON.stringify(o));
@@ -142,7 +143,7 @@ export default function App() {
         {activeTab === 'diagram' && <ComponentSidebar />}
 
         <main className="relative flex-1 overflow-hidden">
-          {activeTab === 'diagram' ? (
+          {activeTab === 'diagram' && (
             <>
               <DiagramCanvas onOpenNodeConfig={onOpenNodeConfig} />
               <LayerPanel />
@@ -153,11 +154,12 @@ export default function App() {
                 />
               )}
             </>
-          ) : (
+          )}
+          {activeTab !== 'diagram' && (
             <Suspense
               fallback={<div className="flex h-full items-center justify-center text-neutral-500">Loading…</div>}
             >
-              <SheetView />
+              {activeTab === 'sheet' ? <SheetView /> : <AboutView />}
             </Suspense>
           )}
         </main>

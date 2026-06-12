@@ -148,6 +148,9 @@ export default function Header({ onOpenSettings }) {
         <TabButton active={activeTab === 'sheet'} onClick={() => setActiveTab('sheet')}>
           Sheet
         </TabButton>
+        <TabButton active={activeTab === 'about'} onClick={() => setActiveTab('about')}>
+          About
+        </TabButton>
       </div>
 
       <div className="flex-1" />

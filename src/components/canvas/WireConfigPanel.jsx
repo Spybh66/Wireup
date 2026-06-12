@@ -84,7 +84,7 @@ export default function WireConfigPanel({ edgeId, onClose }) {
         </label>
 
         {showGF && (
-          <div className="grid grid-cols-2 gap-2">
+          <div className="space-y-2">
             <label className="block">
               <span className="mb-1 block text-neutral-400">Gauge</span>
               <select
@@ -98,19 +98,38 @@ export default function WireConfigPanel({ edgeId, onClose }) {
                 ))}
               </select>
             </label>
-            <label className="block">
-              <span className="mb-1 block text-neutral-400">Fitting</span>
-              <select
-                value={d.wireFitting ?? ''}
-                onChange={(e) => updateEdgeData(edgeId, { wireFitting: e.target.value || null })}
-                className="w-full rounded border border-edge bg-surface-0 px-1 py-1 text-silver"
-              >
-                <option value="">—</option>
-                {FITTING_OPTIONS.map((f) => (
-                  <option key={f} value={f}>{f}</option>
-                ))}
-              </select>
-            </label>
+            <div className="grid grid-cols-2 gap-2">
+              <label className="block">
+                <span className="mb-1 block text-neutral-400" title={`Fitting at ${fromNode?.data.label ?? 'from'}`}>
+                  Fitting (from)
+                </span>
+                <select
+                  value={d.wireFittingFrom ?? d.wireFitting ?? ''}
+                  onChange={(e) => updateEdgeData(edgeId, { wireFittingFrom: e.target.value || null })}
+                  className="w-full rounded border border-edge bg-surface-0 px-1 py-1 text-silver"
+                >
+                  <option value="">—</option>
+                  {FITTING_OPTIONS.map((f) => (
+                    <option key={f} value={f}>{f}</option>
+                  ))}
+                </select>
+              </label>
+              <label className="block">
+                <span className="mb-1 block text-neutral-400" title={`Fitting at ${toNode?.data.label ?? 'to'}`}>
+                  Fitting (to)
+                </span>
+                <select
+                  value={d.wireFittingTo ?? d.wireFitting ?? ''}
+                  onChange={(e) => updateEdgeData(edgeId, { wireFittingTo: e.target.value || null })}
+                  className="w-full rounded border border-edge bg-surface-0 px-1 py-1 text-silver"
+                >
+                  <option value="">—</option>
+                  {FITTING_OPTIONS.map((f) => (
+                    <option key={f} value={f}>{f}</option>
+                  ))}
+                </select>
+              </label>
+            </div>
           </div>
         )}
 

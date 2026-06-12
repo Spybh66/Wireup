@@ -227,6 +227,33 @@ export function ServoIcon({ size = 24 }) {
   );
 }
 
+export function CanJunctionIcon({ size = 24 }) {
+  return (
+    <svg {...base(size)}>
+      <rect x="9" y="12" width="22" height="16" rx="2" />
+      <line x1="20" y1="12" x2="20" y2="28" />
+      <line x1="9" y1="16" x2="6" y2="16" />
+      <line x1="9" y1="24" x2="6" y2="24" />
+      <line x1="31" y1="15" x2="34" y2="15" />
+      <line x1="31" y1="20" x2="34" y2="20" />
+      <line x1="31" y1="25" x2="34" y2="25" />
+    </svg>
+  );
+}
+
+export function LedStripIcon({ size = 24 }) {
+  return (
+    <svg {...base(size)}>
+      <rect x="6" y="16" width="28" height="8" rx="1" />
+      <circle cx="11" cy="20" r="1.4" />
+      <circle cx="16" cy="20" r="1.4" />
+      <circle cx="20" cy="20" r="1.4" />
+      <circle cx="24" cy="20" r="1.4" />
+      <circle cx="29" cy="20" r="1.4" />
+    </svg>
+  );
+}
+
 export function GenericIcon({ size = 24 }) {
   return (
     <svg {...base(size)}>
@@ -260,6 +287,8 @@ export const ICONS = {
   solenoid: SolenoidIcon,
   rsl: RslIcon,
   servo: ServoIcon,
+  canjunction: CanJunctionIcon,
+  ledstrip: LedStripIcon,
   generic: GenericIcon,
 };
 

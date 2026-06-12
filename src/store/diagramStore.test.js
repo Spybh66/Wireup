@@ -22,7 +22,8 @@ describe('diagramStore', () => {
     expect(edge.data.type).toBe('CANH');
     expect(edge.data.label).toBe('CAN001');
     expect(edge.data.wireGauge).toBe('22 AWG');
-    expect(edge.data.wireFitting).toBe('Wago Lever Nut');
+    expect(edge.data.wireFittingFrom).toBe('Wago Lever Nut');
+    expect(edge.data.wireFittingTo).toBe('Wago Lever Nut');
     const layers = useDiagramStore.getState().layers;
     expect(edge.data.layerId).toBe(layers.find((l) => l.name === 'CAN Bus').id);
   });

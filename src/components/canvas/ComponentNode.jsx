@@ -32,17 +32,35 @@ function handleStyle(node, port) {
   return { ...base, bottom: -4, left: pct };
 }
 
+// Per-side font scale so crowded port labels don't stack on top of each other.
+// Shrinks the label font when the spacing between ports on a side gets tight.
+function sideLabelScale(ports, def) {
+  const counts = { top: 0, right: 0, bottom: 0, left: 0 };
+  for (const p of ports) counts[p.side] += 1;
+  const scaleFor = (side) => {
+    const n = counts[side];
+    if (n <= 1) return 1;
+    const vertical = side === 'left' || side === 'right';
+    const span = vertical ? def.height : def.width;
+    const spacing = span / (n + 1);
+    const need = vertical ? 11 : 24; // px of room one label wants
+    return Math.max(0.55, Math.min(1, spacing / need));
+  };
+  return { top: scaleFor('top'), right: scaleFor('right'), bottom: scaleFor('bottom'), left: scaleFor('left') };
+}
+
 // Port label offset so it sits just inside the body, away from the dot.
-function labelStyle(port, f) {
+function labelStyle(port, f, scale = 1) {
   const pct = `${f * 100}%`;
+  const fs = 10 * scale;
   const common = {
     position: 'absolute',
-    fontSize: 10,
-    lineHeight: '10px',
+    fontSize: fs,
+    lineHeight: `${fs}px`,
     color: '#c5c5cd',
     pointerEvents: 'none',
     whiteSpace: 'nowrap',
-    maxWidth: 56,
+    maxWidth: 56 * scale,
     overflow: 'hidden',
     textOverflow: 'ellipsis',
     textShadow: '0 0 3px #1b1b1f, 0 0 3px #1b1b1f',
@@ -68,6 +86,7 @@ function ComponentNode({ id, data, selected }) {
 
   // Keep the centered icon/name clear of the port labels that sit just inside
   // each side that carries ports (only matters when port labels are visible).
+  const labelScale = sideLabelScale(data.ports, def);
   const sides = new Set(data.ports.map((p) => p.side));
   const namePad = showPortLabels
     ? {
@@ -94,7 +113,7 @@ function ComponentNode({ id, data, selected }) {
         style={namePad}
       >
         <Icon size={20} />
-        <span className="w-full truncate text-center font-heading text-[11px] font-semibold tracking-wide text-silver">
+        <span className="line-clamp-2 w-full break-words text-center font-heading text-[11px] font-semibold leading-tight tracking-wide text-silver">
           {data.label}
         </span>
       </div>
@@ -109,7 +128,7 @@ function ComponentNode({ id, data, selected }) {
       {/* port labels */}
       {showPortLabels &&
         data.ports.map((p) => (
-          <span key={`l-${p.id}`} style={labelStyle(p, portFraction(data.ports, p))}>
+          <span key={`l-${p.id}`} style={labelStyle(p, portFraction(data.ports, p), labelScale[p.side])}>
             {p.label}
           </span>
         ))}

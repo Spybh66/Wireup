@@ -9,10 +9,11 @@ export const PAD  = 12;         // obstacle inflation (px)
 export const STEP = 8;          // routing lattice resolution (px)
 
 const HOP_R    = 5;             // crossing hop arc radius (px)
+const CORNER_R = 7;             // rounded-corner fillet radius (px)
 const DIAG     = Math.SQRT2;
-const BEND_45  = STEP * 0.7;    // mild penalty — keep paths straight-ish
-const BEND_90  = STEP * 6;      // strong penalty — discourage square corners
-const BEND_135 = STEP * 16;     // very strong — discourage sharp turns
+const BEND_45  = STEP * 2.2;    // discourage staircasing into clean 45° runs
+const BEND_90  = STEP * 9;      // strong penalty — discourage square corners
+const BEND_135 = STEP * 22;     // very strong — discourage sharp turns
 const OVERLAP_PENALTY = STEP * 50; // running ON an existing wire's edge → relane
 const CROSS_PENALTY   = STEP * 2;  // crossing a perpendicular wire → a hop
 const MAX_CELLS = 240000;          // grid-size guard (coarsen step if exceeded)
@@ -441,34 +442,54 @@ export function detectHops(orderedPolys) {
 }
 
 // ---------- SVG path building ----------
-// Build an SVG path string, inserting semicircular hops at the given crossings.
-export function buildSvgPath(points, hops = []) {
-  if (!points.length) return '';
+// Build an SVG path string with rounded corners (quadratic fillets) for smooth
+// transitions, inserting semicircular hops at the given crossings.
+export function buildSvgPath(points, hops = [], cornerR = CORNER_R) {
+  const n = points.length;
+  if (n === 0) return '';
+  if (n === 1) return `M ${round(points[0].x)} ${round(points[0].y)}`;
+  const dist = (p, q) => Math.hypot(q.x - p.x, q.y - p.y);
+
+  // How far to trim each interior corner so the fillet fits its shorter leg.
+  const trim = new Array(n).fill(0);
+  for (let i = 1; i < n - 1; i++) {
+    trim[i] = Math.min(cornerR, dist(points[i - 1], points[i]) * 0.45, dist(points[i], points[i + 1]) * 0.45);
+  }
+
   let d = `M ${round(points[0].x)} ${round(points[0].y)}`;
-  for (let i = 0; i < points.length - 1; i++) {
+  for (let i = 0; i < n - 1; i++) {
     const a = points[i];
     const b = points[i + 1];
+    const len = dist(a, b) || 1;
+    const ux = (b.x - a.x) / len;
+    const uy = (b.y - a.y) / len;
+    const startT = trim[i];
+    const endT = trim[i + 1];
+    const ex = b.x - ux * endT;
+    const ey = b.y - uy * endT;
+
     const segHops = hops
       .filter((h) => h.seg === i)
       .map((h) => ({ ...h, dist: Math.hypot(h.x - a.x, h.y - a.y) }))
       .sort((p, q) => p.dist - q.dist);
-    if (!segHops.length) {
-      d += ` L ${round(b.x)} ${round(b.y)}`;
-      continue;
-    }
-    const len = Math.hypot(b.x - a.x, b.y - a.y) || 1;
-    const ux = (b.x - a.x) / len;
-    const uy = (b.y - a.y) / len;
     for (const h of segHops) {
-      // skip hops too close to the segment ends to fit the arc
-      if (h.dist < HOP_R || h.dist > len - HOP_R) continue;
+      // keep the hop clear of trimmed corners and segment ends
+      if (h.dist < startT + HOP_R || h.dist > len - endT - HOP_R) continue;
       const entry = { x: h.x - ux * HOP_R, y: h.y - uy * HOP_R };
       const exit = { x: h.x + ux * HOP_R, y: h.y + uy * HOP_R };
       d += ` L ${round(entry.x)} ${round(entry.y)}`;
-      // sweep=1 gives a consistent bulge to one side of travel
       d += ` A ${HOP_R} ${HOP_R} 0 0 1 ${round(exit.x)} ${round(exit.y)}`;
     }
-    d += ` L ${round(b.x)} ${round(b.y)}`;
+    d += ` L ${round(ex)} ${round(ey)}`;
+
+    // round the corner at b with a quadratic through the real vertex
+    if (i < n - 2) {
+      const c = points[i + 2];
+      const len2 = dist(b, c) || 1;
+      const qx = b.x + ((c.x - b.x) / len2) * trim[i + 1];
+      const qy = b.y + ((c.y - b.y) / len2) * trim[i + 1];
+      d += ` Q ${round(b.x)} ${round(b.y)} ${round(qx)} ${round(qy)}`;
+    }
   }
   return d;
 }

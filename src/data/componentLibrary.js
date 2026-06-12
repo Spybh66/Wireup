@@ -72,6 +72,13 @@ export const COMPONENT_LIBRARY = [
     ...usb('USB1', 'top'),
     ...usb('USB2', 'top'),
   ]),
+  def('jetsonorinnano', 'Jetson Orin Nano', 'Controllers', 'pi', 170, 90, ['ipAddress'], [
+    ...pwr('V+', 'V-', 'left', '18 AWG', FERRULE),
+    ...eth('ETH', 'top'),
+    ...usb('USB1', 'top'),
+    ...usb('USB2', 'top'),
+    ...usb('USB3', 'top'),
+  ]),
 
   // ---------------- Power ----------------
   def('battery', 'Battery (12V)', 'Power', 'battery', 140, 80, [], [
@@ -102,6 +109,27 @@ export const COMPONENT_LIBRARY = [
     ...pwr('C+', 'C-', 'right', '18 AWG', FERRULE),
     ...pwr('D+', 'D-', 'right', '18 AWG', FERRULE),
   ]),
+  def('mitocandria', 'MitoCANDria (ThriftyBot)', 'Power', 'vrm', 150, 100, ['canId'], [
+    ...pwr('V+', 'V-', 'left', '18 AWG', FERRULE),
+    ...can('bottom'),
+    ...pwr('OUT1+', 'OUT1-', 'right', '20 AWG', FERRULE),
+    ...pwr('OUT2+', 'OUT2-', 'right', '20 AWG', FERRULE),
+    ...pwr('OUT3+', 'OUT3-', 'right', '20 AWG', FERRULE),
+    ...pwr('OUT4+', 'OUT4-', 'right', '20 AWG', FERRULE),
+  ]),
+  def('canjunction', 'CANJunction (ThriftyBot)', 'Power', 'canjunction', 150, 110, [], [
+    ...pwr('V+', 'V-', 'left', '18 AWG', WAGO),
+    { type: 'CANH', label: 'BUS H', side: 'left' },
+    { type: 'CANL', label: 'BUS L', side: 'left' },
+    { type: 'CANH', label: 'T1 H', side: 'right' },
+    { type: 'CANL', label: 'T1 L', side: 'right' },
+    { type: 'CANH', label: 'T2 H', side: 'right' },
+    { type: 'CANL', label: 'T2 L', side: 'right' },
+    { type: 'CANH', label: 'T3 H', side: 'right' },
+    { type: 'CANL', label: 'T3 L', side: 'right' },
+    { type: 'CANH', label: 'T4 H', side: 'right' },
+    { type: 'CANL', label: 'T4 L', side: 'right' },
+  ]),
 
   // ---------------- Motor Controllers ----------------
   def('sparkmax', 'SPARK MAX', 'Motor Controllers', 'motorController', 120, 70, ['canId'], [
@@ -122,17 +150,6 @@ export const COMPONENT_LIBRARY = [
     ...pwr('M+', 'M-', 'right', '12 AWG', FERRULE),
     ...data('Data port', 'top'),
   ]),
-  def('talonsrx', 'Talon SRX (legacy)', 'Motor Controllers', 'motorController', 120, 70, ['canId'], [
-    ...pwr('V+', 'V-', 'left', '12 AWG', FERRULE),
-    ...can('bottom'),
-    ...pwr('M+', 'M-', 'right', '12 AWG', FERRULE),
-    ...data('Data', 'top'),
-  ]),
-  def('victorspx', 'Victor SPX (legacy)', 'Motor Controllers', 'motorController', 120, 70, ['canId'], [
-    ...pwr('V+', 'V-', 'left', '12 AWG', FERRULE),
-    ...can('bottom'),
-    ...pwr('M+', 'M-', 'right', '12 AWG', FERRULE),
-  ]),
   def('generic_mc', 'Generic Motor Controller', 'Motor Controllers', 'motorController', 120, 70, ['canId'], [
     ...pwr('V+', 'V-', 'left', '12 AWG', FERRULE),
     ...can('bottom'),
@@ -146,10 +163,6 @@ export const COMPONENT_LIBRARY = [
     ...can('bottom'),
   ]),
   def('krakenx44', 'Kraken X44', 'Motors', 'krakenMotor', 120, 70, ['canId'], [
-    ...pwr('V+', 'V-', 'left', '12 AWG', FERRULE),
-    ...can('bottom'),
-  ]),
-  def('falcon500', 'Falcon 500 (legacy)', 'Motors', 'krakenMotor', 120, 70, ['canId'], [
     ...pwr('V+', 'V-', 'left', '12 AWG', FERRULE),
     ...can('bottom'),
   ]),
@@ -201,6 +214,16 @@ export const COMPONENT_LIBRARY = [
     ...pwr('V+', 'V-', 'left', '18 AWG', FERRULE),
     ...eth('ETH', 'top'),
   ]),
+  def('lasercan', 'LaserCAN (Grapple)', 'Sensors', 'canSensor', 100, 60, ['canId'], [
+    ...pwr('V+', 'V-', 'left', '22 AWG', FERRULE),
+    ...can('bottom'),
+  ]),
+  def('thriftycam', 'ThriftyCAM (ThriftyBot)', 'Sensors', 'camera', 120, 70, [], [
+    ...usb('USB', 'left'),
+  ]),
+  def('usbcamera', 'Generic USB Camera', 'Sensors', 'camera', 120, 70, [], [
+    ...usb('USB', 'left'),
+  ]),
   def('generic_sensor', 'Generic Sensor', 'Sensors', 'sensor', 100, 60, [], [
     ...pwr('V+', 'V-', 'left', '18 AWG', FERRULE),
     ...data('Data', 'top'),
@@ -221,22 +244,6 @@ export const COMPONENT_LIBRARY = [
     ...eth('5', 'top'),
   ]),
 
-  // ---------------- Pneumatics ----------------
-  def('pneumatichub', 'Pneumatic Hub (REV)', 'Pneumatics', 'pneumaticHub', 140, 80, ['canId'], [
-    ...pwr('V+', 'V-', 'left'),
-    ...can('bottom'),
-  ]),
-  def('pcm', 'PCM (CTRE)', 'Pneumatics', 'pneumaticHub', 140, 80, ['canId'], [
-    ...pwr('V+', 'V-', 'left'),
-    ...can('bottom'),
-  ]),
-  def('compressor', 'Compressor', 'Pneumatics', 'compressor', 120, 70, [], [
-    ...pwr('V+', 'V-', 'left'),
-  ]),
-  def('solenoid', 'Solenoid', 'Pneumatics', 'solenoid', 100, 60, [], [
-    ...pwr('V+', 'V-', 'left'),
-  ]),
-
   // ---------------- Other ----------------
   def('rsl', 'Robot Signal Light (RSL)', 'Other', 'rsl', 100, 60, [], [
     ...pwr('V+', 'V-', 'left', '18 AWG', FERRULE),
@@ -244,6 +251,10 @@ export const COMPONENT_LIBRARY = [
   def('servohub', 'Servo Hub (REV)', 'Other', 'servo', 120, 70, ['canId'], [
     ...pwr('V+', 'V-', 'left'),
     ...can('bottom'),
+  ]),
+  def('ledstrip', 'LED Strip', 'Other', 'ledstrip', 120, 60, [], [
+    ...pwr('V+', 'V-', 'left', '18 AWG', FERRULE),
+    ...data('Din', 'left'),
   ]),
 ];
 
@@ -255,7 +266,6 @@ export const CATEGORY_ORDER = [
   'Motors',
   'Sensors',
   'Networking',
-  'Pneumatics',
   'Other',
   'Custom',
 ];

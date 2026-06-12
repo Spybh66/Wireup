@@ -5,16 +5,17 @@ import useDiagramStore from '../../store/diagramStore';
 import { buildWireRows } from '../../utils/sheetData';
 
 const COLUMNS = [
-  { key: 'label', label: 'Wire Label', width: '12%' },
-  { key: 'group', label: 'Type', width: '8%' },
-  { key: 'from', label: 'From', width: '13%' },
-  { key: 'to', label: 'To', width: '13%' },
+  { key: 'label', label: 'Wire Label', width: '11%' },
+  { key: 'group', label: 'Type', width: '7%' },
+  { key: 'from', label: 'From', width: '12%' },
+  { key: 'to', label: 'To', width: '12%' },
   { key: 'gauge', label: 'Gauge', width: '7%' },
-  { key: 'fitting', label: 'Fitting', width: '9%' },
-  { key: 'color', label: 'Color', width: '6%' },
-  { key: 'length', label: 'Length (in)', width: '9%' },
-  { key: 'notes', label: 'Notes', width: '15%' },
-  { key: 'layer', label: 'Layer', width: '8%' },
+  { key: 'fittingFrom', label: 'Fitting (From)', width: '11%' },
+  { key: 'fittingTo', label: 'Fitting (To)', width: '11%' },
+  { key: 'color', label: 'Color', width: '5%' },
+  { key: 'length', label: 'Length (in)', width: '8%' },
+  { key: 'notes', label: 'Notes', width: '11%' },
+  { key: 'layer', label: 'Layer', width: '5%' },
 ];
 
 function TemplateEditor() {
@@ -175,7 +176,8 @@ export default function WireTable() {
                 <td className="px-3 py-1.5 break-words">{r.from}</td>
                 <td className="px-3 py-1.5 break-words">{r.to}</td>
                 <td className="px-3 py-1.5">{r.gauge}</td>
-                <td className="px-3 py-1.5">{r.fitting}</td>
+                <td className="px-3 py-1.5 break-words">{r.fittingFrom}</td>
+                <td className="px-3 py-1.5 break-words">{r.fittingTo}</td>
                 <td className="px-3 py-1.5">
                   <span className="inline-block h-4 w-4 rounded border border-edge align-middle" style={{ background: r.color }} />
                 </td>

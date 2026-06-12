@@ -90,14 +90,10 @@ export function computeAllRoutes({
   });
   const obstacles = nodeRects.map((r) => inflate(r, PAD));
 
-  // One shared occupancy lattice for the whole diagram. Routing edges in a
-  // deterministic order lets wires sharing a corridor lane-shift off one
-  // another (spaced bundles) while distant wires stay untouched (local cluster).
-  const grid = dragging.size ? null : buildRoutingGrid(obstacles);
-
-  const ordered = [];
-  const meta = new Map();
-  const fallbacks = [];
+  // Pass 0: resolve each visible edge's endpoints so the routing lattice can be
+  // sized to cover every wire stub (not just the component rects).
+  const jobs = [];
+  const endpoints = [];
   for (const e of edges) {
     if (!visibleLayers.has(e.data.layerId)) continue;
     const sNode = nodeMap.get(e.source);
@@ -108,10 +104,21 @@ export function computeAllRoutes({
     const sPort = sNode.data.ports.find((p) => p.id === e.sourceHandle);
     const tPort = tNode.data.ports.find((p) => p.id === e.targetHandle);
     if (!sDef || !tDef || !sPort || !tPort) continue;
-
     const source = portPosition(sNode, sPort, sDef);
     const target = portPosition(tNode, tPort, tDef);
+    endpoints.push(stubTip(source), stubTip(target));
+    jobs.push({ edge: e, source, target });
+  }
 
+  // One shared occupancy lattice for the whole diagram. Routing edges in a
+  // deterministic order lets wires sharing a corridor lane-shift off one
+  // another (spaced bundles) while distant wires stay untouched (local cluster).
+  const grid = dragging.size ? null : buildRoutingGrid(obstacles, endpoints);
+
+  const ordered = [];
+  const meta = new Map();
+  const fallbacks = [];
+  for (const { edge: e, source, target } of jobs) {
     let points;
     let fallback = false;
     if (dragging.has(e.source) || dragging.has(e.target)) {
