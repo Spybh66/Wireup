@@ -91,16 +91,22 @@ export function buildRoutingGrid(obstacles, extraPoints = [], step = STEP) {
   const margin = step * 8;
   minX -= margin; minY -= margin; maxX += margin; maxY += margin;
 
+  // Align the lattice origin to the world STEP grid so grid-snapped ports land
+  // exactly on cells (and node edges, which sit on the 16px grid, do too).
   let s = step;
-  let cols = Math.ceil((maxX - minX) / s) + 1;
-  let rows = Math.ceil((maxY - minY) / s) + 1;
+  let originX = Math.floor(minX / s) * s;
+  let originY = Math.floor(minY / s) * s;
+  let cols = Math.ceil((maxX - originX) / s) + 1;
+  let rows = Math.ceil((maxY - originY) / s) + 1;
   while (cols * rows > MAX_CELLS) {
     s *= 2;
-    cols = Math.ceil((maxX - minX) / s) + 1;
-    rows = Math.ceil((maxY - minY) / s) + 1;
+    originX = Math.floor(minX / s) * s;
+    originY = Math.floor(minY / s) * s;
+    cols = Math.ceil((maxX - originX) / s) + 1;
+    rows = Math.ceil((maxY - originY) / s) + 1;
   }
 
-  const origin = { x: minX, y: minY };
+  const origin = { x: originX, y: originY };
   const blocked = new Uint8Array(cols * rows);
   for (let j = 0; j < rows; j++) {
     const wy = minY + j * s;

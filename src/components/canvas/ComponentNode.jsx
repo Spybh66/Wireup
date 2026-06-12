@@ -5,7 +5,7 @@ import { Lock } from 'lucide-react';
 import { getDefinition } from '../../data/componentLibrary';
 import { getIcon } from '../../assets/icons';
 import { typeColor, typeHasGaugeFitting } from '../../data/wireTypes';
-import { portFraction } from '../../utils/geometry';
+import { portSnappedFraction } from '../../utils/geometry';
 import useDiagramStore from '../../store/diagramStore';
 
 const SIDE_POSITION = {
@@ -15,8 +15,7 @@ const SIDE_POSITION = {
   left: Position.Left,
 };
 
-function handleStyle(node, port) {
-  const f = portFraction(node.data.ports, port);
+function handleStyle(port, f) {
   const pct = `${f * 100}%`;
   const color = typeColor(port.type);
   const base = {
@@ -81,8 +80,14 @@ function ComponentNode({ id, data, selected }) {
   const Icon = getIcon(def.icon);
   const border = data.color ?? '#d4d4d8';
 
-  // node object shape needed by geometry helpers
-  const node = { id, data };
+  // Snapped fraction (0..1) along a port's side — matches where the wire
+  // actually connects, so dots/labels line up with the routed wire.
+  const snapFrac = (port) =>
+    portSnappedFraction(
+      data.ports,
+      port,
+      port.side === 'left' || port.side === 'right' ? def.height : def.width
+    );
 
   // Keep the centered icon/name clear of the port labels that sit just inside
   // each side that carries ports (only matters when port labels are visible).
@@ -128,7 +133,7 @@ function ComponentNode({ id, data, selected }) {
       {/* port labels */}
       {showPortLabels &&
         data.ports.map((p) => (
-          <span key={`l-${p.id}`} style={labelStyle(p, portFraction(data.ports, p), labelScale[p.side])}>
+          <span key={`l-${p.id}`} style={labelStyle(p, snapFrac(p), labelScale[p.side])}>
             {p.label}
           </span>
         ))}
@@ -137,7 +142,7 @@ function ComponentNode({ id, data, selected }) {
           target-type handle to render an incoming edge, so we render both a
           source and a target handle (same id/position) per port. */}
       {data.ports.map((p) => {
-        const style = handleStyle(node, p);
+        const style = handleStyle(p, snapFrac(p));
         const title = `${p.label} (${p.type})${typeHasGaugeFitting(p.type) && p.gauge ? ` · ${p.gauge}` : ''}`;
         return (
           <div key={p.id}>
