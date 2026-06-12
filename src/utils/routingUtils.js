@@ -6,7 +6,7 @@
 
 export const STUB = 16;         // perpendicular exit stub length (px)
 export const PAD  = 12;         // obstacle inflation (px)
-export const STEP = 8;          // routing lattice resolution (px)
+export const STEP = 4;          // routing lattice resolution (px)
 
 const HOP_R    = 5;             // crossing hop arc radius (px)
 const CORNER_R = 7;             // rounded-corner fillet radius (px)
@@ -14,8 +14,8 @@ const DIAG     = Math.SQRT2;
 const BEND_45  = STEP * 2.2;    // discourage staircasing into clean 45° runs
 const BEND_90  = STEP * 9;      // strong penalty — discourage square corners
 const BEND_135 = STEP * 22;     // very strong — discourage sharp turns
-const OVERLAP_PENALTY = STEP * 50; // running ON an existing wire's edge → relane
-const CROSS_PENALTY   = STEP * 2;  // crossing a perpendicular wire → a hop
+const OVERLAP_PENALTY = STEP * 5000; // running ON an existing wire's edge → relane
+const CROSS_PENALTY   = STEP * 200;  // crossing a perpendicular wire → a hop
 const MAX_CELLS = 240000;          // grid-size guard (coarsen step if exceeded)
 
 // Kept for backward compatibility.
