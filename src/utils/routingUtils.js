@@ -232,6 +232,27 @@ export function simplifyCollinear(points) {
   return out;
 }
 
+// Chamfer each interior corner into a short diagonal segment when space allows.
+export function chamferCorners(points, amount = 8) {
+  if (points.length <= 2) return points.slice();
+  const out = [points[0]];
+  for (let i = 1; i < points.length - 1; i++) {
+    const a = points[i - 1];
+    const b = points[i];
+    const c = points[i + 1];
+    const lenAB = Math.hypot(b.x - a.x, b.y - a.y);
+    const lenBC = Math.hypot(c.x - b.x, c.y - b.y);
+    const d = Math.min(amount, lenAB / 2, lenBC / 2);
+    if (d < 1) { out.push(b); continue; }
+    const uxAB = (b.x - a.x) / lenAB, uyAB = (b.y - a.y) / lenAB;
+    const uxBC = (c.x - b.x) / lenBC, uyBC = (c.y - b.y) / lenBC;
+    out.push({ x: b.x - uxAB * d, y: b.y - uyAB * d });
+    out.push({ x: b.x + uxBC * d, y: b.y + uyBC * d });
+  }
+  out.push(points[points.length - 1]);
+  return out;
+}
+
 // Compute a full polyline for one edge (port → stub → route → stub → port).
 // wireOccupied is now an array of already-routed polylines (kept as param name
 // to avoid changing routeGraph.js call-sites).
