@@ -49,7 +49,6 @@ export function computeAllRoutes({
   const fallbacks = [];
   const wireOccupied = new Map(); // sequential routing occupancy map
   const cell = Math.max(8, gridSize / 2);
-
   for (const e of edges) {
     if (!visibleLayers.has(e.data.layerId)) continue;
     const sNode = nodeMap.get(e.source);

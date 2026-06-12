@@ -5,22 +5,22 @@ import useDiagramStore from '../../store/diagramStore';
 
 function Toggle({ label, checked, onChange }) {
   return (
-    <label className="flex items-center justify-between py-2 text-sm text-silver">
+    <div className="flex items-center justify-between py-2 text-sm text-silver">
       <span>{label}</span>
       <button
         role="switch"
         aria-checked={checked}
         aria-label={label}
         onClick={() => onChange(!checked)}
-        className={`relative h-5 w-9 rounded-full transition-colors ${checked ? 'bg-silver' : 'bg-surface-2'}`}
+        className={`relative h-5 w-9 flex-shrink-0 overflow-hidden rounded-full transition-colors ${checked ? 'bg-silver' : 'bg-surface-2 border border-edge'}`}
       >
         <span
-          className={`absolute top-0.5 h-4 w-4 rounded-full bg-surface-0 transition-transform ${
-            checked ? 'translate-x-4' : 'translate-x-0.5'
+          className={`absolute top-0.5 left-0.5 h-4 w-4 rounded-full bg-surface-0 transition-transform ${
+            checked ? 'translate-x-[18px]' : 'translate-x-0'
           }`}
         />
       </button>
-    </label>
+    </div>
   );
 }
 

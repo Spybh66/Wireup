@@ -4,9 +4,10 @@
 export const STUB = 16; // perpendicular exit stub length (px)
 export const PAD = 10; // obstacle inflation (px)
 export const EXPAND = 250; // A* bounding-box expansion (px)
-const BEND = 4; // bend penalty (step units)
+const BEND = 10; // bend penalty (step units) — high value keeps paths straight
 const DIAG = Math.SQRT2; // diagonal step cost
 const HOP_R = 5; // crossing hop radius (px)
+const WIRE_OVERLAP_PENALTY = 20; // extra cost to enter a cell another wire already uses in same direction
 
 // ---------- wire occupancy helpers (for sequential routing §6.5) ----------
 // dirType: 'H' = horizontal, 'V' = vertical, 'D1' = NE/SW diagonal, 'D2' = NW/SE diagonal
@@ -81,17 +82,14 @@ function astar(start, goal, obstacles, cell, bounds, wireOccupied = null) {
     return true;
   };
 
-  // Returns true when moving in direction (dx,dy) into cell (ix,iy) is allowed:
-  // cell must be obstacle-free AND not occupied by a parallel wire.
-  const freeForDir = (ix, iy, dx, dy) => {
-    if (!free(ix, iy)) return false;
-    if (wireOccupied) {
-      const { x, y } = toXY(ix, iy);
-      const k = `${Math.round(x / cell)},${Math.round(y / cell)}`;
-      const occ = wireOccupied.get(k);
-      if (occ?.has(getDirType(dx, dy))) return false;
-    }
-    return true;
+  // Extra step cost when a routed wire already travels in the same direction
+  // through this cell. Uses a penalty instead of hard blocking so the router
+  // always finds SOME path on dense diagrams.
+  const occupyCost = (ix, iy, dx, dy) => {
+    if (!wireOccupied) return 0;
+    const { x, y } = toXY(ix, iy);
+    const k = `${Math.round(x / cell)},${Math.round(y / cell)}`;
+    return wireOccupied.get(k)?.has(getDirType(dx, dy)) ? WIRE_OVERLAP_PENALTY : 0;
   };
 
   const snap = (pt) => {
@@ -189,15 +187,15 @@ function astar(start, goal, obstacles, cell, bounds, wireOccupied = null) {
       const [dx, dy] = DIRS[di];
       const nix = cur.ix + dx;
       const niy = cur.iy + dy;
-      if (!freeForDir(nix, niy, dx, dy)) continue;
+      if (!free(nix, niy)) continue;
       const diagonal = dx !== 0 && dy !== 0;
       // no corner cutting: both adjacent orthogonals must be free
-      if (diagonal && (!freeForDir(cur.ix + dx, cur.iy, dx, 0) || !freeForDir(cur.ix, cur.iy + dy, 0, dy))) continue;
+      if (diagonal && (!free(cur.ix + dx, cur.iy) || !free(cur.ix, cur.iy + dy))) continue;
       const nk = key(nix, niy);
       if (closed.has(nk)) continue;
       const prevDir = dirIn.get(ck);
       const turn = prevDir !== undefined && prevDir !== di;
-      const step = (diagonal ? DIAG : 1) + (turn ? BEND : 0);
+      const step = (diagonal ? DIAG : 1) + (turn ? BEND : 0) + occupyCost(nix, niy, dx, dy);
       const tentative = gScore.get(ck) + step;
       if (!gScore.has(nk) || tentative < gScore.get(nk)) {
         gScore.set(nk, tentative);
@@ -272,17 +270,31 @@ export function computeRoute({ source, target, obstacles, gridSize = 16, wireOcc
   const tStub = stubTip(target);
   const cell = Math.max(8, gridSize / 2);
 
-  const minX = Math.min(sStub.x, tStub.x) - EXPAND;
-  const minY = Math.min(sStub.y, tStub.y) - EXPAND;
-  const maxX = Math.max(sStub.x, tStub.x) + EXPAND;
-  const maxY = Math.max(sStub.y, tStub.y) + EXPAND;
+  // Snap stub tips to the A* lattice grid. Port positions depend on node
+  // dimensions (e.g. height * fraction) which are rarely on a cell boundary;
+  // snapping eliminates the sub-cell offset that causes staircase zigzags.
+  const snapC = (v) => Math.round(v / cell) * cell;
+  const sSnapped = { x: snapC(sStub.x), y: snapC(sStub.y) };
+  const tSnapped = { x: snapC(tStub.x), y: snapC(tStub.y) };
 
-  const lattice = astar(sStub, tStub, obstacles, cell, { minX, minY, maxX, maxY }, wireOccupied);
+  // Align the A* bounding box to the global cell grid so snapped stub tips
+  // always fall exactly on lattice nodes (no rounding error in snap()).
+  const rawMinX = Math.min(sSnapped.x, tSnapped.x) - EXPAND;
+  const rawMinY = Math.min(sSnapped.y, tSnapped.y) - EXPAND;
+  const minX = Math.floor(rawMinX / cell) * cell;
+  const minY = Math.floor(rawMinY / cell) * cell;
+  const maxX = Math.ceil((Math.max(sSnapped.x, tSnapped.x) + EXPAND) / cell) * cell;
+  const maxY = Math.ceil((Math.max(sSnapped.y, tSnapped.y) + EXPAND) / cell) * cell;
+
+  const lattice = astar(sSnapped, tSnapped, obstacles, cell, { minX, minY, maxX, maxY }, wireOccupied);
 
   if (!lattice) {
     return { points: [{ x: source.x, y: source.y }, { x: target.x, y: target.y }], fallback: true };
   }
 
+  // Build the full path. Include the original (un-snapped) stub tips so the
+  // wire exits the port perfectly perpendicular; simplifyCollinear then merges
+  // any collinear triplets produced by the near-identical stub + snapped stub.
   let pts = [
     { x: source.x, y: source.y },
     sStub,

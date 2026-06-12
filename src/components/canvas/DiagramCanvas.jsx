@@ -78,8 +78,6 @@ function Flow({ onOpenNodeConfig }) {
   }, [fitView]);
 
   // ---- sync store → RF nodes (preserve RF-measured dimensions) ----
-  // Note: locked nodes stay draggable=true at RF level so RF still fires
-  // onNodeDoubleClick. Position resets for locked nodes happen in onNodeDragStop.
   useEffect(() => {
     setRfNodes((prev) => {
       const byId = new Map(prev.map((n) => [n.id, n]));
@@ -87,7 +85,7 @@ function Flow({ onOpenNodeConfig }) {
         const old = byId.get(n.id);
         return {
           ...n,
-          draggable: true,
+          draggable: !n.data.locked,
           selected: selection.nodes.includes(n.id),
           measured: old?.measured,
           width: old?.width,
@@ -146,10 +144,7 @@ function Flow({ onOpenNodeConfig }) {
     const baseline = baselineRef.current ?? useDiagramStore.getState().nodes;
     const next = useDiagramStore
       .getState()
-      // Locked nodes keep their original position — dragging is a no-op for them.
-      .nodes.map((n) =>
-        n.data.locked ? n : moved.has(n.id) ? { ...n, position: moved.get(n.id) } : n
-      );
+      .nodes.map((n) => (moved.has(n.id) ? { ...n, position: moved.get(n.id) } : n));
     useDiagramStore.setState({ nodes: baseline });
     useDiagramStore.temporal.getState().resume();
     useDiagramStore.setState({ nodes: next, dirty: true });
