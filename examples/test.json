@@ -1,0 +1,1055 @@
+{
+  "app": "wireup",
+  "version": 1,
+  "savedAt": "2026-06-12T22:29:29.644Z",
+  "projectName": "Untitled Project",
+  "nodes": [
+    {
+      "id": "a093b1fd-6240-4009-b1d6-f73a3545d9ac",
+      "type": "component",
+      "position": {
+        "x": 240,
+        "y": 208
+      },
+      "draggable": true,
+      "data": {
+        "definitionId": "battery",
+        "label": "Battery (12V)",
+        "color": null,
+        "notes": "",
+        "locked": false,
+        "canId": null,
+        "ipAddress": null,
+        "ports": [
+          {
+            "id": "battery-p0",
+            "type": "PWR+",
+            "label": "BAT+",
+            "side": "right",
+            "order": 0,
+            "gauge": "6 AWG",
+            "fitting": "Anderson SB50"
+          },
+          {
+            "id": "battery-p1",
+            "type": "PWR-",
+            "label": "BAT-",
+            "side": "right",
+            "order": 1,
+            "gauge": "6 AWG",
+            "fitting": "Anderson SB50"
+          }
+        ]
+      }
+    },
+    {
+      "id": "49b867d4-ec29-4bc6-bc4a-ce624ddac3aa",
+      "type": "component",
+      "position": {
+        "x": 448,
+        "y": 208
+      },
+      "draggable": true,
+      "data": {
+        "definitionId": "mainbreaker",
+        "label": "Main Breaker (120A)",
+        "color": null,
+        "notes": "",
+        "locked": false,
+        "canId": null,
+        "ipAddress": null,
+        "ports": [
+          {
+            "id": "mainbreaker-p0",
+            "type": "PWR+",
+            "label": "IN",
+            "side": "left",
+            "order": 0,
+            "gauge": "6 AWG",
+            "fitting": "Anderson SB50"
+          },
+          {
+            "id": "mainbreaker-p1",
+            "type": "PWR+",
+            "label": "OUT",
+            "side": "right",
+            "order": 0,
+            "gauge": "6 AWG",
+            "fitting": "Anderson SB50"
+          }
+        ]
+      }
+    },
+    {
+      "id": "d0560b94-2b31-4df8-8802-74f992b1184d",
+      "type": "component",
+      "position": {
+        "x": 624,
+        "y": -48
+      },
+      "draggable": true,
+      "data": {
+        "definitionId": "pdh",
+        "label": "PDH (REV)",
+        "color": null,
+        "notes": "",
+        "locked": false,
+        "canId": null,
+        "ipAddress": null,
+        "ports": [
+          {
+            "id": "pdh-p0",
+            "type": "PWR+",
+            "label": "V+",
+            "side": "bottom",
+            "order": 0,
+            "gauge": "6 AWG",
+            "fitting": "Anderson SB50"
+          },
+          {
+            "id": "pdh-p1",
+            "type": "PWR-",
+            "label": "V-",
+            "side": "bottom",
+            "order": 1,
+            "gauge": "6 AWG",
+            "fitting": "Anderson SB50"
+          },
+          {
+            "id": "pdh-p2",
+            "type": "CANH",
+            "label": "CAN H",
+            "side": "bottom",
+            "order": 2,
+            "gauge": null,
+            "fitting": null
+          },
+          {
+            "id": "pdh-p3",
+            "type": "CANL",
+            "label": "CAN L",
+            "side": "bottom",
+            "order": 3,
+            "gauge": null,
+            "fitting": null
+          },
+          {
+            "id": "pdh-p4",
+            "type": "CANH",
+            "label": "CAN H",
+            "side": "bottom",
+            "order": 4,
+            "gauge": null,
+            "fitting": null
+          },
+          {
+            "id": "pdh-p5",
+            "type": "CANL",
+            "label": "CAN L",
+            "side": "bottom",
+            "order": 5,
+            "gauge": null,
+            "fitting": null
+          },
+          {
+            "id": "pdh-p6",
+            "type": "PWR+",
+            "label": "CH0+",
+            "side": "right",
+            "order": 0,
+            "gauge": "12 AWG",
+            "fitting": "Ferrule"
+          },
+          {
+            "id": "pdh-p7",
+            "type": "PWR-",
+            "label": "CH0-",
+            "side": "right",
+            "order": 1,
+            "gauge": "12 AWG",
+            "fitting": "Ferrule"
+          },
+          {
+            "id": "pdh-p8",
+            "type": "PWR+",
+            "label": "CH1+",
+            "side": "right",
+            "order": 2,
+            "gauge": "12 AWG",
+            "fitting": "Ferrule"
+          },
+          {
+            "id": "pdh-p9",
+            "type": "PWR-",
+            "label": "CH1-",
+            "side": "right",
+            "order": 3,
+            "gauge": "12 AWG",
+            "fitting": "Ferrule"
+          },
+          {
+            "id": "pdh-p10",
+            "type": "PWR+",
+            "label": "CH2+",
+            "side": "right",
+            "order": 4,
+            "gauge": "12 AWG",
+            "fitting": "Ferrule"
+          },
+          {
+            "id": "pdh-p11",
+            "type": "PWR-",
+            "label": "CH2-",
+            "side": "right",
+            "order": 5,
+            "gauge": "12 AWG",
+            "fitting": "Ferrule"
+          },
+          {
+            "id": "pdh-p12",
+            "type": "PWR+",
+            "label": "CH3+",
+            "side": "right",
+            "order": 6,
+            "gauge": "12 AWG",
+            "fitting": "Ferrule"
+          },
+          {
+            "id": "pdh-p13",
+            "type": "PWR-",
+            "label": "CH3-",
+            "side": "right",
+            "order": 7,
+            "gauge": "12 AWG",
+            "fitting": "Ferrule"
+          },
+          {
+            "id": "pdh-p14",
+            "type": "PWR+",
+            "label": "CH4+",
+            "side": "right",
+            "order": 8,
+            "gauge": "12 AWG",
+            "fitting": "Ferrule"
+          },
+          {
+            "id": "pdh-p15",
+            "type": "PWR-",
+            "label": "CH4-",
+            "side": "right",
+            "order": 9,
+            "gauge": "12 AWG",
+            "fitting": "Ferrule"
+          },
+          {
+            "id": "pdh-p16",
+            "type": "PWR+",
+            "label": "CH5+",
+            "side": "right",
+            "order": 10,
+            "gauge": "12 AWG",
+            "fitting": "Ferrule"
+          },
+          {
+            "id": "pdh-p17",
+            "type": "PWR-",
+            "label": "CH5-",
+            "side": "right",
+            "order": 11,
+            "gauge": "12 AWG",
+            "fitting": "Ferrule"
+          },
+          {
+            "id": "pdh-p18",
+            "type": "PWR+",
+            "label": "CH6+",
+            "side": "right",
+            "order": 12,
+            "gauge": "12 AWG",
+            "fitting": "Ferrule"
+          },
+          {
+            "id": "pdh-p19",
+            "type": "PWR-",
+            "label": "CH6-",
+            "side": "right",
+            "order": 13,
+            "gauge": "12 AWG",
+            "fitting": "Ferrule"
+          },
+          {
+            "id": "pdh-p20",
+            "type": "PWR+",
+            "label": "CH7+",
+            "side": "right",
+            "order": 14,
+            "gauge": "12 AWG",
+            "fitting": "Ferrule"
+          },
+          {
+            "id": "pdh-p21",
+            "type": "PWR-",
+            "label": "CH7-",
+            "side": "right",
+            "order": 15,
+            "gauge": "12 AWG",
+            "fitting": "Ferrule"
+          },
+          {
+            "id": "pdh-p22",
+            "type": "PWR+",
+            "label": "CH8+",
+            "side": "right",
+            "order": 16,
+            "gauge": "12 AWG",
+            "fitting": "Ferrule"
+          },
+          {
+            "id": "pdh-p23",
+            "type": "PWR-",
+            "label": "CH8-",
+            "side": "right",
+            "order": 17,
+            "gauge": "12 AWG",
+            "fitting": "Ferrule"
+          },
+          {
+            "id": "pdh-p24",
+            "type": "PWR+",
+            "label": "CH9+",
+            "side": "right",
+            "order": 18,
+            "gauge": "12 AWG",
+            "fitting": "Ferrule"
+          },
+          {
+            "id": "pdh-p25",
+            "type": "PWR-",
+            "label": "CH9-",
+            "side": "right",
+            "order": 19,
+            "gauge": "12 AWG",
+            "fitting": "Ferrule"
+          },
+          {
+            "id": "pdh-p26",
+            "type": "PWR+",
+            "label": "CH10+",
+            "side": "left",
+            "order": 0,
+            "gauge": "12 AWG",
+            "fitting": "Ferrule"
+          },
+          {
+            "id": "pdh-p27",
+            "type": "PWR-",
+            "label": "CH10-",
+            "side": "left",
+            "order": 1,
+            "gauge": "12 AWG",
+            "fitting": "Ferrule"
+          },
+          {
+            "id": "pdh-p28",
+            "type": "PWR+",
+            "label": "CH11+",
+            "side": "left",
+            "order": 2,
+            "gauge": "12 AWG",
+            "fitting": "Ferrule"
+          },
+          {
+            "id": "pdh-p29",
+            "type": "PWR-",
+            "label": "CH11-",
+            "side": "left",
+            "order": 3,
+            "gauge": "12 AWG",
+            "fitting": "Ferrule"
+          },
+          {
+            "id": "pdh-p30",
+            "type": "PWR+",
+            "label": "CH12+",
+            "side": "left",
+            "order": 4,
+            "gauge": "12 AWG",
+            "fitting": "Ferrule"
+          },
+          {
+            "id": "pdh-p31",
+            "type": "PWR-",
+            "label": "CH12-",
+            "side": "left",
+            "order": 5,
+            "gauge": "12 AWG",
+            "fitting": "Ferrule"
+          },
+          {
+            "id": "pdh-p32",
+            "type": "PWR+",
+            "label": "CH13+",
+            "side": "left",
+            "order": 6,
+            "gauge": "12 AWG",
+            "fitting": "Ferrule"
+          },
+          {
+            "id": "pdh-p33",
+            "type": "PWR-",
+            "label": "CH13-",
+            "side": "left",
+            "order": 7,
+            "gauge": "12 AWG",
+            "fitting": "Ferrule"
+          },
+          {
+            "id": "pdh-p34",
+            "type": "PWR+",
+            "label": "CH14+",
+            "side": "left",
+            "order": 8,
+            "gauge": "12 AWG",
+            "fitting": "Ferrule"
+          },
+          {
+            "id": "pdh-p35",
+            "type": "PWR-",
+            "label": "CH14-",
+            "side": "left",
+            "order": 9,
+            "gauge": "12 AWG",
+            "fitting": "Ferrule"
+          },
+          {
+            "id": "pdh-p36",
+            "type": "PWR+",
+            "label": "CH15+",
+            "side": "left",
+            "order": 10,
+            "gauge": "12 AWG",
+            "fitting": "Ferrule"
+          },
+          {
+            "id": "pdh-p37",
+            "type": "PWR-",
+            "label": "CH15-",
+            "side": "left",
+            "order": 11,
+            "gauge": "12 AWG",
+            "fitting": "Ferrule"
+          },
+          {
+            "id": "pdh-p38",
+            "type": "PWR+",
+            "label": "CH16+",
+            "side": "left",
+            "order": 12,
+            "gauge": "12 AWG",
+            "fitting": "Ferrule"
+          },
+          {
+            "id": "pdh-p39",
+            "type": "PWR-",
+            "label": "CH16-",
+            "side": "left",
+            "order": 13,
+            "gauge": "12 AWG",
+            "fitting": "Ferrule"
+          },
+          {
+            "id": "pdh-p40",
+            "type": "PWR+",
+            "label": "CH17+",
+            "side": "left",
+            "order": 14,
+            "gauge": "12 AWG",
+            "fitting": "Ferrule"
+          },
+          {
+            "id": "pdh-p41",
+            "type": "PWR-",
+            "label": "CH17-",
+            "side": "left",
+            "order": 15,
+            "gauge": "12 AWG",
+            "fitting": "Ferrule"
+          },
+          {
+            "id": "pdh-p42",
+            "type": "PWR+",
+            "label": "CH18+",
+            "side": "left",
+            "order": 16,
+            "gauge": "12 AWG",
+            "fitting": "Ferrule"
+          },
+          {
+            "id": "pdh-p43",
+            "type": "PWR-",
+            "label": "CH18-",
+            "side": "left",
+            "order": 17,
+            "gauge": "12 AWG",
+            "fitting": "Ferrule"
+          },
+          {
+            "id": "pdh-p44",
+            "type": "PWR+",
+            "label": "CH19+",
+            "side": "left",
+            "order": 18,
+            "gauge": "12 AWG",
+            "fitting": "Ferrule"
+          },
+          {
+            "id": "pdh-p45",
+            "type": "PWR-",
+            "label": "CH19-",
+            "side": "left",
+            "order": 19,
+            "gauge": "12 AWG",
+            "fitting": "Ferrule"
+          },
+          {
+            "id": "pdh-p46",
+            "type": "PWR+",
+            "label": "CH20+",
+            "side": "left",
+            "order": 20,
+            "gauge": "12 AWG",
+            "fitting": "Ferrule"
+          },
+          {
+            "id": "pdh-p47",
+            "type": "PWR-",
+            "label": "CH20-",
+            "side": "left",
+            "order": 21,
+            "gauge": "12 AWG",
+            "fitting": "Ferrule"
+          },
+          {
+            "id": "pdh-p48",
+            "type": "PWR+",
+            "label": "CH21+",
+            "side": "left",
+            "order": 22,
+            "gauge": "12 AWG",
+            "fitting": "Ferrule"
+          },
+          {
+            "id": "pdh-p49",
+            "type": "PWR-",
+            "label": "CH21-",
+            "side": "left",
+            "order": 23,
+            "gauge": "12 AWG",
+            "fitting": "Ferrule"
+          },
+          {
+            "id": "pdh-p50",
+            "type": "PWR+",
+            "label": "CH22+",
+            "side": "left",
+            "order": 24,
+            "gauge": "12 AWG",
+            "fitting": "Ferrule"
+          },
+          {
+            "id": "pdh-p51",
+            "type": "PWR-",
+            "label": "CH22-",
+            "side": "left",
+            "order": 25,
+            "gauge": "12 AWG",
+            "fitting": "Ferrule"
+          },
+          {
+            "id": "pdh-p52",
+            "type": "PWR+",
+            "label": "CH23+",
+            "side": "left",
+            "order": 26,
+            "gauge": "12 AWG",
+            "fitting": "Ferrule"
+          },
+          {
+            "id": "pdh-p53",
+            "type": "PWR-",
+            "label": "CH23-",
+            "side": "left",
+            "order": 27,
+            "gauge": "12 AWG",
+            "fitting": "Ferrule"
+          }
+        ]
+      }
+    },
+    {
+      "id": "c77545d2-f9a3-4568-ac9b-8a0aa9e2b47e",
+      "type": "component",
+      "position": {
+        "x": 1104,
+        "y": 432
+      },
+      "draggable": true,
+      "data": {
+        "definitionId": "roborio2",
+        "label": "roboRIO 2",
+        "color": null,
+        "notes": "",
+        "locked": false,
+        "canId": null,
+        "ipAddress": null,
+        "ports": [
+          {
+            "id": "roborio2-p0",
+            "type": "PWR+",
+            "label": "V+",
+            "side": "top",
+            "order": 0,
+            "gauge": "12 AWG",
+            "fitting": "Ferrule"
+          },
+          {
+            "id": "roborio2-p1",
+            "type": "PWR-",
+            "label": "V-",
+            "side": "top",
+            "order": 1,
+            "gauge": "12 AWG",
+            "fitting": "Ferrule"
+          },
+          {
+            "id": "roborio2-p2",
+            "type": "CANH",
+            "label": "CAN H",
+            "side": "left",
+            "order": 0,
+            "gauge": null,
+            "fitting": null
+          },
+          {
+            "id": "roborio2-p3",
+            "type": "CANL",
+            "label": "CAN L",
+            "side": "left",
+            "order": 1,
+            "gauge": null,
+            "fitting": null
+          },
+          {
+            "id": "roborio2-p4",
+            "type": "ETH",
+            "label": "ETH",
+            "side": "top",
+            "order": 2,
+            "gauge": null,
+            "fitting": null
+          },
+          {
+            "id": "roborio2-p5",
+            "type": "USB",
+            "label": "USB1",
+            "side": "right",
+            "order": 0,
+            "gauge": null,
+            "fitting": null
+          },
+          {
+            "id": "roborio2-p6",
+            "type": "USB",
+            "label": "USB2",
+            "side": "right",
+            "order": 1,
+            "gauge": null,
+            "fitting": null
+          },
+          {
+            "id": "roborio2-p7",
+            "type": "PWR+",
+            "label": "RSL+",
+            "side": "bottom",
+            "order": 0,
+            "gauge": "12 AWG",
+            "fitting": "Ferrule"
+          },
+          {
+            "id": "roborio2-p8",
+            "type": "PWR-",
+            "label": "RSL-",
+            "side": "bottom",
+            "order": 1,
+            "gauge": "12 AWG",
+            "fitting": "Ferrule"
+          }
+        ]
+      }
+    },
+    {
+      "id": "41aa248f-6dd5-47d3-8b91-77bdddea2426",
+      "type": "component",
+      "position": {
+        "x": 1136,
+        "y": 80
+      },
+      "draggable": true,
+      "data": {
+        "definitionId": "krakenx60",
+        "label": "Kraken X60",
+        "color": null,
+        "notes": "",
+        "locked": false,
+        "canId": null,
+        "ipAddress": null,
+        "ports": [
+          {
+            "id": "krakenx60-p0",
+            "type": "PWR+",
+            "label": "V+",
+            "side": "left",
+            "order": 0,
+            "gauge": "12 AWG",
+            "fitting": "Ferrule"
+          },
+          {
+            "id": "krakenx60-p1",
+            "type": "PWR-",
+            "label": "V-",
+            "side": "left",
+            "order": 1,
+            "gauge": "12 AWG",
+            "fitting": "Ferrule"
+          },
+          {
+            "id": "krakenx60-p2",
+            "type": "CANH",
+            "label": "CAN H",
+            "side": "right",
+            "order": 0,
+            "gauge": null,
+            "fitting": null
+          },
+          {
+            "id": "krakenx60-p3",
+            "type": "CANL",
+            "label": "CAN L",
+            "side": "right",
+            "order": 1,
+            "gauge": null,
+            "fitting": null
+          },
+          {
+            "id": "krakenx60-p4",
+            "type": "CANH",
+            "label": "CAN H",
+            "side": "right",
+            "order": 2,
+            "gauge": null,
+            "fitting": null
+          },
+          {
+            "id": "krakenx60-p5",
+            "type": "CANL",
+            "label": "CAN L",
+            "side": "right",
+            "order": 3,
+            "gauge": null,
+            "fitting": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "d3b7ce18-9148-4626-b107-2fa0785484b7",
+      "type": "component",
+      "position": {
+        "x": 1136,
+        "y": 160
+      },
+      "draggable": true,
+      "data": {
+        "definitionId": "krakenx60",
+        "label": "Kraken X60",
+        "color": null,
+        "notes": "",
+        "locked": false,
+        "canId": null,
+        "ipAddress": null,
+        "ports": [
+          {
+            "id": "krakenx60-p0",
+            "type": "PWR+",
+            "label": "V+",
+            "side": "left",
+            "order": 0,
+            "gauge": "12 AWG",
+            "fitting": "Ferrule"
+          },
+          {
+            "id": "krakenx60-p1",
+            "type": "PWR-",
+            "label": "V-",
+            "side": "left",
+            "order": 1,
+            "gauge": "12 AWG",
+            "fitting": "Ferrule"
+          },
+          {
+            "id": "krakenx60-p2",
+            "type": "CANH",
+            "label": "CAN H",
+            "side": "right",
+            "order": 0,
+            "gauge": null,
+            "fitting": null
+          },
+          {
+            "id": "krakenx60-p3",
+            "type": "CANL",
+            "label": "CAN L",
+            "side": "right",
+            "order": 1,
+            "gauge": null,
+            "fitting": null
+          },
+          {
+            "id": "krakenx60-p4",
+            "type": "CANH",
+            "label": "CAN H",
+            "side": "right",
+            "order": 2,
+            "gauge": null,
+            "fitting": null
+          },
+          {
+            "id": "krakenx60-p5",
+            "type": "CANL",
+            "label": "CAN L",
+            "side": "right",
+            "order": 3,
+            "gauge": null,
+            "fitting": null
+          }
+        ]
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "d7114fad-bbbc-4bef-8947-97e366c5e4b7",
+      "source": "a093b1fd-6240-4009-b1d6-f73a3545d9ac",
+      "target": "49b867d4-ec29-4bc6-bc4a-ce624ddac3aa",
+      "sourceHandle": "battery-p0",
+      "targetHandle": "mainbreaker-p0",
+      "type": "wire",
+      "data": {
+        "type": "PWR+",
+        "layerId": "power",
+        "color": null,
+        "wireGauge": "6 AWG",
+        "wireFittingFrom": "Anderson SB50",
+        "wireFittingTo": "Anderson SB50",
+        "label": "PWR001",
+        "labelEdited": false,
+        "length": null,
+        "notes": ""
+      }
+    },
+    {
+      "id": "7723ca43-b2aa-4dd0-931d-14c0a33e7366",
+      "source": "d0560b94-2b31-4df8-8802-74f992b1184d",
+      "target": "49b867d4-ec29-4bc6-bc4a-ce624ddac3aa",
+      "sourceHandle": "pdh-p0",
+      "targetHandle": "mainbreaker-p1",
+      "type": "wire",
+      "data": {
+        "type": "PWR+",
+        "layerId": "power",
+        "color": null,
+        "wireGauge": "6 AWG",
+        "wireFittingFrom": "Anderson SB50",
+        "wireFittingTo": "Anderson SB50",
+        "label": "PWR002",
+        "labelEdited": false,
+        "length": null,
+        "notes": ""
+      }
+    },
+    {
+      "id": "fb3c5afe-38ea-4ec2-b92f-d5121bfe9af0",
+      "source": "a093b1fd-6240-4009-b1d6-f73a3545d9ac",
+      "target": "d0560b94-2b31-4df8-8802-74f992b1184d",
+      "sourceHandle": "battery-p1",
+      "targetHandle": "pdh-p1",
+      "type": "wire",
+      "data": {
+        "type": "PWR-",
+        "layerId": "power",
+        "color": null,
+        "wireGauge": "6 AWG",
+        "wireFittingFrom": "Anderson SB50",
+        "wireFittingTo": "Anderson SB50",
+        "label": "PWR003",
+        "labelEdited": false,
+        "length": null,
+        "notes": ""
+      }
+    },
+    {
+      "id": "a8a153f9-b3de-4f4e-aa1a-611ee65f2005",
+      "source": "d3b7ce18-9148-4626-b107-2fa0785484b7",
+      "target": "c77545d2-f9a3-4568-ac9b-8a0aa9e2b47e",
+      "sourceHandle": "krakenx60-p4",
+      "targetHandle": "roborio2-p2",
+      "type": "wire",
+      "data": {
+        "type": "CANH",
+        "layerId": "canbus",
+        "color": null,
+        "wireGauge": "22 AWG",
+        "wireFittingFrom": "Wago Lever Nut",
+        "wireFittingTo": "Wago Lever Nut",
+        "label": "CAN003",
+        "labelEdited": false,
+        "length": null,
+        "notes": ""
+      }
+    },
+    {
+      "id": "19c6864c-a5ef-4aa2-8575-74be82031ee8",
+      "source": "d3b7ce18-9148-4626-b107-2fa0785484b7",
+      "target": "c77545d2-f9a3-4568-ac9b-8a0aa9e2b47e",
+      "sourceHandle": "krakenx60-p5",
+      "targetHandle": "roborio2-p3",
+      "type": "wire",
+      "data": {
+        "type": "CANL",
+        "layerId": "canbus",
+        "color": null,
+        "wireGauge": "22 AWG",
+        "wireFittingFrom": "Wago Lever Nut",
+        "wireFittingTo": "Wago Lever Nut",
+        "label": "CAN004",
+        "labelEdited": false,
+        "length": null,
+        "notes": ""
+      }
+    },
+    {
+      "id": "c2b7b94b-e3b4-4449-93dc-0f37cbf38150",
+      "source": "41aa248f-6dd5-47d3-8b91-77bdddea2426",
+      "target": "d3b7ce18-9148-4626-b107-2fa0785484b7",
+      "sourceHandle": "krakenx60-p5",
+      "targetHandle": "krakenx60-p3",
+      "type": "wire",
+      "data": {
+        "type": "CANL",
+        "layerId": "canbus",
+        "color": null,
+        "wireGauge": "22 AWG",
+        "wireFittingFrom": "Wago Lever Nut",
+        "wireFittingTo": "Wago Lever Nut",
+        "label": "CAN005",
+        "labelEdited": false,
+        "length": null,
+        "notes": ""
+      }
+    },
+    {
+      "id": "e3ff03c6-1ca7-45c8-bc86-b63e7f5a81c2",
+      "source": "41aa248f-6dd5-47d3-8b91-77bdddea2426",
+      "target": "d3b7ce18-9148-4626-b107-2fa0785484b7",
+      "sourceHandle": "krakenx60-p4",
+      "targetHandle": "krakenx60-p2",
+      "type": "wire",
+      "data": {
+        "type": "CANH",
+        "layerId": "canbus",
+        "color": null,
+        "wireGauge": "22 AWG",
+        "wireFittingFrom": "Wago Lever Nut",
+        "wireFittingTo": "Wago Lever Nut",
+        "label": "CAN006",
+        "labelEdited": false,
+        "length": null,
+        "notes": ""
+      }
+    },
+    {
+      "id": "5b6f98a8-c960-4c5f-b78e-2397cccbce34",
+      "source": "d0560b94-2b31-4df8-8802-74f992b1184d",
+      "target": "41aa248f-6dd5-47d3-8b91-77bdddea2426",
+      "sourceHandle": "pdh-p5",
+      "targetHandle": "krakenx60-p3",
+      "type": "wire",
+      "data": {
+        "type": "CANL",
+        "layerId": "canbus",
+        "color": null,
+        "wireGauge": "22 AWG",
+        "wireFittingFrom": "Wago Lever Nut",
+        "wireFittingTo": "Wago Lever Nut",
+        "label": "CAN007",
+        "labelEdited": false,
+        "length": null,
+        "notes": ""
+      }
+    },
+    {
+      "id": "61f42f23-05de-419e-98a4-25969110f08f",
+      "source": "d0560b94-2b31-4df8-8802-74f992b1184d",
+      "target": "41aa248f-6dd5-47d3-8b91-77bdddea2426",
+      "sourceHandle": "pdh-p4",
+      "targetHandle": "krakenx60-p2",
+      "type": "wire",
+      "data": {
+        "type": "CANH",
+        "layerId": "canbus",
+        "color": null,
+        "wireGauge": "22 AWG",
+        "wireFittingFrom": "Wago Lever Nut",
+        "wireFittingTo": "Wago Lever Nut",
+        "label": "CAN008",
+        "labelEdited": false,
+        "length": null,
+        "notes": ""
+      }
+    }
+  ],
+  "layers": [
+    {
+      "id": "power",
+      "name": "Power",
+      "visible": true,
+      "builtIn": true
+    },
+    {
+      "id": "canbus",
+      "name": "CAN Bus",
+      "visible": true,
+      "builtIn": true
+    },
+    {
+      "id": "ethernet",
+      "name": "Ethernet",
+      "visible": true,
+      "builtIn": true
+    },
+    {
+      "id": "usb",
+      "name": "USB",
+      "visible": true,
+      "builtIn": true
+    },
+    {
+      "id": "data",
+      "name": "Data",
+      "visible": true,
+      "builtIn": true
+    }
+  ],
+  "wireLabelTemplate": "{type}{index}",
+  "customDefinitions": []
+}
