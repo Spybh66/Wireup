@@ -236,6 +236,26 @@ const useDiagramStore = create(
           dirty: true,
         })),
 
+      // Flip a wire's direction — swap which endpoint is From vs To (and the
+      // per-side fittings). Type/layer are unchanged.
+      flipEdge: (id) =>
+        set((s) => ({
+          edges: s.edges.map((e) => {
+            if (e.id !== id) return e;
+            const fromFit = e.data.wireFittingFrom ?? e.data.wireFitting ?? null;
+            const toFit = e.data.wireFittingTo ?? e.data.wireFitting ?? null;
+            return {
+              ...e,
+              source: e.target,
+              target: e.source,
+              sourceHandle: e.targetHandle,
+              targetHandle: e.sourceHandle,
+              data: { ...e.data, wireFittingFrom: toFit, wireFittingTo: fromFit },
+            };
+          }),
+          dirty: true,
+        })),
+
       removeEdge: (id) =>
         set((s) => ({ edges: s.edges.filter((e) => e.id !== id), dirty: true })),
 

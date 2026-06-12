@@ -96,17 +96,35 @@ function Flow({ onOpenNodeConfig }) {
   }, [storeNodes, selection.nodes, setRfNodes]);
 
   // ---- routing (from live RF node positions so wires follow drags) ----
+  // Routing is expensive, so gate it on a structural signature of the nodes
+  // (positions + ports + definition) — NOT selection. Otherwise rubber-band
+  // selecting many nodes would re-run the router on every delta and freeze the
+  // canvas. `routeNodes` only changes identity when that signature changes.
+  const routeSig = useMemo(
+    () =>
+      rfNodes
+        .map(
+          (n) =>
+            `${n.id}:${n.position.x},${n.position.y}:${n.data.definitionId}:` +
+            n.data.ports.map((p) => p.id + p.side + p.order).join('|')
+        )
+        .join(';'),
+    [rfNodes]
+  );
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const routeNodes = useMemo(() => rfNodes, [routeSig]);
+
   const { routes, fallbacks } = useMemo(
     () =>
       computeAllRoutes({
-        nodes: rfNodes,
+        nodes: routeNodes,
         edges,
         layers,
         gridSize: settings.gridSize,
         draggingIds: draggingNodeIds,
         customDefinitions,
       }),
-    [rfNodes, edges, layers, settings.gridSize, draggingNodeIds, customDefinitions]
+    [routeNodes, edges, layers, settings.gridSize, draggingNodeIds, customDefinitions]
   );
 
   useEffect(() => {

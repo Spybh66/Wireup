@@ -15,7 +15,7 @@ const BEND_45  = STEP * 2.2;    // discourage staircasing into clean 45° runs
 const BEND_90  = STEP * 9;      // strong penalty — discourage square corners
 const BEND_135 = STEP * 22;     // very strong — discourage sharp turns
 const OVERLAP_PENALTY = STEP * 50; // running ON an existing wire's edge → relane
-const CROSS_PENALTY   = STEP * 2;  // crossing a perpendicular wire → a hop
+const CROSS_PENALTY   = STEP * 12; // crossing a perpendicular wire (a hop) — avoid when possible
 const MAX_CELLS = 240000;          // grid-size guard (coarsen step if exceeded)
 
 // Kept for backward compatibility.

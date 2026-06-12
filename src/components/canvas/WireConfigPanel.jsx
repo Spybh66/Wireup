@@ -1,5 +1,5 @@
 // §9 Wire config panel — floating top-right; edits the selected edge.
-import { X } from 'lucide-react';
+import { X, ArrowLeftRight } from 'lucide-react';
 import useDiagramStore from '../../store/diagramStore';
 import {
   GAUGE_OPTIONS,
@@ -13,6 +13,7 @@ export default function WireConfigPanel({ edgeId, onClose }) {
   const layers = useDiagramStore((s) => s.layers);
   const nodes = useDiagramStore((s) => s.nodes);
   const updateEdgeData = useDiagramStore((s) => s.updateEdgeData);
+  const flipEdge = useDiagramStore((s) => s.flipEdge);
   if (!edge) return null;
 
   const d = edge.data;
@@ -33,8 +34,18 @@ export default function WireConfigPanel({ edgeId, onClose }) {
       </div>
 
       <div className="space-y-3 p-3 text-sm">
-        <div className="text-xs text-neutral-500">
-          {fromNode?.data.label} → {toNode?.data.label}
+        <div className="flex items-center gap-2 text-xs text-neutral-500">
+          <span className="min-w-0 flex-1 truncate">
+            {fromNode?.data.label} → {toNode?.data.label}
+          </span>
+          <button
+            onClick={() => flipEdge(edgeId)}
+            title="Flip direction (swap From / To)"
+            aria-label="Flip wire direction"
+            className="flex shrink-0 items-center gap-1 rounded border border-edge bg-surface-2 px-2 py-1 text-neutral-300 hover:bg-surface-0 hover:text-silver"
+          >
+            <ArrowLeftRight size={13} /> Flip
+          </button>
         </div>
 
         <label className="block">

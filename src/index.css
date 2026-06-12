@@ -50,6 +50,13 @@ body {
   color: #555;
 }
 
+/* Rubber-band selection rectangle — translucent, never an opaque fill */
+.react-flow__selection,
+.react-flow__nodesselection-rect {
+  background: rgba(212, 212, 216, 0.08);
+  border: 1px solid rgba(212, 212, 216, 0.55);
+}
+
 /* Thin scrollbars in dark UI */
 * {
   scrollbar-width: thin;

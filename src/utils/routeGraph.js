@@ -90,12 +90,13 @@ export function computeAllRoutes({
   });
   const obstacles = nodeRects.map((r) => inflate(r, PAD));
 
-  // Pass 0: resolve each visible edge's endpoints so the routing lattice can be
-  // sized to cover every wire stub (not just the component rects).
+  // Pass 0: resolve EVERY edge's endpoints (not just visible ones). Routing all
+  // wires — regardless of layer visibility — keeps the occupancy lattice (and
+  // therefore the visible routes) stable when a layer is toggled off/on, so
+  // hiding a layer never reroutes the wires that stay on screen.
   const jobs = [];
   const endpoints = [];
   for (const e of edges) {
-    if (!visibleLayers.has(e.data.layerId)) continue;
     const sNode = nodeMap.get(e.source);
     const tNode = nodeMap.get(e.target);
     if (!sNode || !tNode) continue;
@@ -107,7 +108,7 @@ export function computeAllRoutes({
     const source = portPosition(sNode, sPort, sDef);
     const target = portPosition(tNode, tPort, tDef);
     endpoints.push(stubTip(source), stubTip(target));
-    jobs.push({ edge: e, source, target });
+    jobs.push({ edge: e, source, target, visible: visibleLayers.has(e.data.layerId) });
   }
 
   // One shared occupancy lattice for the whole diagram. Routing edges in a
@@ -115,10 +116,10 @@ export function computeAllRoutes({
   // another (spaced bundles) while distant wires stay untouched (local cluster).
   const grid = dragging.size ? null : buildRoutingGrid(obstacles, endpoints);
 
-  const ordered = [];
+  const ordered = [];      // visible edges only — used for hops/labels/render
   const meta = new Map();
   const fallbacks = [];
-  for (const { edge: e, source, target } of jobs) {
+  for (const { edge: e, source, target, visible } of jobs) {
     let points;
     let fallback = false;
     if (dragging.has(e.source) || dragging.has(e.target)) {
@@ -127,8 +128,9 @@ export function computeAllRoutes({
       const r = computeRoute({ source, target, obstacles, gridSize, grid });
       points = r.points;
       fallback = r.fallback;
-      if (fallback) fallbacks.push({ id: e.id, label: e.data.label });
+      if (fallback && visible) fallbacks.push({ id: e.id, label: e.data.label });
     }
+    if (!visible) continue; // routed into the grid for stability, but not drawn
     ordered.push({ id: e.id, points });
     meta.set(e.id, {
       points,
