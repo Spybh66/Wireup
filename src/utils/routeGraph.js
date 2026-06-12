@@ -47,8 +47,7 @@ export function computeAllRoutes({
   const ordered = [];
   const meta = new Map();
   const fallbacks = [];
-  const wireOccupied = new Map(); // sequential routing occupancy map
-  const cell = Math.max(8, gridSize / 2);
+  const wireOccupied = []; // polyline array for wire proximity avoidance
   for (const e of edges) {
     if (!visibleLayers.has(e.data.layerId)) continue;
     const sNode = nodeMap.get(e.source);
@@ -72,7 +71,7 @@ export function computeAllRoutes({
       points = r.points;
       fallback = r.fallback;
       if (fallback) fallbacks.push({ id: e.id, label: e.data.label });
-      if (!fallback) markWirePath(points, cell, wireOccupied);
+      if (!fallback) markWirePath(points, 0, wireOccupied);
     }
     ordered.push({ id: e.id, points });
     meta.set(e.id, {

@@ -1,45 +1,26 @@
-// §6 Wire routing engine — obstacle-avoiding A* + crossing hops.
+﻿// §6 Wire routing engine — visibility-graph any-angle routing + crossing hops.
 // Pure functions; no React/DOM. Unit-tested in routingUtils.test.js.
 
-export const STUB = 16; // perpendicular exit stub length (px)
-export const PAD = 10; // obstacle inflation (px)
-export const EXPAND = 250; // A* bounding-box expansion (px)
-const BEND = 10; // bend penalty (step units) — high value keeps paths straight
-const DIAG = Math.SQRT2; // diagonal step cost
-const HOP_R = 5; // crossing hop radius (px)
-const WIRE_OVERLAP_PENALTY = 20; // extra cost to enter a cell another wire already uses in same direction
+export const STUB = 16;         // perpendicular exit stub length (px)
+export const PAD  = 10;         // obstacle inflation (px)
+const HOP_R       = 5;          // crossing hop arc radius (px)
+const BEND_COST   = 80;         // A* cost penalty per direction change
+const WIRE_PROX_PENALTY = 0.5;  // extra cost per pixel running close to an existing wire
+const PROX_DIST   = 8;          // px — "too close" proximity threshold
+const CORNER_EPS  = 0.5;        // nudge vis-graph corners just off rect edges
 
-// ---------- wire occupancy helpers (for sequential routing §6.5) ----------
-// dirType: 'H' = horizontal, 'V' = vertical, 'D1' = NE/SW diagonal, 'D2' = NW/SE diagonal
+// Kept for backward compatibility.
 export function getDirType(dx, dy) {
   if (Math.abs(dy) < 0.5) return 'H';
   if (Math.abs(dx) < 0.5) return 'V';
   return dx * dy > 0 ? 'D1' : 'D2';
 }
 
-// Mark the lattice cells along a routed wire's inner path (excluding port/stub
-// endpoints) into wireOccupied so subsequent wires avoid parallel overlap.
-// wireOccupied: Map<"gx,gy", Set<dirType>>  (global grid keys)
-export function markWirePath(points, cell, wireOccupied) {
-  // Skip first 2 and last 2 points (port position + stub tip at each end).
-  const start = Math.min(2, points.length);
-  const end = Math.max(points.length - 2, start);
-  for (let i = start; i < end - 1; i++) {
-    const a = points[i];
-    const b = points[i + 1];
-    const dx = b.x - a.x;
-    const dy = b.y - a.y;
-    const len = Math.hypot(dx, dy);
-    if (len < 0.5) continue;
-    const dirType = getDirType(dx, dy);
-    const steps = Math.max(1, Math.round(len / cell));
-    for (let s = 0; s <= steps; s++) {
-      const t = s / steps;
-      const k = `${Math.round((a.x + dx * t) / cell)},${Math.round((a.y + dy * t) / cell)}`;
-      if (!wireOccupied.has(k)) wireOccupied.set(k, new Set());
-      wireOccupied.get(k).add(dirType);
-    }
-  }
+// Sequential path tracking — wirePolylines is an array of already-routed
+// point-arrays. markWirePath pushes the new wire in so later wires can apply a
+// proximity cost when passing near it.
+export function markWirePath(points, _cell, wirePolylines) {
+  if (Array.isArray(wirePolylines)) wirePolylines.push(points);
 }
 
 // ---------- geometry helpers ----------
@@ -53,164 +34,187 @@ function pointInRect(x, y, r) {
 
 export function stubTip(p) {
   switch (p.side) {
-    case 'top':
-      return { x: p.x, y: p.y - STUB };
-    case 'bottom':
-      return { x: p.x, y: p.y + STUB };
-    case 'left':
-      return { x: p.x - STUB, y: p.y };
+    case 'top':    return { x: p.x, y: p.y - STUB };
+    case 'bottom': return { x: p.x, y: p.y + STUB };
+    case 'left':   return { x: p.x - STUB, y: p.y };
     case 'right':
-    default:
-      return { x: p.x + STUB, y: p.y };
+    default:       return { x: p.x + STUB, y: p.y };
   }
 }
 
-// ---------- A* over a uniform lattice ----------
-// source/target: {x, y, side}. obstacles: array of {x,y,w,h} (already inflated).
-// wireOccupied: Map<"gx,gy", Set<dirType>> — cells blocked for parallel travel.
-// Returns array of lattice points {x,y} (excluding the port/stub endpoints), or
-// null when no path is found.
-function astar(start, goal, obstacles, cell, bounds, wireOccupied = null) {
-  const cols = Math.ceil((bounds.maxX - bounds.minX) / cell) + 1;
-  const rows = Math.ceil((bounds.maxY - bounds.minY) / cell) + 1;
-  const toXY = (ix, iy) => ({ x: bounds.minX + ix * cell, y: bounds.minY + iy * cell });
+// ---------- visibility-graph helpers ----------
 
-  const free = (ix, iy) => {
-    if (ix < 0 || iy < 0 || ix >= cols || iy >= rows) return false;
-    const { x, y } = toXY(ix, iy);
-    for (const o of obstacles) if (pointInRect(x, y, o)) return false;
-    return true;
-  };
+// Strict segment–segment intersection (touching endpoints not counted).
+function segsIntersectStrict(ax, ay, bx, by, cx, cy, dx, dy) {
+  const d1x = bx - ax, d1y = by - ay;
+  const d2x = dx - cx, d2y = dy - cy;
+  const denom = d1x * d2y - d1y * d2x;
+  if (Math.abs(denom) < 1e-9) return false;
+  const t = ((cx - ax) * d2y - (cy - ay) * d2x) / denom;
+  const u = ((cx - ax) * d1y - (cy - ay) * d1x) / denom;
+  return t > 1e-9 && t < 1 - 1e-9 && u > 1e-9 && u < 1 - 1e-9;
+}
 
-  // Extra step cost when a routed wire already travels in the same direction
-  // through this cell. Uses a penalty instead of hard blocking so the router
-  // always finds SOME path on dense diagrams.
-  const occupyCost = (ix, iy, dx, dy) => {
-    if (!wireOccupied) return 0;
-    const { x, y } = toXY(ix, iy);
-    const k = `${Math.round(x / cell)},${Math.round(y / cell)}`;
-    return wireOccupied.get(k)?.has(getDirType(dx, dy)) ? WIRE_OVERLAP_PENALTY : 0;
-  };
+// Returns true when segment a→b passes clear of every obstacle's interior.
+function segClear(a, b, obstacles) {
+  for (const r of obstacles) {
+    const minX = Math.min(a.x, b.x), maxX = Math.max(a.x, b.x);
+    const minY = Math.min(a.y, b.y), maxY = Math.max(a.y, b.y);
+    if (maxX <= r.x || minX >= r.x + r.w || maxY <= r.y || minY >= r.y + r.h) continue;
+    if (pointInRect(a.x, a.y, r) || pointInRect(b.x, b.y, r)) return false;
+    if (segsIntersectStrict(a.x, a.y, b.x, b.y, r.x,       r.y,       r.x + r.w, r.y      )) return false;
+    if (segsIntersectStrict(a.x, a.y, b.x, b.y, r.x + r.w, r.y,       r.x + r.w, r.y + r.h)) return false;
+    if (segsIntersectStrict(a.x, a.y, b.x, b.y, r.x + r.w, r.y + r.h, r.x,       r.y + r.h)) return false;
+    if (segsIntersectStrict(a.x, a.y, b.x, b.y, r.x,       r.y + r.h, r.x,       r.y      )) return false;
+  }
+  return true;
+}
 
-  const snap = (pt) => {
-    let bix = Math.round((pt.x - bounds.minX) / cell);
-    let biy = Math.round((pt.y - bounds.minY) / cell);
-    if (free(bix, biy)) return { ix: bix, iy: biy };
-    // spiral outward to nearest free lattice node
-    for (let r = 1; r < Math.max(cols, rows); r++) {
-      for (let dx = -r; dx <= r; dx++) {
-        for (let dy = -r; dy <= r; dy++) {
-          if (Math.max(Math.abs(dx), Math.abs(dy)) !== r) continue;
-          if (free(bix + dx, biy + dy)) return { ix: bix + dx, iy: biy + dy };
+// Squared distance from point to segment.
+function ptSegDistSq(px, py, ax, ay, bx, by) {
+  const dx = bx - ax, dy = by - ay;
+  const lenSq = dx * dx + dy * dy;
+  if (lenSq < 1e-9) return (px - ax) ** 2 + (py - ay) ** 2;
+  const t = Math.max(0, Math.min(1, ((px - ax) * dx + (py - ay) * dy) / lenSq));
+  return (ax + t * dx - px) ** 2 + (ay + t * dy - py) ** 2;
+}
+
+// Additional A* cost for a segment that runs close to already-routed wires.
+function wireProxCost(a, b, wirePolylines) {
+  if (!wirePolylines || wirePolylines.length === 0) return 0;
+  const len = Math.hypot(b.x - a.x, b.y - a.y);
+  if (len < 1e-9) return 0;
+  const proxSq = PROX_DIST * PROX_DIST;
+  const steps = Math.max(2, Math.ceil(len / 12));
+  const segLen = len / steps;
+  let cost = 0;
+  for (let s = 0; s < steps; s++) {
+    const t = (s + 0.5) / steps;
+    const px = a.x + (b.x - a.x) * t;
+    const py = a.y + (b.y - a.y) * t;
+    let near = false;
+    outer: for (const poly of wirePolylines) {
+      for (let i = 0; i < poly.length - 1; i++) {
+        if (ptSegDistSq(px, py, poly[i].x, poly[i].y, poly[i + 1].x, poly[i + 1].y) < proxSq) {
+          near = true;
+          break outer;
         }
       }
     }
-    return null;
-  };
+    if (near) cost += WIRE_PROX_PENALTY * segLen;
+  }
+  return cost;
+}
 
-  const s = snap(start);
-  const g = snap(goal);
-  if (!s || !g) return null;
-
-  const key = (ix, iy) => iy * cols + ix;
-  const startK = key(s.ix, s.iy);
-  const goalK = key(g.ix, g.iy);
-
-  // Orthogonal-only moves (no diagonals). Diagonal paths look messy in
-  // electrical diagrams and prevent hop-arc detection at crossings.
-  const DIRS = [
-    [1, 0],
-    [-1, 0],
-    [0, 1],
-    [0, -1],
-  ];
-
-  const gScore = new Map([[startK, 0]]);
-  const cameFrom = new Map();
-  const dirIn = new Map(); // incoming direction index per node
-
-  // Manhattan heuristic (exact for orthogonal-only routing)
-  const heur = (ix, iy) => Math.abs(ix - g.ix) + Math.abs(iy - g.iy);
-
-  // binary heap with deterministic tie-break (f, then x, then y)
-  const heap = [];
-  const cmp = (a, b) =>
-    a.f - b.f || a.ix - b.ix || a.iy - b.iy;
-  const push = (item) => {
-    heap.push(item);
-    let i = heap.length - 1;
+// Tiny binary min-heap.
+function makeHeap() {
+  const h = [];
+  const up = (i) => {
     while (i > 0) {
       const p = (i - 1) >> 1;
-      if (cmp(heap[i], heap[p]) < 0) {
-        [heap[i], heap[p]] = [heap[p], heap[i]];
-        i = p;
-      } else break;
+      if (h[i].f < h[p].f) { [h[i], h[p]] = [h[p], h[i]]; i = p; } else break;
     }
   };
-  const pop = () => {
-    const top = heap[0];
-    const last = heap.pop();
-    if (heap.length) {
-      heap[0] = last;
-      let i = 0;
-      for (;;) {
-        const l = 2 * i + 1;
-        const r = 2 * i + 2;
-        let m = i;
-        if (l < heap.length && cmp(heap[l], heap[m]) < 0) m = l;
-        if (r < heap.length && cmp(heap[r], heap[m]) < 0) m = r;
-        if (m === i) break;
-        [heap[i], heap[m]] = [heap[m], heap[i]];
-        i = m;
-      }
+  const dn = (i) => {
+    for (;;) {
+      const l = 2 * i + 1, r = 2 * i + 2;
+      let m = i;
+      if (l < h.length && h[l].f < h[m].f) m = l;
+      if (r < h.length && h[r].f < h[m].f) m = r;
+      if (m === i) break;
+      [h[i], h[m]] = [h[m], h[i]]; i = m;
     }
-    return top;
   };
+  return {
+    push(x) { h.push(x); up(h.length - 1); },
+    pop()   { const top = h[0]; const last = h.pop(); if (h.length) { h[0] = last; dn(0); } return top; },
+    get length() { return h.length; },
+  };
+}
 
-  push({ ix: s.ix, iy: s.iy, f: heur(s.ix, s.iy) });
-  const closed = new Set();
+// Visibility-graph A* from stub s to stub t.
+// Returns the intermediate waypoints (obstacle corners to route through),
+// or null when no path exists.
+function visgraphRoute(s, t, obstacles, wirePolylines) {
+  // Node 0 = s (source stub tip), Node 1 = t (target stub tip),
+  // then the 4 epsilon-nudged corners of every obstacle.
+  const nodes = [s, t];
+  for (const r of obstacles) {
+    const e = CORNER_EPS;
+    const candidates = [
+      { x: r.x - e,        y: r.y - e        },
+      { x: r.x + r.w + e,  y: r.y - e        },
+      { x: r.x - e,        y: r.y + r.h + e  },
+      { x: r.x + r.w + e,  y: r.y + r.h + e  },
+    ];
+    // Skip corners that fall inside another obstacle.
+    for (const c of candidates) {
+      if (!obstacles.some((o) => pointInRect(c.x, c.y, o))) nodes.push(c);
+    }
+  }
+  const N = nodes.length;
+  const S = 0, T = 1;
+
+  // Precompute pairwise line-of-sight — O(N² × |obstacles|).
+  const vis = new Uint8Array(N * N);
+  for (let i = 0; i < N; i++)
+    for (let j = i + 1; j < N; j++)
+      if (segClear(nodes[i], nodes[j], obstacles))
+        vis[i * N + j] = vis[j * N + i] = 1;
+
+  const gScore   = new Float64Array(N).fill(Infinity);
+  const cameFrom = new Int32Array(N).fill(-1);
+  gScore[S] = 0;
+
+  const heap = makeHeap();
+  heap.push({ i: S, f: Math.hypot(t.x - s.x, t.y - s.y) });
+  const closed = new Uint8Array(N);
 
   while (heap.length) {
-    const cur = pop();
-    const ck = key(cur.ix, cur.iy);
-    if (closed.has(ck)) continue;
-    closed.add(ck);
-    if (ck === goalK) break;
+    const { i: ci } = heap.pop();
+    if (closed[ci]) continue;
+    closed[ci] = 1;
+    if (ci === T) break;
 
-    for (let di = 0; di < DIRS.length; di++) {
-      const [dx, dy] = DIRS[di];
-      const nix = cur.ix + dx;
-      const niy = cur.iy + dy;
-      if (!free(nix, niy)) continue;
-      const nk = key(nix, niy);
-      if (closed.has(nk)) continue;
-      const prevDir = dirIn.get(ck);
-      const turn = prevDir !== undefined && prevDir !== di;
-      const step = 1 + (turn ? BEND : 0) + occupyCost(nix, niy, dx, dy);
-      const tentative = gScore.get(ck) + step;
-      if (!gScore.has(nk) || tentative < gScore.get(nk)) {
-        gScore.set(nk, tentative);
-        cameFrom.set(nk, ck);
-        dirIn.set(nk, di);
-        push({ ix: nix, iy: niy, f: tentative + heur(nix, niy) });
+    for (let j = 0; j < N; j++) {
+      if (!vis[ci * N + j] || closed[j]) continue;
+      const d = Math.hypot(nodes[j].x - nodes[ci].x, nodes[j].y - nodes[ci].y);
+
+      // Bend penalty for any direction change from the incoming segment.
+      let bendCost = 0;
+      const prev = cameFrom[ci];
+      if (prev >= 0) {
+        const ax = nodes[ci].x - nodes[prev].x, ay = nodes[ci].y - nodes[prev].y;
+        const bx = nodes[j].x  - nodes[ci].x,  by = nodes[j].y  - nodes[ci].y;
+        const la = Math.hypot(ax, ay), lb = Math.hypot(bx, by);
+        if (la > 0 && lb > 0 && (ax * bx + ay * by) / (la * lb) < 0.9999) bendCost = BEND_COST;
+      }
+
+      const proxCost = wireProxCost(nodes[ci], nodes[j], wirePolylines);
+      const tentative = gScore[ci] + d + bendCost + proxCost;
+      if (tentative < gScore[j]) {
+        gScore[j] = tentative;
+        cameFrom[j] = ci;
+        heap.push({ i: j, f: tentative + Math.hypot(nodes[T].x - nodes[j].x, nodes[T].y - nodes[j].y) });
       }
     }
   }
 
-  if (!cameFrom.has(goalK) && goalK !== startK) return null;
+  if (gScore[T] === Infinity) return null;
 
-  // reconstruct
+  // Reconstruct: walk cameFrom from T back to S, build forward path.
   const path = [];
-  let k = goalK;
-  while (k !== undefined) {
-    const ix = k % cols;
-    const iy = Math.floor(k / cols);
-    path.push(toXY(ix, iy));
-    if (k === startK) break;
-    k = cameFrom.get(k);
+  const seen = new Set();
+  let k = T;
+  while (k >= 0 && !seen.has(k)) {
+    seen.add(k);
+    path.unshift(k);
+    if (k === S) break;
+    k = cameFrom[k];
   }
-  path.reverse();
-  return path;
+  if (path[0] !== S) return null;
+  // Return intermediate waypoints only (not S=sStub nor T=tStub).
+  return path.slice(1, -1).map((idx) => nodes[idx]);
 }
 
 // Remove middle point of any 3 collinear consecutive points.
@@ -228,83 +232,43 @@ export function simplifyCollinear(points) {
   return out;
 }
 
-// Chamfer each interior corner into a short 45° segment when space allows.
-export function chamferCorners(points, amount = CHAMFER) {
-  if (points.length <= 2) return points.slice();
-  const out = [points[0]];
-  for (let i = 1; i < points.length - 1; i++) {
-    const a = points[i - 1];
-    const b = points[i];
-    const c = points[i + 1];
-    const lenAB = Math.hypot(b.x - a.x, b.y - a.y);
-    const lenBC = Math.hypot(c.x - b.x, c.y - b.y);
-    const d = Math.min(amount, lenAB / 2, lenBC / 2);
-    if (d < 1) {
-      out.push(b);
-      continue;
-    }
-    const uxAB = (b.x - a.x) / lenAB;
-    const uyAB = (b.y - a.y) / lenAB;
-    const uxBC = (c.x - b.x) / lenBC;
-    const uyBC = (c.y - b.y) / lenBC;
-    out.push({ x: b.x - uxAB * d, y: b.y - uyAB * d });
-    out.push({ x: b.x + uxBC * d, y: b.y + uyBC * d });
-  }
-  out.push(points[points.length - 1]);
-  return out;
-}
-
-// Compute a full polyline for one edge (port → stub → A* → stub → port).
-// Returns { points, fallback }. On A* failure returns a straight 2-point line.
+// Compute a full polyline for one edge (port → stub → route → stub → port).
+// wireOccupied is now an array of already-routed polylines (kept as param name
+// to avoid changing routeGraph.js call-sites).
 export function computeRoute({ source, target, obstacles, gridSize = 16, wireOccupied = null }) {
   const sStub = stubTip(source);
   const tStub = stubTip(target);
-  const cell = Math.max(8, gridSize / 2);
+  const wirePolylines = wireOccupied;
 
-  // Snap ONLY the axis perpendicular to each stub's exit direction so the
-  // stub→grid alignment segment is always a clean orthogonal step.
-  // • Left/right ports exit horizontally → snap y only (x is already on-grid
-  //   because port.x ± STUB inherits the component's snapped position).
-  // • Top/bottom ports exit vertically → snap x only.
-  const snapC = (v) => Math.round(v / cell) * cell;
-  const snapStub = (stub, side) =>
-    side === 'left' || side === 'right'
-      ? { x: stub.x, y: snapC(stub.y) }
-      : { x: snapC(stub.x), y: stub.y };
-  const sSnapped = snapStub(sStub, source.side);
-  const tSnapped = snapStub(tStub, target.side);
+  // Fast path: direct line when stubs have clear line-of-sight.
+  if (segClear(sStub, tStub, obstacles)) {
+    return {
+      points: simplifyCollinear([
+        { x: source.x, y: source.y },
+        sStub,
+        tStub,
+        { x: target.x, y: target.y },
+      ]),
+      fallback: false,
+    };
+  }
 
-  // Align the A* bounding box to the global cell grid so snapped stub tips
-  // always land exactly on a lattice node (eliminates snap() rounding drift).
-  const rawMinX = Math.min(sSnapped.x, tSnapped.x) - EXPAND;
-  const rawMinY = Math.min(sSnapped.y, tSnapped.y) - EXPAND;
-  const minX = Math.floor(rawMinX / cell) * cell;
-  const minY = Math.floor(rawMinY / cell) * cell;
-  const maxX = Math.ceil((Math.max(sSnapped.x, tSnapped.x) + EXPAND) / cell) * cell;
-  const maxY = Math.ceil((Math.max(sSnapped.y, tSnapped.y) + EXPAND) / cell) * cell;
-
-  const lattice = astar(sSnapped, tSnapped, obstacles, cell, { minX, minY, maxX, maxY }, wireOccupied);
-
-  if (!lattice) {
+  // Visibility-graph route around obstacles.
+  const waypoints = visgraphRoute(sStub, tStub, obstacles, wirePolylines);
+  if (!waypoints) {
     return { points: [{ x: source.x, y: source.y }, { x: target.x, y: target.y }], fallback: true };
   }
 
-  // Full path: port → stub (perpendicular exit) → snapped-stub (grid alignment,
-  // tiny orthogonal jog ≤ cell/2 px) → A* lattice → snapped target stub →
-  // target stub → target port.
-  // simplifyCollinear merges any consecutive collinear triplets so the path has
-  // no redundant interior points (e.g. when the jog is collinear with the route).
-  let pts = [
-    { x: source.x, y: source.y },
-    sStub,
-    sSnapped,
-    ...lattice,
-    tSnapped,
-    tStub,
-    { x: target.x, y: target.y },
-  ];
-  pts = simplifyCollinear(pts);
-  return { points: pts, fallback: false };
+  return {
+    points: simplifyCollinear([
+      { x: source.x, y: source.y },
+      sStub,
+      ...waypoints,
+      tStub,
+      { x: target.x, y: target.y },
+    ]),
+    fallback: false,
+  };
 }
 
 // ---------- crossing detection ----------
