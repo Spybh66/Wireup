@@ -115,13 +115,14 @@ export const COMPONENT_LIBRARY = [
     ...pwr('C+', 'C-', 'right', '18 AWG', FERRULE),
     ...pwr('D+', 'D-', 'right', '18 AWG', FERRULE),
   ]),
-  def('mitocandria', 'MitoCANDria (ThriftyBot)', 'Power', 'vrm', 150, 100, ['canId'], [
+  def('mitocandria', 'MitoCANDria (ThriftyBot)', 'Power', 'vrm', 180, 80, ['canId'], [
     ...pwr('V+', 'V-', 'left', '18 AWG', FERRULE),
     ...can('bottom'),
-    ...pwr('OUT1+', 'OUT1-', 'right', '20 AWG', FERRULE),
-    ...pwr('OUT2+', 'OUT2-', 'right', '20 AWG', FERRULE),
-    ...pwr('OUT3+', 'OUT3-', 'right', '20 AWG', FERRULE),
-    ...pwr('OUT4+', 'OUT4-', 'right', '20 AWG', FERRULE),
+    ...usb('5V USBC', 'top'),
+    ...usb('5V USBC', 'top'),
+    ...pwr('BOOST+', 'BOOST-', 'right', '20 AWG', FERRULE),
+    ...pwr('5VA+', '5VA-', 'right', '20 AWG', FERRULE),
+    ...pwr('5VB+', '5VB-', 'right', '20 AWG', FERRULE),
   ]),
   def('canjunction', 'CANJunction (ThriftyBot)', 'Power', 'canjunction', 150, 110, [], [
     ...pwr('V+', 'V-', 'left', '18 AWG', WAGO),
@@ -167,9 +168,11 @@ export const COMPONENT_LIBRARY = [
   def('krakenx60', 'Kraken X60', 'Motors', 'krakenMotor', 120, 70, ['canId'], [
     ...pwr('V+', 'V-', 'left', '12 AWG', FERRULE),
     ...can('right'),
+    ...can('right'),
   ]),
   def('krakenx44', 'Kraken X44', 'Motors', 'krakenMotor', 120, 70, ['canId'], [
     ...pwr('V+', 'V-', 'left', '12 AWG', FERRULE),
+    ...can('right'),
     ...can('right'),
   ]),
   def('minion', 'Minion', 'Motors', 'motor', 120, 70, [], [
@@ -220,9 +223,11 @@ export const COMPONENT_LIBRARY = [
     ...pwr('V+', 'V-', 'left', '18 AWG', FERRULE),
     ...eth('ETH', 'top'),
   ]),
-  def('lasercan', 'LaserCAN (Grapple)', 'Sensors', 'canSensor', 100, 60, ['canId'], [
-    ...pwr('V+', 'V-', 'left', '22 AWG', FERRULE),
-    ...can('bottom'),
+  def('lasercan', 'LaserCAN (Grapple)', 'Sensors', 'canSensor', 120, 80, ['canId'], [
+    ...pwr('V+', 'V-', 'bottom', '22 AWG', FERRULE),
+    ...pwr('V+', 'V-', 'top', '22 AWG', FERRULE),
+    ...can('left'),
+    ...can('right'),
   ]),
   def('thriftycam', 'ThriftyCAM (ThriftyBot)', 'Sensors', 'camera', 120, 70, [], [
     ...usb('USB', 'left'),
