@@ -40,13 +40,18 @@ function def(id, name, category, icon, width, height, trackedFields, portSpecs) 
 }
 
 // PDH/PDP shape: P± IN (6 AWG/SB50), CAN, 8 output channel pairs (12 AWG/Ferrule).
-function powerDistPorts() {
-  const ports = [...pwr('V+', 'V-', 'left', '6 AWG', SB50), ...can('bottom')];
-  for (let i = 0; i < 8; i++) {
-    ports.push(
+function powerDistPorts(numChannels) {
+  const ports = [...pwr('V+', 'V-', 'bottom', '6 AWG', SB50), ...can('bottom'), ...can('bottom')];
+  for (let i = 0; i < numChannels; i++) {
+    if (i <= 9) {
+      ports.push(
       { type: 'PWR+', label: `CH${i}+`, side: 'right', gauge: '12 AWG', fitting: FERRULE },
-      { type: 'PWR-', label: `CH${i}-`, side: 'right', gauge: '12 AWG', fitting: FERRULE }
-    );
+      { type: 'PWR-', label: `CH${i}-`, side: 'right', gauge: '12 AWG', fitting: FERRULE });
+    } else {
+      ports.push(
+      { type: 'PWR+', label: `CH${i}+`, side: 'left', gauge: '12 AWG', fitting: FERRULE },
+      { type: 'PWR-', label: `CH${i}-`, side: 'left', gauge: '12 AWG', fitting: FERRULE });
+    }    
   }
   return ports;
 }
@@ -54,23 +59,24 @@ function powerDistPorts() {
 export const COMPONENT_LIBRARY = [
   // ---------------- Controllers ----------------
   def('roborio2', 'roboRIO 2', 'Controllers', 'controller', 200, 120, ['ipAddress'], [
-    ...pwr('V+', 'V-', 'left', '12 AWG', FERRULE),
-    ...can('bottom'),
+    ...pwr('V+', 'V-', 'top', '12 AWG', FERRULE),
+    ...can('left'),
     ...eth('ETH', 'top'),
-    ...usb('USB1', 'top'),
-    ...usb('USB2', 'top'),
+    ...usb('USB1', 'right'),
+    ...usb('USB2', 'right'),
+    ...pwr('RSL+', 'RSL-', 'bottom', '12 AWG', FERRULE),
   ]),
   def('orangepi5', 'Orange Pi 5', 'Controllers', 'pi', 140, 80, ['ipAddress'], [
     ...pwr('V+', 'V-', 'left'),
     ...eth('ETH', 'top'),
-    ...usb('USB1', 'top'),
-    ...usb('USB2', 'top'),
+    ...usb('USB1', 'right'),
+    ...usb('USB2', 'right'),
   ]),
   def('raspberrypi5', 'Raspberry Pi 5', 'Controllers', 'pi', 140, 80, ['ipAddress'], [
     ...pwr('V+', 'V-', 'left'),
     ...eth('ETH', 'top'),
-    ...usb('USB1', 'top'),
-    ...usb('USB2', 'top'),
+    ...usb('USB1', 'right'),
+    ...usb('USB2', 'right'),
   ]),
 
   // ---------------- Power ----------------
@@ -81,9 +87,9 @@ export const COMPONENT_LIBRARY = [
     { type: 'PWR+', label: 'IN', side: 'left', gauge: '6 AWG', fitting: SB50 },
     { type: 'PWR+', label: 'OUT', side: 'right', gauge: '6 AWG', fitting: SB50 },
   ]),
-  def('pdh', 'PDH (REV)', 'Power', 'powerdist', 180, 110, ['canId'], powerDistPorts()),
-  def('pdp2', 'PDP 2.0 (CTRE)', 'Power', 'powerdist', 180, 110, ['canId'], powerDistPorts()),
-  def('pdp_legacy', 'PDP (CTRE, legacy)', 'Power', 'powerdist', 180, 110, ['canId'], powerDistPorts()),
+  def('pdh', 'PDH (REV)', 'Power', 'powerdist', 280, 400, ['canId'], powerDistPorts(24)),
+  def('pdp2', 'PDP 2.0 (CTRE)', 'Power', 'powerdist', 180, 110, ['canId'], powerDistPorts(24)),
+  def('pdp_legacy', 'PDP (CTRE, legacy)', 'Power', 'powerdist', 180, 110, ['canId'], powerDistPorts(24)),
   def('vrm', 'VRM', 'Power', 'vrm', 140, 80, [], [
     ...pwr('V+', 'V-', 'left'),
     ...pwr('12V+', '12V-', 'right', '18 AWG', FERRULE),
@@ -143,15 +149,15 @@ export const COMPONENT_LIBRARY = [
   // ---------------- Motors ----------------
   def('krakenx60', 'Kraken X60', 'Motors', 'krakenMotor', 120, 70, ['canId'], [
     ...pwr('V+', 'V-', 'left', '12 AWG', FERRULE),
-    ...can('bottom'),
+    ...can('right'),
   ]),
   def('krakenx44', 'Kraken X44', 'Motors', 'krakenMotor', 120, 70, ['canId'], [
     ...pwr('V+', 'V-', 'left', '12 AWG', FERRULE),
-    ...can('bottom'),
+    ...can('right'),
   ]),
   def('falcon500', 'Falcon 500 (legacy)', 'Motors', 'krakenMotor', 120, 70, ['canId'], [
     ...pwr('V+', 'V-', 'left', '12 AWG', FERRULE),
-    ...can('bottom'),
+    ...can('right'),
   ]),
   def('minion', 'Minion', 'Motors', 'motor', 120, 70, [], [
     ...pwr('V+', 'V-', 'left', '12 AWG', FERRULE),
@@ -208,9 +214,12 @@ export const COMPONENT_LIBRARY = [
 
   // ---------------- Networking ----------------
   def('vh109', 'VH-109 Radio', 'Networking', 'radio', 140, 80, ['ipAddress'], [
+    ...eth('AUX2', 'left'),
+    ...eth('RIO', 'left'),
     ...pwr('V+', 'V-', 'left', '18 AWG', FERRULE),
-    ...eth('RIO/PoE', 'top'),
-    ...eth('AUX', 'top'),
+    ...eth('AUX1', 'right'),
+    ...eth('DS', 'right'),
+    
   ]),
   def('ethswitch', 'Ethernet Switch', 'Networking', 'switch', 140, 80, ['ipAddress'], [
     ...pwr('V+', 'V-', 'left'),
