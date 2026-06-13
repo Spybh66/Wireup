@@ -10,9 +10,12 @@ import {
   Settings as SettingsIcon,
   Zap,
   Spline,
+  ShieldCheck,
+  ShieldAlert,
 } from 'lucide-react';
 import useDiagramStore from '../../store/diagramStore';
 import { useCanUndo, useCanRedo } from '../../store/useTemporal';
+import { useDrc } from '../../store/useDrc';
 import { serializeProject, downloadJSON, sanitizeFilename } from '../../utils/saveLoadUtils';
 import { canvasBridge } from '../canvas/canvasBridge';
 import {
@@ -52,7 +55,7 @@ function IconBtn({ onClick, disabled, label, children }) {
   );
 }
 
-export default function Header({ onOpenSettings }) {
+export default function Header({ onOpenSettings, drcOpen, onToggleDrc }) {
   const projectName = useDiagramStore((s) => s.projectName);
   const setProjectName = useDiagramStore((s) => s.setProjectName);
   const activeTab = useDiagramStore((s) => s.activeTab);
@@ -68,6 +71,8 @@ export default function Header({ onOpenSettings }) {
   const addToast = useDiagramStore((s) => s.addToast);
   const canUndo = useCanUndo();
   const canRedo = useCanRedo();
+  const { counts: drcCounts } = useDrc();
+  const drcIssues = drcCounts.error + drcCounts.warning;
 
   const fileInputRef = useRef(null);
   const [exportOpen, setExportOpen] = useState(false);
@@ -225,6 +230,24 @@ export default function Header({ onOpenSettings }) {
           </div>
         )}
       </div>
+
+      {activeTab === 'diagram' && (
+        <button
+          onClick={onToggleDrc}
+          aria-label="Design checks"
+          title="Design checks"
+          className={`relative flex items-center gap-1 rounded px-2 py-1.5 text-sm hover:bg-surface-2 ${
+            drcOpen ? 'bg-surface-2 text-silver' : 'text-neutral-300 hover:text-silver'
+          }`}
+        >
+          {drcIssues > 0 ? (
+            <ShieldAlert size={18} className={drcCounts.error > 0 ? 'text-red-400' : 'text-amber-400'} />
+          ) : (
+            <ShieldCheck size={18} />
+          )}
+          {drcIssues > 0 && <span className="text-xs font-semibold">{drcIssues}</span>}
+        </button>
+      )}
 
       <IconBtn onClick={onOpenSettings} label="Settings">
         <SettingsIcon size={18} />

@@ -5,6 +5,7 @@ import ComponentSidebar from './components/sidebar/ComponentSidebar';
 import DiagramCanvas from './components/canvas/DiagramCanvas';
 import LayerPanel from './components/canvas/LayerPanel';
 import WireConfigPanel from './components/canvas/WireConfigPanel';
+import DrcPanel from './components/canvas/DrcPanel';
 import ComponentConfigModal from './components/modal/ComponentConfigModal';
 import Toaster from './components/shared/Toast';
 import ConfirmDialog from './components/shared/ConfirmDialog';
@@ -33,6 +34,7 @@ export default function App() {
 
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [configNodeId, setConfigNodeId] = useState(null);
+  const [drcOpen, setDrcOpen] = useState(false);
 
   const clipboard = useRef(null);
   const pasteCount = useRef(0);
@@ -137,7 +139,11 @@ export default function App() {
   return (
     <div className="flex h-full flex-col bg-surface-0 text-silver">
       <MobileBanner />
-      <Header onOpenSettings={() => setSettingsOpen(true)} />
+      <Header
+        onOpenSettings={() => setSettingsOpen(true)}
+        drcOpen={drcOpen}
+        onToggleDrc={() => setDrcOpen((o) => !o)}
+      />
 
       <div className="relative flex flex-1 overflow-hidden">
         {activeTab === 'diagram' && <ComponentSidebar />}
@@ -147,6 +153,7 @@ export default function App() {
             <>
               <DiagramCanvas onOpenNodeConfig={onOpenNodeConfig} />
               <LayerPanel />
+              {drcOpen && <DrcPanel onClose={() => setDrcOpen(false)} />}
               {selectedEdgeId && (
                 <WireConfigPanel
                   edgeId={selectedEdgeId}

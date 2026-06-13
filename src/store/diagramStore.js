@@ -36,6 +36,7 @@ const DEFAULT_SETTINGS = {
   showPortLabels: true,
   showWireLabels: false,
   routingMode: 'auto', // 'auto' = A* route new wires; 'manual' = straight, user-shaped
+  drc: { disabledRules: [] }, // Design Rule Check — ids of rules the user turned off
 };
 
 const SETTINGS_KEY = 'wireup_settings';
@@ -483,6 +484,18 @@ const useDiagramStore = create(
       updateSettings: (patch) =>
         set((s) => {
           const settings = { ...s.settings, ...patch };
+          persistSettings(settings);
+          return { settings };
+        }),
+
+      // Enable/disable a single DRC rule (persisted with settings).
+      toggleDrcRule: (ruleId) =>
+        set((s) => {
+          const cur = s.settings.drc?.disabledRules ?? [];
+          const disabledRules = cur.includes(ruleId)
+            ? cur.filter((r) => r !== ruleId)
+            : [...cur, ruleId];
+          const settings = { ...s.settings, drc: { ...s.settings.drc, disabledRules } };
           persistSettings(settings);
           return { settings };
         }),

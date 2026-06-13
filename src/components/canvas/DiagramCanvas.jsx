@@ -72,8 +72,13 @@ function Flow({ onOpenNodeConfig }) {
 
   useEffect(() => {
     canvasBridge.fitView = fitView;
+    canvasBridge.focusElements = (nodeIds) => {
+      const ns = (nodeIds ?? []).map((id) => ({ id }));
+      if (ns.length) fitView({ nodes: ns, padding: 0.4, duration: 400, maxZoom: 1.4 });
+    };
     return () => {
       canvasBridge.fitView = null;
+      canvasBridge.focusElements = null;
     };
   }, [fitView]);
 
