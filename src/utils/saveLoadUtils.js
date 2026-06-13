@@ -90,6 +90,50 @@ export function downloadJSON(obj, filename) {
   downloadBlob(blob, filename);
 }
 
+// ---- shareable links (project encoded into the URL hash) ----
+function bytesToB64url(bytes) {
+  let bin = '';
+  for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
+  return btoa(bin).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+function b64urlToBytes(s) {
+  const b64 = s.replace(/-/g, '+').replace(/_/g, '/');
+  const bin = atob(b64);
+  const out = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+  return out;
+}
+async function gzip(str) {
+  if (typeof CompressionStream === 'undefined') return null;
+  const cs = new CompressionStream('gzip');
+  const w = cs.writable.getWriter();
+  w.write(new TextEncoder().encode(str));
+  w.close();
+  return new Uint8Array(await new Response(cs.readable).arrayBuffer());
+}
+async function gunzip(bytes) {
+  const ds = new DecompressionStream('gzip');
+  const w = ds.writable.getWriter();
+  w.write(bytes);
+  w.close();
+  return new TextDecoder().decode(await new Response(ds.readable).arrayBuffer());
+}
+
+// Encode a serialized project to a compact, URL-safe string ('g'=gzip, 'r'=raw).
+export async function encodeProjectToHash(project) {
+  const json = JSON.stringify(project);
+  const gz = await gzip(json);
+  return gz ? 'g' + bytesToB64url(gz) : 'r' + bytesToB64url(new TextEncoder().encode(json));
+}
+
+// Decode a hash payload (without the leading "p=") back to a project object.
+export async function decodeProjectFromHash(payload) {
+  const flag = payload[0];
+  const bytes = b64urlToBytes(payload.slice(1));
+  const json = flag === 'g' ? await gunzip(bytes) : new TextDecoder().decode(bytes);
+  return JSON.parse(json);
+}
+
 // ---- autosave (single slot) ----
 const AUTOSAVE_KEY = 'wireup_autosave';
 

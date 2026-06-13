@@ -6,6 +6,7 @@ import {
   FilePlus2,
   FolderOpen,
   Save,
+  Share2,
   ChevronDown,
   Settings as SettingsIcon,
   Zap,
@@ -16,7 +17,12 @@ import {
 import useDiagramStore from '../../store/diagramStore';
 import { useCanUndo, useCanRedo } from '../../store/useTemporal';
 import { useDrc } from '../../store/useDrc';
-import { serializeProject, downloadJSON, sanitizeFilename } from '../../utils/saveLoadUtils';
+import {
+  serializeProject,
+  downloadJSON,
+  sanitizeFilename,
+  encodeProjectToHash,
+} from '../../utils/saveLoadUtils';
 import { canvasBridge } from '../canvas/canvasBridge';
 import {
   exportCanvasPNG,
@@ -98,6 +104,18 @@ export default function Header({ onOpenSettings, drcOpen, onToggleDrc }) {
     const state = useDiagramStore.getState();
     downloadJSON(serializeProject(state), `${sanitizeFilename(state.projectName)}.wireup.json`);
     markSaved();
+  };
+
+  const onShare = async () => {
+    try {
+      const payload = await encodeProjectToHash(serializeProject(useDiagramStore.getState()));
+      const url = `${window.location.origin}${window.location.pathname}#p=${payload}`;
+      window.history.replaceState(null, '', `#p=${payload}`);
+      await navigator.clipboard.writeText(url);
+      addToast('Share link copied to clipboard');
+    } catch {
+      addToast('Could not create share link');
+    }
   };
 
   const onOpenFile = (e) => {
@@ -206,6 +224,9 @@ export default function Header({ onOpenSettings, drcOpen, onToggleDrc }) {
       <input ref={fileInputRef} type="file" accept=".json,application/json" hidden onChange={onOpenFile} />
       <IconBtn onClick={onSave} label="Save project">
         <Save size={18} />
+      </IconBtn>
+      <IconBtn onClick={onShare} label="Copy share link">
+        <Share2 size={18} />
       </IconBtn>
 
       <div className="relative" ref={exportRef}>

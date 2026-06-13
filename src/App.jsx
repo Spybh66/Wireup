@@ -12,7 +12,7 @@ import ConfirmDialog from './components/shared/ConfirmDialog';
 import RestoreBanner from './components/shared/RestoreBanner';
 import MobileBanner from './components/shared/MobileBanner';
 import useDiagramStore from './store/diagramStore';
-import { readAutosave } from './utils/saveLoadUtils';
+import { readAutosave, decodeProjectFromHash } from './utils/saveLoadUtils';
 
 const SheetView = lazy(() => import('./components/sheet/SheetView'));
 const AboutView = lazy(() => import('./components/about/AboutView'));
@@ -39,8 +39,19 @@ export default function App() {
   const clipboard = useRef(null);
   const pasteCount = useRef(0);
 
-  // ---- restore-from-autosave banner on startup (§2.8) ----
+  // ---- load a shared project from the URL hash, else restore-from-autosave ----
   useEffect(() => {
+    const m = window.location.hash.match(/[#&]p=([^&]+)/);
+    if (m) {
+      decodeProjectFromHash(m[1])
+        .then((project) => {
+          if (useDiagramStore.getState().loadProject(project))
+            useDiagramStore.getState().addToast('Loaded shared project');
+          else useDiagramStore.getState().addToast('Shared link is invalid');
+        })
+        .catch(() => useDiagramStore.getState().addToast('Shared link is invalid'));
+      return;
+    }
     const data = readAutosave();
     if (data) useDiagramStore.getState().setRestoreData(data);
   }, []);
