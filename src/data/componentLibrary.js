@@ -1,6 +1,13 @@
 // §5 Component Library — built-in FRC component definitions.
 // Each definition: { id, name, category, width, height, icon, defaultPorts, trackedFields }.
 // Port spec shorthand expands to full Port objects (id/order auto-assigned per side).
+import { STEP } from '../utils/routingUtils';
+
+// Round a component dimension to the wire grid (STEP) so that a node's edges —
+// and therefore its ports — always land on the routing lattice. Combined with
+// node positions snapping to the (coarser) component grid, every port sits on
+// the wire grid, so wires and manual waypoints line up into clean straight runs.
+const snapDim = (v) => Math.max(STEP, Math.round(v / STEP) * STEP);
 
 // ---- port spec helpers (return arrays of partial port specs) ----
 const SB50 = 'Anderson SB50';
@@ -34,7 +41,7 @@ function def(id, name, category, icon, width, height, trackedFields, portSpecs) 
       fitting: p.fitting ?? null,
     };
   });
-  return { id, name, category, width, height, icon, defaultPorts, trackedFields };
+  return { id, name, category, width: snapDim(width), height: snapDim(height), icon, defaultPorts, trackedFields };
 }
 
 // PDH/PDP shape: PWR IN (6 AWG/SB50), 2x CAN, N output channels (12 AWG/Ferrule).

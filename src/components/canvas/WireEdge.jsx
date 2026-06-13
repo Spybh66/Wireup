@@ -5,7 +5,7 @@ import { memo, useRef, useState } from 'react';
 import { BaseEdge, EdgeLabelRenderer, useReactFlow } from '@xyflow/react';
 import { useRouting } from './RoutingContext';
 import useDiagramStore from '../../store/diagramStore';
-import { buildSvgPath } from '../../utils/routingUtils';
+import { buildSvgPath, STEP } from '../../utils/routingUtils';
 
 const MIN_SEG = 26; // only show an insert dot on segments at least this long (px)
 
@@ -13,7 +13,6 @@ function WireEdge({ id, selected }) {
   const routing = useRouting();
   const showWireLabels = useDiagramStore((s) => s.settings.showWireLabels);
   const snapToGrid = useDiagramStore((s) => s.settings.snapToGrid);
-  const gridSize = useDiagramStore((s) => s.settings.gridSize);
   const edge = useDiagramStore((s) => s.edges.find((e) => e.id === id));
   const setEdgeWaypoints = useDiagramStore((s) => s.setEdgeWaypoints);
   const { screenToFlowPosition } = useReactFlow();
@@ -41,9 +40,11 @@ function WireEdge({ id, selected }) {
   // Path: from the live draft while dragging, otherwise the computed route.
   const dPath = draft ? buildSvgPath(controlPts, []) : route.d;
 
+  // Snap waypoints to the wire grid (STEP) — a sub-grid of the component grid —
+  // so they align with ports (also on the wire grid) for clean straight runs.
   const snap = (p) =>
     snapToGrid
-      ? { x: Math.round(p.x / gridSize) * gridSize, y: Math.round(p.y / gridSize) * gridSize }
+      ? { x: Math.round(p.x / STEP) * STEP, y: Math.round(p.y / STEP) * STEP }
       : { x: p.x, y: p.y };
 
   // Begin dragging control-point `idx` of polyline `base`.

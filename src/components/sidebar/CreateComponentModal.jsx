@@ -37,7 +37,9 @@ export default function CreateComponentModal({ onClose }) {
     setPorts((p) => p.map((row) => (row.key === key ? { ...row, ...patch } : row)));
   const removePort = (key) => setPorts((p) => p.filter((row) => row.key !== key));
 
-  const clampSize = (v) => Math.max(60, Math.min(400, Number(v) || 60));
+  // Clamp to range and round to the wire grid (8px) so ports land on the
+  // routing lattice for clean straight wires.
+  const clampSize = (v) => Math.round(Math.max(60, Math.min(400, Number(v) || 60)) / 8) * 8;
 
   const save = () => {
     if (!name.trim()) {
