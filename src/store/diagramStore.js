@@ -36,7 +36,9 @@ const DEFAULT_SETTINGS = {
   showPortLabels: true,
   showWireLabels: false,
   routingMode: 'auto', // 'auto' = A* route new wires; 'manual' = straight, user-shaped
-  drc: { disabledRules: [] }, // Design Rule Check — ids of rules the user turned off
+  // Design Rule Check — disabled rule ids + per-rule severity overrides
+  // ('error' | 'warning' | 'info' | 'off').
+  drc: { disabledRules: [], severityOverrides: {} },
 };
 
 const SETTINGS_KEY = 'wireup_settings';
@@ -496,6 +498,23 @@ const useDiagramStore = create(
             ? cur.filter((r) => r !== ruleId)
             : [...cur, ruleId];
           const settings = { ...s.settings, drc: { ...s.settings.drc, disabledRules } };
+          persistSettings(settings);
+          return { settings };
+        }),
+
+      // Override a rule's severity ('error'|'warning'|'info'|'off'). Passing the
+      // rule's default removes the override.
+      setDrcRuleSeverity: (ruleId, severity, defaultSeverity) =>
+        set((s) => {
+          const cur = { ...(s.settings.drc?.severityOverrides ?? {}) };
+          if (!severity || severity === defaultSeverity) delete cur[ruleId];
+          else cur[ruleId] = severity;
+          // overrides win over the legacy disabledRules list
+          const disabledRules = (s.settings.drc?.disabledRules ?? []).filter((r) => r !== ruleId);
+          const settings = {
+            ...s.settings,
+            drc: { ...s.settings.drc, severityOverrides: cur, disabledRules },
+          };
           persistSettings(settings);
           return { settings };
         }),

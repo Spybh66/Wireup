@@ -7,6 +7,7 @@ import {
   Layers,
   Table2,
   Download,
+  ShieldCheck,
 } from 'lucide-react';
 
 function Section({ icon: Icon, title, children }) {
@@ -103,7 +104,10 @@ export default function AboutView() {
               <Step>Wires run horizontally, vertically, and at 45°, avoiding components.</Step>
               <Step>Parallel wires spread into neatly spaced bundles instead of overlapping.</Step>
               <Step>Crossing wires hop over one another with a jump symbol.</Step>
-              <Step>Adding a wire re-optimizes the nearby cluster, not the whole diagram.</Step>
+              <Step>
+                Toggle <strong>Auto / Manual</strong> in the top bar. Select any wire to drag its
+                line into waypoints; double-click a point to remove it.
+              </Step>
             </ul>
           </Section>
 
@@ -150,6 +154,25 @@ export default function AboutView() {
             </ul>
           </Section>
         </div>
+
+        <Section icon={ShieldCheck} title="Design checks (DRC)">
+          <ul className="ml-4 list-disc space-y-1.5">
+            <Step>
+              The <strong>Checks</strong> button in the top bar opens a panel that flags wiring
+              mistakes live: duplicate CAN IDs / IPs, unpowered or unconnected devices, a
+              fragmented CAN bus, overloaded power ports, and more.
+            </Step>
+            <Step>Click an issue (or use the ▲▼ stepper) to select and zoom to the offending part.</Step>
+            <Step>
+              Flagged components show a colored badge on the canvas; one-click
+              <strong> Auto-number / Auto-assign</strong> fixes resolve duplicate CAN IDs and IPs.
+            </Step>
+            <Step>
+              Set each rule to Error / Warning / Info / Off via the panel’s rules view. Issues also
+              appear in the Sheet tab and exports.
+            </Step>
+          </ul>
+        </Section>
 
         <Section icon={Move} title="Tech stack">
           <ul className="grid gap-x-8 gap-y-1.5 sm:grid-cols-2">

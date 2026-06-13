@@ -99,9 +99,16 @@ store state, surfaced in a **panel** and (later) on the canvas.
 - Unit tests for both fixes.
 - _Deferred:_ per-violation dismiss/ignore (low priority).
 
-### Phase 5 — Reach & polish ⬜
-- `required`-port flag refinement; per-rule severity override; validation in
-  Sheet view + exports; About-tab docs; "next issue" hotkey.
+### Phase 5 — Reach & polish ✅ DONE
+- Per-rule **severity override** (Error/Warning/Info/Off): `setDrcRuleSeverity`
+  action + `severityOverrides`; engine applies effective severity; panel rules
+  view uses a dropdown.
+- **Sheet view** Validation section (`ValidationTable`) + included in CSV / Excel
+  / PDF exports (`buildValidationRows`).
+- **About tab** documents DRC + manual routing.
+- **Next/prev issue stepper** in the panel header (▲▼).
+- _Deferred:_ precise `required`-port flag (category heuristic kept — works well,
+  large library churn for marginal gain).
 
 ## Progress log
 - **Phase 1 (engine + 8 rules):** done. `runDrc` + rule registry + `engine.test.js`

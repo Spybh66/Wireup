@@ -1,6 +1,6 @@
 // Design Rule Check panel — floating bottom-left on the Diagram tab. Lists live
-// violations (click to select + focus the offending element) and lets the user
-// enable/disable individual rules.
+// violations (click to select + focus the offending element, or step through
+// them) and lets the user set each rule's severity (or turn it off).
 import { useState } from 'react';
 import {
   ShieldCheck,
@@ -10,6 +10,8 @@ import {
   X,
   SlidersHorizontal,
   ChevronLeft,
+  ChevronUp,
+  ChevronDown,
 } from 'lucide-react';
 import useDiagramStore from '../../store/diagramStore';
 import { useDrc } from '../../store/useDrc';
@@ -21,32 +23,44 @@ const SEV = {
   warning: { Icon: TriangleAlert, cls: 'text-amber-400' },
   info: { Icon: Info, cls: 'text-sky-400' },
 };
+const SEVERITY_OPTIONS = ['error', 'warning', 'info', 'off'];
+const FIX_LABEL = { autoAssignCanId: 'Auto-number', autoAssignIp: 'Auto-assign' };
 
 function SevIcon({ severity, size = 14 }) {
   const { Icon, cls } = SEV[severity] ?? SEV.info;
   return <Icon size={size} className={cls} />;
 }
 
-const FIX_LABEL = { autoAssignCanId: 'Auto-number', autoAssignIp: 'Auto-assign' };
-
 export default function DrcPanel({ onClose }) {
   const { violations, counts } = useDrc();
   const setSelection = useDiagramStore((s) => s.setSelection);
-  const toggleDrcRule = useDiagramStore((s) => s.toggleDrcRule);
+  const setDrcRuleSeverity = useDiagramStore((s) => s.setDrcRuleSeverity);
   const autoAssignCanIds = useDiagramStore((s) => s.autoAssignCanIds);
   const autoAssignIps = useDiagramStore((s) => s.autoAssignIps);
+  const overrides = useDiagramStore((s) => s.settings.drc?.severityOverrides) ?? {};
   const disabledRules = useDiagramStore((s) => s.settings.drc?.disabledRules) ?? [];
   const [showRules, setShowRules] = useState(false);
+  const [cursor, setCursor] = useState(0);
 
   const focus = (v) => {
     setSelection({ nodes: v.nodes ?? [], edges: v.edges ?? [] });
     canvasBridge.focusElements?.(v.nodes ?? []);
   };
 
+  const step = (dir) => {
+    if (!violations.length) return;
+    const next = ((cursor + dir) % violations.length + violations.length) % violations.length;
+    setCursor(next);
+    focus(violations[next]);
+  };
+
   const runFix = (kind) => {
     if (kind === 'autoAssignCanId') autoAssignCanIds();
     else if (kind === 'autoAssignIp') autoAssignIps();
   };
+
+  const ruleValue = (rule) =>
+    overrides[rule.id] ?? (disabledRules.includes(rule.id) ? 'off' : rule.severity);
 
   return (
     <div className="pointer-events-auto absolute bottom-4 left-4 z-10 flex max-h-[60vh] w-72 flex-col rounded-lg border border-edge bg-surface-1 shadow-xl">
@@ -75,6 +89,26 @@ export default function DrcPanel({ onClose }) {
           </span>
         )}
         <div className="ml-auto flex items-center gap-1">
+          {!showRules && violations.length > 1 && (
+            <>
+              <button
+                onClick={() => step(-1)}
+                aria-label="Previous issue"
+                title="Previous issue"
+                className="rounded p-1 text-neutral-400 hover:bg-surface-2 hover:text-silver"
+              >
+                <ChevronUp size={15} />
+              </button>
+              <button
+                onClick={() => step(1)}
+                aria-label="Next issue"
+                title="Next issue"
+                className="rounded p-1 text-neutral-400 hover:bg-surface-2 hover:text-silver"
+              >
+                <ChevronDown size={15} />
+              </button>
+            </>
+          )}
           <button
             onClick={() => setShowRules((v) => !v)}
             aria-label={showRules ? 'Back to issues' : 'Configure rules'}
@@ -96,29 +130,35 @@ export default function DrcPanel({ onClose }) {
       <div className="min-h-0 flex-1 overflow-y-auto">
         {showRules ? (
           <ul className="divide-y divide-edge/60">
-            {DRC_RULES.map((rule) => {
-              const enabled = !disabledRules.includes(rule.id);
-              return (
-                <li key={rule.id} className="flex items-start gap-2 px-3 py-2">
-                  <input
-                    type="checkbox"
-                    checked={enabled}
-                    onChange={() => toggleDrcRule(rule.id)}
-                    aria-label={`Toggle ${rule.label}`}
-                    className="mt-0.5 cursor-pointer accent-silver"
-                  />
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-1.5">
-                      <SevIcon severity={rule.severity} size={12} />
-                      <span className={`text-xs font-semibold ${enabled ? 'text-silver' : 'text-neutral-500'}`}>
-                        {rule.label}
-                      </span>
-                    </div>
-                    <p className="mt-0.5 text-[11px] leading-snug text-neutral-500">{rule.description}</p>
+            {DRC_RULES.map((rule) => (
+              <li key={rule.id} className="flex items-start gap-2 px-3 py-2">
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-1.5">
+                    <SevIcon severity={ruleValue(rule) === 'off' ? rule.severity : ruleValue(rule)} size={12} />
+                    <span
+                      className={`text-xs font-semibold ${
+                        ruleValue(rule) === 'off' ? 'text-neutral-500' : 'text-silver'
+                      }`}
+                    >
+                      {rule.label}
+                    </span>
                   </div>
-                </li>
-              );
-            })}
+                  <p className="mt-0.5 text-[11px] leading-snug text-neutral-500">{rule.description}</p>
+                </div>
+                <select
+                  value={ruleValue(rule)}
+                  onChange={(e) => setDrcRuleSeverity(rule.id, e.target.value, rule.severity)}
+                  aria-label={`Severity for ${rule.label}`}
+                  className="mt-0.5 shrink-0 rounded border border-edge bg-surface-0 px-1 py-0.5 text-[11px] text-silver"
+                >
+                  {SEVERITY_OPTIONS.map((o) => (
+                    <option key={o} value={o}>
+                      {o[0].toUpperCase() + o.slice(1)}
+                    </option>
+                  ))}
+                </select>
+              </li>
+            ))}
           </ul>
         ) : violations.length === 0 ? (
           <div className="flex flex-col items-center justify-center gap-2 px-3 py-8 text-center">
@@ -128,9 +168,15 @@ export default function DrcPanel({ onClose }) {
         ) : (
           <ul className="divide-y divide-edge/60">
             {violations.map((v, i) => (
-              <li key={`${v.ruleId}-${i}`} className="flex items-start hover:bg-surface-2">
+              <li
+                key={`${v.ruleId}-${i}`}
+                className={`flex items-start ${i === cursor ? 'bg-surface-2/60' : 'hover:bg-surface-2'}`}
+              >
                 <button
-                  onClick={() => focus(v)}
+                  onClick={() => {
+                    setCursor(i);
+                    focus(v);
+                  }}
                   className="flex min-w-0 flex-1 items-start gap-2 px-3 py-2 text-left"
                 >
                   <span className="mt-0.5 shrink-0">

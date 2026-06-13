@@ -1,6 +1,7 @@
-// §10 Sheet view root — Components table + Wires table (lazy-loaded).
+// §10 Sheet view root — Components table + Wires table + Validation (lazy-loaded).
 import ComponentTable from './ComponentTable';
 import WireTable from './WireTable';
+import ValidationTable from './ValidationTable';
 
 export default function SheetView() {
   return (
@@ -13,6 +14,10 @@ export default function SheetView() {
         <section>
           <h2 className="mb-2 font-heading text-lg font-semibold text-silver">Wires</h2>
           <WireTable />
+        </section>
+        <section>
+          <h2 className="mb-2 font-heading text-lg font-semibold text-silver">Validation</h2>
+          <ValidationTable />
         </section>
       </div>
     </div>

@@ -91,6 +91,19 @@ describe('DRC engine', () => {
     expect(over[0].edges.sort()).toEqual(['e1', 'e2']);
   });
 
+  it('applies per-rule severity overrides (and off = skip)', () => {
+    const k = node('krakenx60', 'K', { canId: 1, ports: [port('k-can', 'CAN')] });
+    // unconnected-can defaults to warning; override to error
+    const res = runDrc({ nodes: [k], edges: [] }, { severityOverrides: { 'unconnected-can': 'error' } });
+    const v = findIds(res, 'unconnected-can');
+    expect(v).toHaveLength(1);
+    expect(v[0].severity).toBe('error');
+
+    // 'off' removes it entirely
+    const res2 = runDrc({ nodes: [k], edges: [] }, { severityOverrides: { 'unconnected-can': 'off' } });
+    expect(findIds(res2, 'unconnected-can')).toHaveLength(0);
+  });
+
   it('flags missing CAN ID and respects disabled rules', () => {
     const k = node('krakenx60', 'K', { canId: null, ports: [port('k-can', 'CAN')] });
     const res = runDrc({ nodes: [k], edges: [] });

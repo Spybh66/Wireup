@@ -35,20 +35,30 @@ function buildContext({ nodes, edges, customDefinitions = [] }) {
   return { nodes, edges, nodeById, defOf, portEdges, portsOfType, typeEdges };
 }
 
-// Run all enabled rules. `disabledRules` is an array/Set of rule ids to skip.
-export function runDrc(state, disabledRules = []) {
-  const disabled = new Set(disabledRules);
+// Run all enabled rules.
+//   opts — either an array/Set of disabled rule ids (back-compat) or
+//          { disabledRules, severityOverrides } where severityOverrides maps a
+//          rule id to 'error' | 'warning' | 'info' | 'off'.
+// Each violation's severity is the effective severity (override ?? rule default).
+export function runDrc(state, opts = {}) {
+  const norm = Array.isArray(opts) || opts instanceof Set ? { disabledRules: opts } : opts;
+  const disabled = new Set(norm.disabledRules ?? []);
+  const overrides = norm.severityOverrides ?? {};
   const ctx = buildContext(state);
   const violations = [];
   for (const rule of DRC_RULES) {
-    if (disabled.has(rule.id)) continue;
+    const sev = overrides[rule.id] ?? rule.severity;
+    if (sev === 'off' || disabled.has(rule.id)) continue;
     let found;
     try {
       found = rule.run(ctx) || [];
     } catch {
       found = []; // a buggy rule must never break the whole check
     }
-    for (const v of found) violations.push(v);
+    for (const v of found) {
+      v.severity = sev; // effective severity (may be overridden)
+      violations.push(v);
+    }
   }
   violations.sort(
     (a, b) =>

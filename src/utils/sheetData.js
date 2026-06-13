@@ -1,6 +1,29 @@
 // Builds tabular rows for the Sheet view and exports from store state.
 import { getDefinition } from '../data/componentLibrary';
 import { typeGroup, typeColor } from '../data/wireTypes';
+import { runDrc } from './drc/engine';
+import { DRC_RULES } from './drc/rules';
+
+const RULE_LABEL = new Map(DRC_RULES.map((r) => [r.id, r.label]));
+
+// Design-rule-check rows for the Sheet view / exports.
+export function buildValidationRows(state) {
+  const { nodes, edges, customDefinitions, settings } = state;
+  const { violations } = runDrc(
+    { nodes, edges, customDefinitions },
+    {
+      disabledRules: settings?.drc?.disabledRules ?? [],
+      severityOverrides: settings?.drc?.severityOverrides ?? {},
+    }
+  );
+  const labelOf = (id) => nodes.find((n) => n.id === id)?.data.label ?? id;
+  return violations.map((v) => ({
+    severity: v.severity,
+    rule: RULE_LABEL.get(v.ruleId) ?? v.ruleId,
+    message: v.message,
+    elements: (v.nodes ?? []).map(labelOf).join(', '),
+  }));
+}
 
 export function buildComponentRows(state) {
   const { nodes, customDefinitions } = state;

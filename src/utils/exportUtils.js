@@ -4,7 +4,7 @@ import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import * as XLSX from 'xlsx';
 import { sanitizeFilename, downloadBlob } from './saveLoadUtils';
-import { buildComponentRows, buildWireRows } from './sheetData';
+import { buildComponentRows, buildWireRows, buildValidationRows } from './sheetData';
 
 function downloadDataUrl(dataUrl, filename) {
   const a = document.createElement('a');
@@ -135,6 +135,10 @@ const wireMatrix = (state) =>
     r.layer,
   ]);
 
+const VALIDATION_HEADERS = ['Severity', 'Rule', 'Issue', 'Components'];
+const validationMatrix = (state) =>
+  buildValidationRows(state).map((r) => [r.severity, r.rule, r.message, r.elements]);
+
 // §11 / decision 24 — two CSV files, downloaded sequentially.
 export function exportSheetCSV(state, name) {
   const base = sanitizeFilename(name);
@@ -144,6 +148,13 @@ export function exportSheetCSV(state, name) {
     const wires = toCSV(WIRE_HEADERS, wireMatrix(state));
     downloadBlob(new Blob([wires], { type: 'text/csv;charset=utf-8' }), `${base}-wires.csv`);
   }, 150);
+  const issues = validationMatrix(state);
+  if (issues.length) {
+    setTimeout(() => {
+      const v = toCSV(VALIDATION_HEADERS, issues);
+      downloadBlob(new Blob([v], { type: 'text/csv;charset=utf-8' }), `${base}-validation.csv`);
+    }, 300);
+  }
 }
 
 export function exportSheetExcel(state, name) {
@@ -152,6 +163,11 @@ export function exportSheetExcel(state, name) {
   const wireSheet = XLSX.utils.aoa_to_sheet([WIRE_HEADERS, ...wireMatrix(state)]);
   XLSX.utils.book_append_sheet(wb, compSheet, 'Components');
   XLSX.utils.book_append_sheet(wb, wireSheet, 'Wires');
+  const issues = validationMatrix(state);
+  if (issues.length) {
+    const vSheet = XLSX.utils.aoa_to_sheet([VALIDATION_HEADERS, ...issues]);
+    XLSX.utils.book_append_sheet(wb, vSheet, 'Validation');
+  }
   XLSX.writeFile(wb, `${sanitizeFilename(name)}.xlsx`);
 }
 
@@ -175,5 +191,17 @@ export function exportSheetPDF(state, name) {
     styles: { fontSize: 8 },
     headStyles: { fillColor: [35, 35, 38] },
   });
+  const issues = validationMatrix(state);
+  if (issues.length) {
+    const afterWires = doc.lastAutoTable.finalY + 28;
+    doc.text('Validation', 40, afterWires);
+    autoTable(doc, {
+      startY: afterWires + 12,
+      head: [VALIDATION_HEADERS],
+      body: issues,
+      styles: { fontSize: 8 },
+      headStyles: { fillColor: [35, 35, 38] },
+    });
+  }
   doc.save(`${sanitizeFilename(name)}.pdf`);
 }
