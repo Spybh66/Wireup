@@ -212,6 +212,7 @@ const useDiagramStore = create(
             type,
             layerId: layerIdForType(layers, type),
             color: null,
+            color2: null,
             wireGauge: srcPort.gauge ?? defaultGaugeForType(type),
             wireFittingFrom: srcPort.fitting ?? defaultFittingForType(type),
             wireFittingTo: tgtPort?.fitting ?? defaultFittingForType(type),

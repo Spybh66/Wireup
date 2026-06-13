@@ -12,8 +12,10 @@ function WireEdge({ id, selected }) {
   if (!route || !edge) return null; // hidden layer or missing route
 
   const color = route.color;
+  const color2 = route.color2;
   const showLabel = showWireLabels || selected;
   const labelPos = route.labelPos ?? route.midpoint;
+  const strokeW = selected ? 3 : 2;
 
   return (
     <>
@@ -28,11 +30,25 @@ function WireEdge({ id, selected }) {
         path={route.d}
         style={{
           stroke: color,
-          strokeWidth: selected ? 3 : 2,
+          strokeWidth: strokeW,
           fill: 'none',
           strokeDasharray: route.fallback ? '6 4' : undefined,
         }}
       />
+      {/* striped overlay — second color dashed on top of the solid base, giving
+          a candy-stripe (PWR red/black, CAN yellow/green). Skipped for solid
+          wires (color2 == null) and for fallback dashed routes. */}
+      {color2 && !route.fallback && (
+        <BaseEdge
+          path={route.d}
+          style={{
+            stroke: color2,
+            strokeWidth: strokeW,
+            fill: 'none',
+            strokeDasharray: '7 7',
+          }}
+        />
+      )}
       {/* fat invisible hit area for easy selection */}
       <path
         d={route.d}

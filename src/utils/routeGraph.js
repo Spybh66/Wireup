@@ -3,7 +3,7 @@
 // occupancy lattice with crossing hops (§6.3) and label collision layout.
 import { getDefinition } from '../data/componentLibrary';
 import { portPosition, nodeRect } from './geometry';
-import { typeColor } from '../data/wireTypes';
+import { typeColor, typeColor2 } from '../data/wireTypes';
 import {
   computeRoute,
   detectHops,
@@ -168,6 +168,7 @@ export function computeAllRoutes({
       points,
       fallback,
       color: e.data.color ?? typeColor(e.data.type),
+      color2: e.data.color2 ?? typeColor2(e.data.type),
       type: e.data.type,
       label: e.data.label,
     });
@@ -193,6 +194,7 @@ export function computeAllRoutes({
       labelPos: labelPos.get(o.id) ?? { x: anchor.x, y: anchor.y },
       fallback: m.fallback,
       color: m.color,
+      color2: m.color2,
       type: m.type,
     });
   }

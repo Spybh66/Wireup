@@ -4,9 +4,11 @@
 export const PORT_TYPES = ['PWR', 'CAN', 'ETH', 'USB', 'DATA'];
 
 // §3.1 — default color (hex), label group, default layer name per type.
+// `color2` (optional) makes a striped two-tone wire: PWR = red/black,
+// CAN = yellow/green (the FRC wiring convention).
 export const WIRE_TYPE_INFO = {
-  PWR: { color: '#ef4444', group: 'PWR', layer: 'Power' },
-  CAN: { color: '#eab308', group: 'CAN', layer: 'CAN Bus' },
+  PWR: { color: '#ef4444', color2: '#1a1a1a', group: 'PWR', layer: 'Power' },
+  CAN: { color: '#eab308', color2: '#22c55e', group: 'CAN', layer: 'CAN Bus' },
   ETH: { color: '#3b82f6', group: 'ETH', layer: 'Ethernet' },
   USB: { color: '#a855f7', group: 'USB', layer: 'USB' },
   DATA: { color: '#9ca3af', group: 'DATA', layer: 'Data' },
@@ -14,6 +16,11 @@ export const WIRE_TYPE_INFO = {
 
 export function typeColor(type) {
   return WIRE_TYPE_INFO[type]?.color ?? '#9ca3af';
+}
+
+// Secondary stripe color, or null for solid (single-color) wires.
+export function typeColor2(type) {
+  return WIRE_TYPE_INFO[type]?.color2 ?? null;
 }
 
 export function typeGroup(type) {

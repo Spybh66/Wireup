@@ -55,9 +55,12 @@ for (const n of nodes) {
   }
 }
 
-// wires
+// wires (solid base, plus a dashed second-color stripe for PWR/CAN)
 for (const [, rt] of routes) {
   body += `<path d="${rt.d}" fill="none" stroke="${rt.color}" stroke-width="2.5"/>`;
+  if (rt.color2) {
+    body += `<path d="${rt.d}" fill="none" stroke="${rt.color2}" stroke-width="2.5" stroke-dasharray="7 7"/>`;
+  }
 }
 // wire labels
 for (const e of edges) {
