@@ -97,17 +97,19 @@ function Flow({ onOpenNodeConfig }) {
       const byId = new Map(prev.map((n) => [n.id, n]));
       return storeNodes.map((n) => {
         const old = byId.get(n.id);
+        const isAnnotation = n.type === 'note' || n.type === 'zone';
         return {
           ...n,
           draggable: !n.data.locked,
           selected: selection.nodes.includes(n.id),
+          hidden: isAnnotation && !settings.annotationsVisible,
           measured: old?.measured,
           width: old?.width,
           height: old?.height,
         };
       });
     });
-  }, [storeNodes, selection.nodes, setRfNodes]);
+  }, [storeNodes, selection.nodes, settings.annotationsVisible, setRfNodes]);
 
   // ---- routing (from live RF node positions so wires follow drags) ----
   // Routing is expensive, so gate it on a structural signature of the nodes
@@ -250,7 +252,9 @@ function Flow({ onOpenNodeConfig }) {
   );
 
   const onNodeDoubleClick = useCallback(
-    (_e, node) => onOpenNodeConfig(node.id),
+    (_e, node) => {
+      if (node.type === 'component') onOpenNodeConfig(node.id); // annotations edit inline
+    },
     [onOpenNodeConfig]
   );
 
@@ -264,7 +268,8 @@ function Flow({ onOpenNodeConfig }) {
     (e) => {
       e.preventDefault();
       const definitionId = e.dataTransfer.getData('application/wireup-definition');
-      if (!definitionId) return;
+      const templateId = e.dataTransfer.getData('application/wireup-template');
+      if (!definitionId && !templateId) return;
       let pos = screenToFlowPosition({ x: e.clientX, y: e.clientY });
       const { snapToGrid, gridSize } = useDiagramStore.getState().settings;
       if (snapToGrid) {
@@ -273,7 +278,8 @@ function Flow({ onOpenNodeConfig }) {
           y: Math.round(pos.y / gridSize) * gridSize,
         };
       }
-      useDiagramStore.getState().addNode(definitionId, pos);
+      if (templateId) useDiagramStore.getState().instantiateTemplate(templateId, pos);
+      else useDiagramStore.getState().addNode(definitionId, pos);
     },
     [screenToFlowPosition]
   );

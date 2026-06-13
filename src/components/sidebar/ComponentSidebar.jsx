@@ -33,11 +33,13 @@ export default function ComponentSidebar() {
   const selectionCount = useDiagramStore((s) => s.selection.nodes.length);
   const saveTemplate = useDiagramStore((s) => s.saveTemplate);
   const removeTemplate = useDiagramStore((s) => s.removeTemplate);
-  const instantiateTemplate = useDiagramStore((s) => s.instantiateTemplate);
+  const renameTemplate = useDiagramStore((s) => s.renameTemplate);
+  const [editingId, setEditingId] = useState(null);
 
+  // Save the current selection, then drop the new row straight into rename mode.
   const onSaveTemplate = () => {
-    const name = window.prompt('Name this subsystem:');
-    if (name !== null) saveTemplate(name);
+    const id = saveTemplate();
+    if (id) setEditingId(id);
   };
 
   const [rawSearch, setRawSearch] = useState('');
@@ -111,29 +113,57 @@ export default function ComponentSidebar() {
               <span className="ml-auto text-neutral-600">{templates.length}</span>
             </div>
             <div className="ml-1">
-              {templates.map((t) => (
-                <div
-                  key={t.id}
-                  className="group flex items-center gap-2 rounded px-2 py-1.5 text-sm text-silver hover:bg-surface-2"
-                >
-                  <button
-                    onClick={() => instantiateTemplate(t.id)}
-                    className="flex min-w-0 flex-1 items-center gap-2 text-left"
-                    title={`Add "${t.name}" (${t.nodes.length} components)`}
+              {templates.map((t) => {
+                const editing = editingId === t.id;
+                return (
+                  <div
+                    key={t.id}
+                    draggable={!editing}
+                    onDragStart={(e) => {
+                      e.dataTransfer.setData('application/wireup-template', t.id);
+                      e.dataTransfer.effectAllowed = 'move';
+                    }}
+                    className="group flex items-center gap-2 rounded px-2 py-1.5 text-sm text-silver hover:bg-surface-2"
+                    title={editing ? '' : `Drag "${t.name}" onto the canvas (${t.nodes.length} components)`}
                   >
-                    <Boxes size={20} className="shrink-0 text-neutral-400" />
-                    <span className="truncate">{t.name}</span>
-                    <span className="ml-auto shrink-0 text-xs text-neutral-600">{t.nodes.length}</span>
-                  </button>
-                  <button
-                    onClick={() => removeTemplate(t.id)}
-                    aria-label={`Delete ${t.name}`}
-                    className="text-neutral-500 opacity-0 hover:text-red-400 group-hover:opacity-100"
-                  >
-                    <Trash2 size={14} />
-                  </button>
-                </div>
-              ))}
+                    <Boxes size={20} className="shrink-0 cursor-grab text-neutral-400 active:cursor-grabbing" />
+                    {editing ? (
+                      <input
+                        autoFocus
+                        defaultValue={t.name}
+                        onFocus={(e) => e.target.select()}
+                        onBlur={(e) => {
+                          renameTemplate(t.id, e.target.value);
+                          setEditingId(null);
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') e.currentTarget.blur();
+                          if (e.key === 'Escape') setEditingId(null);
+                        }}
+                        className="min-w-0 flex-1 rounded border border-edge bg-surface-0 px-1 py-0.5 text-silver outline-none focus:border-silver"
+                      />
+                    ) : (
+                      <span
+                        onDoubleClick={() => setEditingId(t.id)}
+                        className="min-w-0 flex-1 cursor-grab truncate"
+                        title={`${t.name} (double-click to rename)`}
+                      >
+                        {t.name}
+                      </span>
+                    )}
+                    {!editing && (
+                      <span className="shrink-0 text-xs text-neutral-600">{t.nodes.length}</span>
+                    )}
+                    <button
+                      onClick={() => removeTemplate(t.id)}
+                      aria-label={`Delete ${t.name}`}
+                      className="shrink-0 text-neutral-500 opacity-0 hover:text-red-400 group-hover:opacity-100"
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
+                );
+              })}
             </div>
           </div>
         )}

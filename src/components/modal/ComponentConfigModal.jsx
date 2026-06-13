@@ -243,6 +243,22 @@ export default function ComponentConfigModal({ nodeId, onClose, onSelectEdge }) 
                             <option key={f} value={f}>{f}</option>
                           ))}
                         </select>
+                        {p.type === 'PWR' && (
+                          <input
+                            type="number"
+                            min={0}
+                            value={p.breaker ?? ''}
+                            onChange={(e) =>
+                              updatePort(p.id, {
+                                breaker: e.target.value === '' ? null : Math.max(0, Number(e.target.value)),
+                              })
+                            }
+                            placeholder="breaker A"
+                            title="Breaker rating (A) protecting this output — checked against connected wire gauge"
+                            aria-label="Port breaker amps"
+                            className="w-20 rounded border border-edge bg-surface-0 px-2 py-1 text-sm text-silver"
+                          />
+                        )}
                       </>
                     )}
                     <button

@@ -1,6 +1,6 @@
 // §7 Layer panel — floating bottom-left, visible only on the Diagram tab.
 import { useState } from 'react';
-import { Eye, EyeOff, Plus, Trash2, Layers } from 'lucide-react';
+import { Eye, EyeOff, Plus, Trash2, Layers, StickyNote } from 'lucide-react';
 import useDiagramStore from '../../store/diagramStore';
 
 function LayerRow({ layer }) {
@@ -67,6 +67,8 @@ function LayerRow({ layer }) {
 export default function LayerPanel() {
   const layers = useDiagramStore((s) => s.layers);
   const addLayer = useDiagramStore((s) => s.addLayer);
+  const annotationsVisible = useDiagramStore((s) => s.settings.annotationsVisible);
+  const updateSettings = useDiagramStore((s) => s.updateSettings);
   const [open, setOpen] = useState(true);
 
   return (
@@ -83,6 +85,19 @@ export default function LayerPanel() {
           {layers.map((l) => (
             <LayerRow key={l.id} layer={l} />
           ))}
+          {/* Annotations (notes + zones) — not a wire layer, toggles their visibility */}
+          <div className="flex items-center gap-2 py-1">
+            <button
+              onClick={() => updateSettings({ annotationsVisible: !annotationsVisible })}
+              aria-label={annotationsVisible ? 'Hide annotations' : 'Show annotations'}
+              className="text-neutral-300 hover:text-silver"
+            >
+              {annotationsVisible ? <Eye size={15} /> : <EyeOff size={15} className="text-neutral-600" />}
+            </button>
+            <span className={`flex flex-1 items-center gap-1 text-sm ${annotationsVisible ? 'text-silver' : 'text-neutral-500'}`}>
+              <StickyNote size={12} /> Annotations
+            </span>
+          </div>
           <button
             onClick={addLayer}
             className="mt-1 flex w-full items-center justify-center gap-1 rounded border border-edge bg-surface-2 py-1 text-xs text-silver hover:bg-surface-0"

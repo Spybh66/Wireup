@@ -50,6 +50,59 @@ body {
   color: #555;
 }
 
+/*
+ * GPU-compositing black-out mitigation (Chromium bug)
+ *
+ * Two symptoms share the same root cause: Chromium allocates a new GPU
+ * compositing layer for any element that receives a CSS transform (React Flow
+ * sets transform:matrix(…) on .react-flow__viewport every frame), and again
+ * for .react-flow__nodesselection when it first appears (rubber-band with 2+
+ * nodes). If those layers are not pre-promoted Chromium may initialise them
+ * to opaque black before the first composited frame is ready, producing a
+ * full-screen black flash.
+ *
+ * Fix A — pre-promote the viewport + renderer so Chromium never has to
+ *   promote them reactively (reactive promotion = the frame that triggers it
+ *   paints black). translateZ(0) + backface-visibility:hidden are the
+ *   lightest-weight, universally-supported GPU-promotion hints.
+ *
+ * Fix B — give .react-flow__nodesselection its own stable layer before it
+ *   becomes visible, again with translateZ(0). This prevents the
+ *   "appears during rubber-band → black frame" symptom. We also explicitly
+ *   set background:transparent so the layer is never filled black.
+ *
+ * Fix C — isolation:isolate on #root creates a new stacking context so that
+ *   any composited overlay (modals, portals) cannot bleed into the RF canvas
+ *   layer stack during tab remounts.
+ */
+
+/* Fix A: pre-promote the two main React Flow compositing surfaces */
+.react-flow__viewport {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.react-flow__renderer {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+/* Fix B: stable layer for the nodes-selection overlay; explicit transparent
+   background ensures the layer is never initialised to opaque black */
+.react-flow__nodesselection {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+/* Fix C: isolate the app root so portal/modal layers can't composite over
+   the React Flow canvas during tab switches */
+#root {
+  isolation: isolate;
+}
+
 /* Rubber-band selection rectangle — translucent, never an opaque fill */
 .react-flow__selection,
 .react-flow__nodesselection-rect {

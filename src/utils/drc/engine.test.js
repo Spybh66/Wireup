@@ -91,13 +91,16 @@ describe('DRC engine', () => {
     expect(over[0].edges.sort()).toEqual(['e1', 'e2']);
   });
 
-  it('flags an undersized power wire gauge for its current', () => {
-    const a = node('pdh', 'PDH', { ports: [port('a', 'PWR', 'CH0', 'right')] });
+  it('flags an undersized power wire gauge for the port breaker', () => {
+    // Breaker rating lives on the PDH output port; wires are checked against it.
+    const a = node('pdh', 'PDH', {
+      ports: [{ ...port('a', 'PWR', 'CH0', 'right'), breaker: 40 }],
+    });
     const b = node('krakenx60', 'M', { ports: [port('b', 'PWR')] });
     const ok = edge('ok', a.id, 'a', b.id, 'b', 'PWR');
-    ok.data = { ...ok.data, label: 'PWR1', wireGauge: '12 AWG', wireAmps: 40 }; // 12awg ~41A ok
+    ok.data = { ...ok.data, label: 'PWR1', wireGauge: '12 AWG' }; // 12awg ~41A ok on 40A
     const bad = edge('bad', a.id, 'a', b.id, 'b', 'PWR');
-    bad.data = { ...bad.data, label: 'PWR2', wireGauge: '18 AWG', wireAmps: 40 }; // 18awg ~16A
+    bad.data = { ...bad.data, label: 'PWR2', wireGauge: '18 AWG' }; // 18awg ~16A on 40A
     const res = runDrc({ nodes: [a, b], edges: [ok, bad] });
     const g = findIds(res, 'undersized-gauge');
     expect(g).toHaveLength(1);

@@ -36,6 +36,7 @@ const DEFAULT_SETTINGS = {
   showPortLabels: true,
   showWireLabels: false,
   routingMode: 'auto', // 'auto' = A* route new wires; 'manual' = straight, user-shaped
+  annotationsVisible: true, // notes + zones layer visibility
   // Design Rule Check — disabled rule ids + per-rule severity overrides
   // ('error' | 'warning' | 'info' | 'off').
   drc: { disabledRules: [], severityOverrides: {} },
@@ -182,6 +183,17 @@ const useDiagramStore = create(
         return node.id;
       },
 
+      // Resize/reposition an annotation (NodeResizer gives the new top-left + size).
+      setAnnotationBox: (id, { x, y, width, height }) =>
+        set((s) => ({
+          nodes: s.nodes.map((n) =>
+            n.id === id
+              ? { ...n, position: { x, y }, data: { ...n.data, width: Math.round(width), height: Math.round(height) } }
+              : n
+          ),
+          dirty: true,
+        })),
+
       updateNodeData: (id, patch) =>
         set((s) => ({
           nodes: s.nodes.map((n) =>
@@ -260,7 +272,6 @@ const useDiagramStore = create(
             wireGauge: srcPort.gauge ?? defaultGaugeForType(type),
             wireFittingFrom: srcPort.fitting ?? defaultFittingForType(type),
             wireFittingTo: tgtPort?.fitting ?? defaultFittingForType(type),
-            wireAmps: null, // breaker / continuous current rating (A), for gauge check
             label,
             labelEdited: false,
             length: null,
@@ -383,6 +394,15 @@ const useDiagramStore = create(
         persistTemplates(templates);
         set({ templates });
         get().addToast(`Saved "${tpl.name}"`);
+        return tpl.id;
+      },
+
+      renameTemplate: (id, name) => {
+        const clean = name?.trim();
+        if (!clean) return;
+        const templates = get().templates.map((t) => (t.id === id ? { ...t, name: clean } : t));
+        persistTemplates(templates);
+        set({ templates });
       },
 
       removeTemplate: (id) => {

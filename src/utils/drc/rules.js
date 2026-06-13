@@ -235,21 +235,27 @@ export const DRC_RULES = [
     id: 'undersized-gauge',
     label: 'Undersized wire gauge',
     description:
-      'A power wire’s gauge is too small for its breaker / current rating.',
+      'A power wire’s gauge is too small for the breaker protecting it (set the breaker on the PDH/MPM port).',
     severity: 'warning',
     run(ctx) {
       const out = [];
+      const breakerOf = (nodeId, portId) => {
+        const node = ctx.nodeById.get(nodeId);
+        const port = node?.data.ports.find((p) => p.id === portId);
+        const v = Number(port?.breaker);
+        return Number.isFinite(v) && v > 0 ? v : 0;
+      };
       for (const e of ctx.edges) {
         if (e.data.type !== 'PWR') continue;
-        const amps = Number(e.data.wireAmps);
-        if (!Number.isFinite(amps) || amps <= 0) continue;
+        const amps = Math.max(breakerOf(e.source, e.sourceHandle), breakerOf(e.target, e.targetHandle));
+        if (amps <= 0) continue;
         const cap = ampacityForGauge(e.data.wireGauge);
         if (cap == null || cap >= amps) continue;
         const rec = minGaugeForAmps(amps);
         out.push({
           ruleId: this.id,
           severity: this.severity,
-          message: `${e.data.label}: ${e.data.wireGauge} (~${cap} A) carries ${amps} A${rec ? ` — use ${rec}` : ''}`,
+          message: `${e.data.label}: ${e.data.wireGauge} (~${cap} A) on a ${amps} A breaker${rec ? ` — use ${rec}` : ''}`,
           nodes: [e.source, e.target],
           edges: [e.id],
         });

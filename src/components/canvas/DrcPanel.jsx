@@ -63,7 +63,7 @@ export default function DrcPanel({ onClose }) {
     overrides[rule.id] ?? (disabledRules.includes(rule.id) ? 'off' : rule.severity);
 
   return (
-    <div className="pointer-events-auto absolute bottom-4 left-4 z-10 flex max-h-[60vh] w-72 flex-col rounded-lg border border-edge bg-surface-1 shadow-xl">
+    <div className="pointer-events-auto absolute right-4 top-4 z-10 flex max-h-[70vh] w-72 flex-col rounded-lg border border-edge bg-surface-1 shadow-xl">
       <div className="flex items-center gap-2 border-b border-edge px-3 py-2">
         <ShieldCheck size={15} className="text-neutral-300" />
         <span className="text-xs font-semibold uppercase tracking-wide text-neutral-300">
