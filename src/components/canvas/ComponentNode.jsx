@@ -154,11 +154,14 @@ function ComponentNode({ id, data, selected }) {
         );
       })()}
 
-      {/* port labels */}
+      {/* port labels (+ fuse/breaker readout for power ports) */}
       {showPortLabels &&
         data.ports.map((p) => (
           <span key={`l-${p.id}`} style={labelStyle(p, snapFrac(p), labelScale[p.side])}>
             {p.label}
+            {p.type === 'PWR' && p.breaker != null && (
+              <span style={{ marginLeft: 3, color: '#fbbf24', fontWeight: 600 }}>{p.breaker}A</span>
+            )}
           </span>
         ))}
 

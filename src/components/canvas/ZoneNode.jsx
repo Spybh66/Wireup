@@ -21,7 +21,7 @@ function ZoneNode({ id, data, selected }) {
         onResizeEnd={() => useDiagramStore.temporal.getState().resume()}
       />
       <div
-        className="h-full w-full rounded-md border-2 border-dashed"
+        className="relative h-full w-full rounded-md border-2 border-dashed"
         style={{
           width: data.width ?? 240,
           height: data.height ?? 160,
@@ -33,9 +33,19 @@ function ZoneNode({ id, data, selected }) {
           value={data.text ?? ''}
           onChange={(e) => updateNodeData(id, { text: e.target.value })}
           placeholder="Zone"
-          className="nodrag nopan m-1 w-[calc(100%-0.5rem)] bg-transparent px-1 text-xs font-semibold uppercase tracking-wide outline-none"
+          className="nodrag nopan m-1 w-[calc(100%-2rem)] bg-transparent px-1 text-xs font-semibold uppercase tracking-wide outline-none"
           style={{ color }}
         />
+        {selected && (
+          <input
+            type="color"
+            value={color}
+            onChange={(e) => updateNodeData(id, { color: e.target.value })}
+            title="Zone color"
+            aria-label="Zone color"
+            className="nodrag nopan absolute right-1 top-1 h-5 w-5 cursor-pointer rounded border-0 bg-transparent p-0"
+          />
+        )}
       </div>
     </>
   );
