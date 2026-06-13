@@ -12,6 +12,7 @@ import {
   buildRoutingGrid,
   inflate,
   stubTip,
+  simplifyCollinear,
   PAD,
 } from './routingUtils';
 
@@ -154,7 +155,12 @@ export function computeAllRoutes({
   for (const { edge: e, source, target, visible } of jobs) {
     let points;
     let fallback = false;
-    if (dragging.has(e.source) || dragging.has(e.target)) {
+    if (e.data.manual) {
+      // Manual wire: straight segments through the user's waypoints. No A*,
+      // no obstacle avoidance — the user owns the path.
+      const wps = e.data.waypoints ?? [];
+      points = simplifyCollinear([source, ...wps, target]);
+    } else if (dragging.has(e.source) || dragging.has(e.target)) {
       points = cheapRoute(source, target);
     } else {
       const r = computeRoute({ source, target, obstacles, gridSize, grid });
@@ -197,6 +203,7 @@ export function computeAllRoutes({
       color2: m.color2,
       type: m.type,
       hopCount: hops.length,
+      points: o.points, // corner polyline — used to seed/edit manual waypoints
     });
   }
   return { routes: result, fallbacks };

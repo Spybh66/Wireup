@@ -1,13 +1,25 @@
-// §6.4 Edge renderer — routed path + hops, selection glow, optional label.
-import { memo } from 'react';
-import { BaseEdge, EdgeLabelRenderer } from '@xyflow/react';
+// §6.4 Edge renderer — routed path + hops, selection glow, optional label, and
+// manual waypoint editing (drag corners, insert on segments, double-click to
+// delete). Editing any wire converts it to a manual route through its waypoints.
+import { memo, useRef, useState } from 'react';
+import { BaseEdge, EdgeLabelRenderer, useReactFlow } from '@xyflow/react';
 import { useRouting } from './RoutingContext';
 import useDiagramStore from '../../store/diagramStore';
+import { buildSvgPath } from '../../utils/routingUtils';
+
+const MIN_SEG = 26; // only show an insert dot on segments at least this long (px)
 
 function WireEdge({ id, selected }) {
   const routing = useRouting();
   const showWireLabels = useDiagramStore((s) => s.settings.showWireLabels);
+  const snapToGrid = useDiagramStore((s) => s.settings.snapToGrid);
+  const gridSize = useDiagramStore((s) => s.settings.gridSize);
   const edge = useDiagramStore((s) => s.edges.find((e) => e.id === id));
+  const setEdgeWaypoints = useDiagramStore((s) => s.setEdgeWaypoints);
+  const { screenToFlowPosition } = useReactFlow();
+  const [draft, setDraft] = useState(null); // full control polyline during a drag
+  const dragRef = useRef(null);
+
   const route = routing.get(id);
   if (!route || !edge) return null; // hidden layer or missing route
 
@@ -17,17 +29,75 @@ function WireEdge({ id, selected }) {
   const labelPos = route.labelPos ?? route.midpoint;
   const strokeW = selected ? 3 : 2;
 
+  // Control polyline = endpoints + interior points. For a manual wire the
+  // interior points are its waypoints; for an auto wire we use the routed
+  // corners, so the first edit converts it to manual without changing shape.
+  const routePts = route.points ?? [];
+  const src = routePts[0];
+  const tgt = routePts[routePts.length - 1];
+  const interior = edge.data.manual ? (edge.data.waypoints ?? []) : routePts.slice(1, -1);
+  const controlPts = draft ?? (src && tgt ? [src, ...interior, tgt] : []);
+
+  // Path: from the live draft while dragging, otherwise the computed route.
+  const dPath = draft ? buildSvgPath(controlPts, []) : route.d;
+
+  const snap = (p) =>
+    snapToGrid
+      ? { x: Math.round(p.x / gridSize) * gridSize, y: Math.round(p.y / gridSize) * gridSize }
+      : { x: p.x, y: p.y };
+
+  // Begin dragging control-point `idx` of polyline `base`.
+  const beginDrag = (base, idx, ev) => {
+    ev.stopPropagation();
+    ev.preventDefault();
+    dragRef.current = { idx, pts: base };
+    setDraft(base);
+    const onMove = (e) => {
+      const fp = snap(screenToFlowPosition({ x: e.clientX, y: e.clientY }));
+      const pts = dragRef.current.pts.slice();
+      pts[dragRef.current.idx] = fp;
+      dragRef.current.pts = pts;
+      setDraft(pts);
+    };
+    const onUp = () => {
+      window.removeEventListener('pointermove', onMove);
+      window.removeEventListener('pointerup', onUp);
+      const pts = dragRef.current.pts;
+      dragRef.current = null;
+      setDraft(null);
+      setEdgeWaypoints(id, pts.slice(1, -1)); // strip endpoints → waypoints
+    };
+    window.addEventListener('pointermove', onMove);
+    window.addEventListener('pointerup', onUp);
+  };
+
+  const onWaypointDown = (i, ev) => beginDrag([src, ...interior, tgt], i, ev);
+
+  const onInsertDown = (segIdx, ev) => {
+    const base = [src, ...interior, tgt];
+    const a = base[segIdx];
+    const b = base[segIdx + 1];
+    const mid = snap({ x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 });
+    const pts = [...base.slice(0, segIdx + 1), mid, ...base.slice(segIdx + 1)];
+    beginDrag(pts, segIdx + 1, ev);
+  };
+
+  const onWaypointDelete = (i, ev) => {
+    ev.stopPropagation();
+    ev.preventDefault();
+    const wps = [src, ...interior, tgt].slice(1, -1); // current interior points
+    wps.splice(i - 1, 1); // remove the one at this control index
+    setEdgeWaypoints(id, wps);
+  };
+
   return (
     <>
       {/* glow underlay when selected */}
       {selected && (
-        <BaseEdge
-          path={route.d}
-          style={{ stroke: '#ffffff40', strokeWidth: 6, fill: 'none' }}
-        />
+        <BaseEdge path={dPath} style={{ stroke: '#ffffff40', strokeWidth: 6, fill: 'none' }} />
       )}
       <BaseEdge
-        path={route.d}
+        path={dPath}
         style={{
           stroke: color,
           strokeWidth: strokeW,
@@ -36,27 +106,82 @@ function WireEdge({ id, selected }) {
         }}
       />
       {/* striped overlay — second color dashed on top of the solid base, giving
-          a candy-stripe (PWR red/black, CAN yellow/green). Skipped for solid
+          a candy-stripe (PWR red/gray, CAN yellow/green). Skipped for solid
           wires (color2 == null) and for fallback dashed routes. */}
       {color2 && !route.fallback && (
         <BaseEdge
-          path={route.d}
-          style={{
-            stroke: color2,
-            strokeWidth: strokeW,
-            fill: 'none',
-            strokeDasharray: '7 7',
-          }}
+          path={dPath}
+          style={{ stroke: color2, strokeWidth: strokeW, fill: 'none', strokeDasharray: '7 7' }}
         />
       )}
       {/* fat invisible hit area for easy selection */}
       <path
-        d={route.d}
+        d={dPath}
         fill="none"
         stroke="transparent"
         strokeWidth={12}
         className="react-flow__edge-interaction"
       />
+
+      {/* waypoint editing handles (only when selected) */}
+      {selected && controlPts.length >= 2 && (
+        <EdgeLabelRenderer>
+          {/* insert dots at segment midpoints */}
+          {controlPts.slice(0, -1).map((a, k) => {
+            const b = controlPts[k + 1];
+            const len = Math.hypot(b.x - a.x, b.y - a.y);
+            if (len < MIN_SEG) return null;
+            const mx = (a.x + b.x) / 2;
+            const my = (a.y + b.y) / 2;
+            return (
+              <div
+                key={`ins-${k}`}
+                className="nodrag nopan"
+                onPointerDown={(ev) => onInsertDown(k, ev)}
+                title="Drag to add a bend"
+                style={{
+                  position: 'absolute',
+                  transform: `translate(-50%, -50%) translate(${mx}px, ${my}px)`,
+                  width: 9,
+                  height: 9,
+                  borderRadius: '50%',
+                  background: '#1a1a1c',
+                  border: `1.5px solid ${color}`,
+                  opacity: 0.7,
+                  cursor: 'copy',
+                  pointerEvents: 'all',
+                }}
+              />
+            );
+          })}
+          {/* draggable waypoint dots (interior control points) */}
+          {controlPts.slice(1, -1).map((p, j) => {
+            const i = j + 1;
+            return (
+              <div
+                key={`wp-${j}`}
+                className="nodrag nopan"
+                onPointerDown={(ev) => onWaypointDown(i, ev)}
+                onDoubleClick={(ev) => onWaypointDelete(i, ev)}
+                title="Drag to move · double-click to remove"
+                style={{
+                  position: 'absolute',
+                  transform: `translate(-50%, -50%) translate(${p.x}px, ${p.y}px)`,
+                  width: 11,
+                  height: 11,
+                  borderRadius: '50%',
+                  background: color,
+                  border: '2px solid #1a1a1c',
+                  boxShadow: '0 0 0 1px rgba(255,255,255,0.35)',
+                  cursor: 'grab',
+                  pointerEvents: 'all',
+                }}
+              />
+            );
+          })}
+        </EdgeLabelRenderer>
+      )}
+
       {showLabel && edge.data.label && (
         <EdgeLabelRenderer>
           <div

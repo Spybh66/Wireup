@@ -15,6 +15,7 @@ export default function WireConfigPanel({ edgeId, onClose }) {
   const nodes = useDiagramStore((s) => s.nodes);
   const updateEdgeData = useDiagramStore((s) => s.updateEdgeData);
   const flipEdge = useDiagramStore((s) => s.flipEdge);
+  const clearEdgeWaypoints = useDiagramStore((s) => s.clearEdgeWaypoints);
   if (!edge) return null;
 
   const d = edge.data;
@@ -55,6 +56,26 @@ export default function WireConfigPanel({ edgeId, onClose }) {
           >
             <ArrowLeftRight size={13} /> Flip
           </button>
+        </div>
+
+        <div className="flex items-center justify-between gap-2 rounded bg-surface-2 px-2 py-1.5 text-xs">
+          <span className="text-neutral-300">
+            Routing:{' '}
+            <span className="font-semibold text-silver">{d.manual ? 'Manual' : 'Auto'}</span>
+            {d.manual && d.waypoints?.length
+              ? ` · ${d.waypoints.length} pt${d.waypoints.length > 1 ? 's' : ''}`
+              : ''}
+          </span>
+          {d.manual ? (
+            <button
+              onClick={() => clearEdgeWaypoints(edgeId)}
+              className="shrink-0 rounded border border-edge bg-surface-0 px-2 py-0.5 text-neutral-300 hover:text-silver"
+            >
+              Reset to auto
+            </button>
+          ) : (
+            <span className="shrink-0 text-neutral-500">drag wire to edit</span>
+          )}
         </div>
 
         <label className="block">

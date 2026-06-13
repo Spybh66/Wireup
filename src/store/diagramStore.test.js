@@ -79,6 +79,38 @@ describe('diagramStore', () => {
     expect(result.error).toMatch(/newer version/);
   });
 
+  it('routing mode + manual waypoints', () => {
+    const s = useDiagramStore.getState();
+    const a = s.addNode('roborio2', { x: 0, y: 0 });
+    const b = s.addNode('pdh', { x: 400, y: 0 });
+    let st = useDiagramStore.getState();
+    const sp = st.nodes.find((n) => n.id === a).data.ports.find((p) => p.type === 'CAN');
+    const tp = st.nodes.find((n) => n.id === b).data.ports.find((p) => p.type === 'CAN');
+
+    // auto mode (default) → new wire is not manual
+    st.addEdge({ source: a, target: b, sourceHandle: sp.id, targetHandle: tp.id });
+    expect(useDiagramStore.getState().edges[0].data.manual).toBe(false);
+
+    // switch to manual mode → next wire is manual
+    useDiagramStore.getState().updateSettings({ routingMode: 'manual' });
+    st = useDiagramStore.getState();
+    st.addEdge({ source: a, target: b, sourceHandle: sp.id, targetHandle: tp.id });
+    expect(useDiagramStore.getState().edges[1].data.manual).toBe(true);
+
+    // setEdgeWaypoints marks any wire manual; clearEdgeWaypoints reverts to auto
+    const e0 = useDiagramStore.getState().edges[0].id;
+    useDiagramStore.getState().setEdgeWaypoints(e0, [{ x: 50, y: 60 }]);
+    let edge0 = useDiagramStore.getState().edges.find((e) => e.id === e0);
+    expect(edge0.data.manual).toBe(true);
+    expect(edge0.data.waypoints).toEqual([{ x: 50, y: 60 }]);
+    useDiagramStore.getState().clearEdgeWaypoints(e0);
+    edge0 = useDiagramStore.getState().edges.find((e) => e.id === e0);
+    expect(edge0.data.manual).toBe(false);
+    expect(edge0.data.waypoints).toEqual([]);
+
+    useDiagramStore.getState().updateSettings({ routingMode: 'auto' }); // avoid leaking mode
+  });
+
   it('moves deleted-layer wires to Power', () => {
     const s = useDiagramStore.getState();
     s.addLayer();

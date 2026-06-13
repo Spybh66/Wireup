@@ -8,6 +8,8 @@ import {
   Save,
   ChevronDown,
   Settings as SettingsIcon,
+  Zap,
+  Spline,
 } from 'lucide-react';
 import useDiagramStore from '../../store/diagramStore';
 import { useCanUndo, useCanRedo } from '../../store/useTemporal';
@@ -57,6 +59,8 @@ export default function Header({ onOpenSettings }) {
   const setActiveTab = useDiagramStore((s) => s.setActiveTab);
   const undo = useDiagramStore((s) => s.undo);
   const redo = useDiagramStore((s) => s.redo);
+  const routingMode = useDiagramStore((s) => s.settings.routingMode);
+  const updateSettings = useDiagramStore((s) => s.updateSettings);
   const newProject = useDiagramStore((s) => s.newProject);
   const loadProject = useDiagramStore((s) => s.loadProject);
   const markSaved = useDiagramStore((s) => s.markSaved);
@@ -152,6 +156,30 @@ export default function Header({ onOpenSettings }) {
           About
         </TabButton>
       </div>
+
+      {activeTab === 'diagram' && (
+        <div
+          className="ml-2 flex overflow-hidden rounded border border-edge"
+          title="New wires: Auto routes around components; Manual draws a straight line you shape with waypoints"
+        >
+          <button
+            onClick={() => updateSettings({ routingMode: 'auto' })}
+            className={`flex items-center gap-1 px-2 py-1 text-xs font-semibold ${
+              routingMode === 'auto' ? 'bg-surface-2 text-silver' : 'text-neutral-400 hover:text-silver'
+            }`}
+          >
+            <Zap size={13} /> Auto
+          </button>
+          <button
+            onClick={() => updateSettings({ routingMode: 'manual' })}
+            className={`flex items-center gap-1 px-2 py-1 text-xs font-semibold ${
+              routingMode === 'manual' ? 'bg-surface-2 text-silver' : 'text-neutral-400 hover:text-silver'
+            }`}
+          >
+            <Spline size={13} /> Manual
+          </button>
+        </div>
+      )}
 
       <div className="flex-1" />
 

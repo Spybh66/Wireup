@@ -35,6 +35,7 @@ const DEFAULT_SETTINGS = {
   gridVisible: true,
   showPortLabels: true,
   showWireLabels: false,
+  routingMode: 'auto', // 'auto' = A* route new wires; 'manual' = straight, user-shaped
 };
 
 const SETTINGS_KEY = 'wireup_settings';
@@ -174,7 +175,7 @@ const useDiagramStore = create(
 
       // ---------- edges ----------
       addEdge: (connection) => {
-        const { nodes, edges, layers, wireLabelTemplate, labelCounters, customDefinitions } = get();
+        const { nodes, edges, layers, wireLabelTemplate, labelCounters, customDefinitions, settings } = get();
         const { source, target, sourceHandle, targetHandle } = connection;
         if (source === target) {
           get().addToast("Can't connect a component to itself");
@@ -220,6 +221,8 @@ const useDiagramStore = create(
             labelEdited: false,
             length: null,
             notes: '',
+            manual: settings.routingMode === 'manual', // straight, user-shaped
+            waypoints: [],
           },
         };
         set({
@@ -233,6 +236,25 @@ const useDiagramStore = create(
         set((s) => ({
           edges: s.edges.map((e) =>
             e.id === id ? { ...e, data: { ...e.data, ...patch } } : e
+          ),
+          dirty: true,
+        })),
+
+      // Set a wire's manual waypoints (interior control points, world coords).
+      // Marks the wire manual so it routes straight through them instead of A*.
+      setEdgeWaypoints: (id, waypoints) =>
+        set((s) => ({
+          edges: s.edges.map((e) =>
+            e.id === id ? { ...e, data: { ...e.data, manual: true, waypoints } } : e
+          ),
+          dirty: true,
+        })),
+
+      // Drop manual waypoints and return a wire to automatic routing.
+      clearEdgeWaypoints: (id) =>
+        set((s) => ({
+          edges: s.edges.map((e) =>
+            e.id === id ? { ...e, data: { ...e.data, manual: false, waypoints: [] } } : e
           ),
           dirty: true,
         })),
