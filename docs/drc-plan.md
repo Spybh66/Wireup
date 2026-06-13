@@ -90,10 +90,14 @@ store state, surfaced in a **panel** and (later) on the canvas.
 - Always-on (independent of panel open state); stable during node drags (DRC
   reads committed store state, not the live drag positions).
 
-### Phase 4 — Quick-fixes ⬜
-- `autoAssignCanIds()` / `autoAssignIps()` (single undo step) wired to a "Fix"
-  button on the relevant violations.
-- Optional per-violation dismiss/ignore.
+### Phase 4 — Quick-fixes ✅ DONE
+- `autoAssignCanIds()` — per device class: keep first valid id, renumber
+  duplicates, fill blanks (single undo step).
+- `autoAssignIps()` — resolve duplicate IPs onto the next free host octet of
+  the detected subnet (blanks left untouched).
+- "Auto-number" / "Auto-assign" button on the relevant violations in DrcPanel.
+- Unit tests for both fixes.
+- _Deferred:_ per-violation dismiss/ignore (low priority).
 
 ### Phase 5 — Reach & polish ⬜
 - `required`-port flag refinement; per-rule severity override; validation in
@@ -109,5 +113,8 @@ store state, surfaced in a **panel** and (later) on the canvas.
   Full suite 27 tests green; build clean.
 - **Phase 3 (canvas badges):** done. `DrcContext` + node corner badges + edge
   severity halos, computed once in `DiagramCanvas`.
-- **Next:** Phase 4 (auto-assign CAN ID / IP quick-fixes — `fix` descriptors
-  already emitted by the engine).
+- **Phase 4 (quick-fixes):** done. `autoAssignCanIds` / `autoAssignIps` store
+  actions + "Auto-number"/"Auto-assign" buttons on violations; 2 unit tests.
+  Full suite 29 tests green.
+- **Next:** Phase 5 (precise `required`-port flag, per-rule severity override,
+  validation in Sheet view + exports, About-tab docs, "next issue" hotkey).

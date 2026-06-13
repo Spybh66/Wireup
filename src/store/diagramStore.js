@@ -500,6 +500,86 @@ const useDiagramStore = create(
           return { settings };
         }),
 
+      // DRC quick-fix: give every CAN device a unique CAN ID within its device
+      // class. Keeps the first valid id in each class, renumbers conflicts, and
+      // fills in missing ids — all as one undo step.
+      autoAssignCanIds: () =>
+        set((s) => {
+          const groups = new Map(); // definitionId -> nodes[]
+          for (const n of s.nodes) {
+            const def = getDefinition(n.data.definitionId, s.customDefinitions);
+            if (!def?.trackedFields?.includes('canId')) continue;
+            const g = groups.get(n.data.definitionId);
+            if (g) g.push(n);
+            else groups.set(n.data.definitionId, [n]);
+          }
+          const idMap = new Map();
+          for (const [, group] of groups) {
+            const used = new Set();
+            for (const n of group) {
+              const v = Number(n.data.canId);
+              if (n.data.canId !== null && n.data.canId !== '' && Number.isFinite(v) && !used.has(v)) {
+                used.add(v);
+                idMap.set(n.id, v);
+              }
+            }
+            let next = 1;
+            for (const n of group) {
+              if (idMap.has(n.id)) continue;
+              while (used.has(next)) next++;
+              used.add(next);
+              idMap.set(n.id, next);
+            }
+          }
+          return {
+            nodes: s.nodes.map((n) =>
+              idMap.has(n.id) ? { ...n, data: { ...n.data, canId: idMap.get(n.id) } } : n
+            ),
+            dirty: true,
+          };
+        }),
+
+      // DRC quick-fix: resolve duplicate IP addresses. Keeps the first device on
+      // each address and moves the rest to the next free host octet on the same
+      // subnet (falls back to 10.0.0.x). Blank IPs are left untouched.
+      autoAssignIps: () =>
+        set((s) => {
+          const tracked = s.nodes.filter((n) =>
+            getDefinition(n.data.definitionId, s.customDefinitions)?.trackedFields?.includes('ipAddress')
+          );
+          const ipOf = (n) => (n.data.ipAddress ?? '').trim();
+          const valid = tracked.map(ipOf).filter(Boolean);
+          // most common 3-octet prefix, else default
+          const prefix =
+            (valid.find((ip) => /^\d+\.\d+\.\d+\.\d+$/.test(ip)) || '10.0.0.0')
+              .split('.')
+              .slice(0, 3)
+              .join('.');
+          const used = new Set();
+          const patch = new Map();
+          for (const n of tracked) {
+            const ip = ipOf(n);
+            if (!ip) continue; // don't fill blanks
+            if (!used.has(ip)) {
+              used.add(ip);
+              continue;
+            }
+            let host = 2;
+            let candidate;
+            do {
+              candidate = `${prefix}.${host++}`;
+            } while (used.has(candidate));
+            used.add(candidate);
+            patch.set(n.id, candidate);
+          }
+          return {
+            nodes: s.nodes.map((n) =>
+              patch.has(n.id) ? { ...n, data: { ...n.data, ipAddress: patch.get(n.id) } } : n
+            ),
+            dirty: true,
+          };
+        }),
+
       // ---------- toasts ----------
       addToast: (message) =>
         set((s) => {

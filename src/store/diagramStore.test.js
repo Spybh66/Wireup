@@ -111,6 +111,39 @@ describe('diagramStore', () => {
     useDiagramStore.getState().updateSettings({ routingMode: 'auto' }); // avoid leaking mode
   });
 
+  it('auto-assigns unique CAN IDs (keep first, renumber dups, fill missing)', () => {
+    const s = useDiagramStore.getState();
+    const a = s.addNode('krakenx60', { x: 0, y: 0 });
+    const b = s.addNode('krakenx60', { x: 200, y: 0 });
+    s.addNode('krakenx60', { x: 400, y: 0 }); // left with null canId
+    useDiagramStore.getState().updateNodeData(a, { canId: 5 });
+    useDiagramStore.getState().updateNodeData(b, { canId: 5 }); // duplicate
+    useDiagramStore.getState().autoAssignCanIds();
+    const ids = useDiagramStore
+      .getState()
+      .nodes.filter((n) => n.data.definitionId === 'krakenx60')
+      .map((n) => n.data.canId);
+    expect(new Set(ids).size).toBe(ids.length); // all unique
+    expect(ids.every((x) => x != null)).toBe(true); // no missing
+    expect(ids).toContain(5); // first valid id kept
+  });
+
+  it('auto-assigns unique IPs for duplicates, leaving blanks alone', () => {
+    const s = useDiagramStore.getState();
+    const a = s.addNode('roborio2', { x: 0, y: 0 });
+    const b = s.addNode('orangepi5', { x: 200, y: 0 });
+    s.addNode('raspberrypi5', { x: 400, y: 0 }); // blank IP stays blank
+    useDiagramStore.getState().updateNodeData(a, { ipAddress: '10.0.0.2' });
+    useDiagramStore.getState().updateNodeData(b, { ipAddress: '10.0.0.2' }); // dup
+    useDiagramStore.getState().autoAssignIps();
+    const ips = useDiagramStore
+      .getState()
+      .nodes.map((n) => n.data.ipAddress)
+      .filter(Boolean);
+    expect(new Set(ips).size).toBe(ips.length); // duplicates resolved
+    expect(ips).toContain('10.0.0.2'); // first kept
+  });
+
   it('moves deleted-layer wires to Power', () => {
     const s = useDiagramStore.getState();
     s.addLayer();

@@ -27,16 +27,25 @@ function SevIcon({ severity, size = 14 }) {
   return <Icon size={size} className={cls} />;
 }
 
+const FIX_LABEL = { autoAssignCanId: 'Auto-number', autoAssignIp: 'Auto-assign' };
+
 export default function DrcPanel({ onClose }) {
   const { violations, counts } = useDrc();
   const setSelection = useDiagramStore((s) => s.setSelection);
   const toggleDrcRule = useDiagramStore((s) => s.toggleDrcRule);
+  const autoAssignCanIds = useDiagramStore((s) => s.autoAssignCanIds);
+  const autoAssignIps = useDiagramStore((s) => s.autoAssignIps);
   const disabledRules = useDiagramStore((s) => s.settings.drc?.disabledRules) ?? [];
   const [showRules, setShowRules] = useState(false);
 
   const focus = (v) => {
     setSelection({ nodes: v.nodes ?? [], edges: v.edges ?? [] });
     canvasBridge.focusElements?.(v.nodes ?? []);
+  };
+
+  const runFix = (kind) => {
+    if (kind === 'autoAssignCanId') autoAssignCanIds();
+    else if (kind === 'autoAssignIp') autoAssignIps();
   };
 
   return (
@@ -119,16 +128,25 @@ export default function DrcPanel({ onClose }) {
         ) : (
           <ul className="divide-y divide-edge/60">
             {violations.map((v, i) => (
-              <li key={`${v.ruleId}-${i}`}>
+              <li key={`${v.ruleId}-${i}`} className="flex items-start hover:bg-surface-2">
                 <button
                   onClick={() => focus(v)}
-                  className="flex w-full items-start gap-2 px-3 py-2 text-left hover:bg-surface-2"
+                  className="flex min-w-0 flex-1 items-start gap-2 px-3 py-2 text-left"
                 >
                   <span className="mt-0.5 shrink-0">
                     <SevIcon severity={v.severity} />
                   </span>
                   <span className="min-w-0 flex-1 text-xs text-silver">{v.message}</span>
                 </button>
+                {v.fix && FIX_LABEL[v.fix.kind] && (
+                  <button
+                    onClick={() => runFix(v.fix.kind)}
+                    title="Apply automatic fix"
+                    className="my-1 mr-2 shrink-0 self-center rounded border border-edge bg-surface-0 px-2 py-0.5 text-[11px] text-neutral-300 hover:text-silver"
+                  >
+                    {FIX_LABEL[v.fix.kind]}
+                  </button>
+                )}
               </li>
             ))}
           </ul>
