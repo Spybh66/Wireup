@@ -4,13 +4,16 @@
 import { memo, useRef, useState } from 'react';
 import { BaseEdge, EdgeLabelRenderer, useReactFlow } from '@xyflow/react';
 import { useRouting } from './RoutingContext';
+import { useDrcMarks } from './DrcContext';
 import useDiagramStore from '../../store/diagramStore';
 import { buildSvgPath, STEP } from '../../utils/routingUtils';
 
 const MIN_SEG = 26; // only show an insert dot on segments at least this long (px)
+const DRC_HALO = { error: '#f87171', warning: '#fbbf24', info: '#38bdf8' };
 
 function WireEdge({ id, selected }) {
   const routing = useRouting();
+  const drcSeverity = useDrcMarks().edges.get(id);
   const showWireLabels = useDiagramStore((s) => s.settings.showWireLabels);
   const snapToGrid = useDiagramStore((s) => s.settings.snapToGrid);
   const edge = useDiagramStore((s) => s.edges.find((e) => e.id === id));
@@ -93,6 +96,13 @@ function WireEdge({ id, selected }) {
 
   return (
     <>
+      {/* DRC severity halo under the wire when flagged */}
+      {drcSeverity && (
+        <BaseEdge
+          path={dPath}
+          style={{ stroke: `${DRC_HALO[drcSeverity] ?? DRC_HALO.info}66`, strokeWidth: strokeW + 5, fill: 'none' }}
+        />
+      )}
       {/* glow underlay when selected */}
       {selected && (
         <BaseEdge path={dPath} style={{ stroke: '#ffffff40', strokeWidth: 6, fill: 'none' }} />

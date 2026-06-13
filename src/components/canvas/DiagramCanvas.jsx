@@ -14,9 +14,13 @@ import {
 import ComponentNode from './ComponentNode';
 import WireEdge from './WireEdge';
 import { RoutingContext } from './RoutingContext';
+import { DrcContext } from './DrcContext';
 import { canvasBridge } from './canvasBridge';
 import useDiagramStore from '../../store/diagramStore';
+import { useDrc } from '../../store/useDrc';
 import { computeAllRoutes } from '../../utils/routeGraph';
+
+const SEV_RANK = { error: 0, warning: 1, info: 2 };
 
 const nodeTypes = { component: ComponentNode };
 const edgeTypes = { wire: WireEdge };
@@ -152,6 +156,22 @@ function Flow({ onOpenNodeConfig }) {
     [edges, selection.edges]
   );
 
+  // DRC marks → worst severity per node/edge, for canvas badges.
+  const { violations: drcViolations } = useDrc();
+  const drcMarks = useMemo(() => {
+    const nodeMarks = new Map();
+    const edgeMarks = new Map();
+    const apply = (map, id, sev) => {
+      const cur = map.get(id);
+      if (!cur || SEV_RANK[sev] < SEV_RANK[cur]) map.set(id, sev);
+    };
+    for (const v of drcViolations) {
+      for (const nid of v.nodes ?? []) apply(nodeMarks, nid, v.severity);
+      for (const eid of v.edges ?? []) apply(edgeMarks, eid, v.severity);
+    }
+    return { nodes: nodeMarks, edges: edgeMarks };
+  }, [drcViolations]);
+
   // ---- drag → single history entry (baseline → moved) ----
   const onNodeDragStart = useCallback(
     (_e, _node, dragged) => {
@@ -247,6 +267,7 @@ function Flow({ onOpenNodeConfig }) {
 
   return (
     <RoutingContext.Provider value={routes}>
+     <DrcContext.Provider value={drcMarks}>
       <div className="h-full w-full" onDrop={onDrop} onDragOver={onDragOver}>
         <ReactFlow
           nodes={rfNodes}
@@ -279,6 +300,7 @@ function Flow({ onOpenNodeConfig }) {
           <Controls />
         </ReactFlow>
       </div>
+     </DrcContext.Provider>
     </RoutingContext.Provider>
   );
 }

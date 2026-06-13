@@ -1,12 +1,19 @@
 // §4.1 Node renderer — header (icon + label + lock), body, port handles.
 import { memo } from 'react';
 import { Handle, Position } from '@xyflow/react';
-import { Lock } from 'lucide-react';
+import { Lock, CircleAlert, TriangleAlert, Info } from 'lucide-react';
 import { getDefinition } from '../../data/componentLibrary';
 import { getIcon } from '../../assets/icons';
 import { typeColor, typeHasGaugeFitting } from '../../data/wireTypes';
 import { portSnappedFraction } from '../../utils/geometry';
 import useDiagramStore from '../../store/diagramStore';
+import { useDrcMarks } from './DrcContext';
+
+const DRC_BADGE = {
+  error: { Icon: CircleAlert, color: '#f87171' },
+  warning: { Icon: TriangleAlert, color: '#fbbf24' },
+  info: { Icon: Info, color: '#38bdf8' },
+};
 
 const SIDE_POSITION = {
   top: Position.Top,
@@ -75,6 +82,8 @@ function labelStyle(port, f, scale = 1) {
 function ComponentNode({ id, data, selected }) {
   const customDefinitions = useDiagramStore((s) => s.customDefinitions);
   const showPortLabels = useDiagramStore((s) => s.settings.showPortLabels);
+  const drcMarks = useDrcMarks();
+  const drcSeverity = drcMarks.nodes.get(id);
   const def = getDefinition(data.definitionId, customDefinitions);
   if (!def) return null;
   const Icon = getIcon(def.icon);
@@ -129,6 +138,19 @@ function ComponentNode({ id, data, selected }) {
           <Lock size={10} className="text-neutral-400" />
         </div>
       )}
+
+      {/* DRC badge — top-left corner */}
+      {drcSeverity && (() => {
+        const { Icon, color } = DRC_BADGE[drcSeverity] ?? DRC_BADGE.info;
+        return (
+          <div
+            className="pointer-events-none absolute -left-1.5 -top-1.5 rounded-full bg-surface-0 p-0.5"
+            title={`Design check: ${drcSeverity}`}
+          >
+            <Icon size={13} style={{ color }} />
+          </div>
+        );
+      })()}
 
       {/* port labels */}
       {showPortLabels &&

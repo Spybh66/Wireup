@@ -82,9 +82,13 @@ store state, surfaced in a **panel** and (later) on the canvas.
 - **Acceptance:** live list; click selects + centers; counts correct; toggles
   persist across reload. ✅
 
-### Phase 3 — Canvas integration (visual flags) ⬜
-- `DrcContext` provides `Map<nodeId,severity>` / `Set<edgeId>`.
-- Node severity ring in `ComponentNode`; warning outline on flagged edges.
+### Phase 3 — Canvas integration (visual flags) ✅ DONE
+- `DrcContext` provides `{ nodes: Map<id,severity>, edges: Map<id,severity> }`,
+  computed once in `DiagramCanvas` from `useDrc()`.
+- `ComponentNode`: severity icon badge (top-left corner).
+- `WireEdge`: severity-colored halo under flagged wires.
+- Always-on (independent of panel open state); stable during node drags (DRC
+  reads committed store state, not the live drag positions).
 
 ### Phase 4 — Quick-fixes ⬜
 - `autoAssignCanIds()` / `autoAssignIps()` (single undo step) wired to a "Fix"
@@ -103,5 +107,7 @@ store state, surfaced in a **panel** and (later) on the canvas.
   bottom-left floating `DrcPanel` (issue list → click to select/focus; gear view
   with per-rule on/off toggles, persisted). `canvasBridge.focusElements` added.
   Full suite 27 tests green; build clean.
-- **Next:** Phase 3 (canvas badges on flagged nodes/edges), then Phase 4
-  (auto-assign CAN ID / IP quick-fixes — `fix` descriptors already emitted).
+- **Phase 3 (canvas badges):** done. `DrcContext` + node corner badges + edge
+  severity halos, computed once in `DiagramCanvas`.
+- **Next:** Phase 4 (auto-assign CAN ID / IP quick-fixes — `fix` descriptors
+  already emitted by the engine).
