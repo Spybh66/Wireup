@@ -132,6 +132,33 @@ describe('DRC engine', () => {
     expect(findIds(runDrc({ nodes: [pdh, rio], edges: [e] }), 'roborio-power-breaker')).toHaveLength(0);
   });
 
+  it('CAN termination: controller required + ends must be terminators', () => {
+    // roboRIO (terminator) — Kraken — Kraken (loose end, not a terminator) → 1 unterminated end
+    const rio = node('roborio2', 'RIO', { ports: [port('r', 'CAN')] });
+    const k1 = node('krakenx60', 'K1', { ports: [port('k1a', 'CAN'), port('k1b', 'CAN')] });
+    const k2 = node('krakenx60', 'K2', { ports: [port('k2', 'CAN')] });
+    const e1 = edge('e1', rio.id, 'r', k1.id, 'k1a', 'CAN');
+    const e2 = edge('e2', k1.id, 'k1b', k2.id, 'k2', 'CAN');
+    let res = runDrc({ nodes: [rio, k1, k2], edges: [e1, e2] });
+    let t = findIds(res, 'can-termination');
+    expect(t).toHaveLength(1); // RIO end ok (terminator); K2 end unterminated
+    expect(t[0].nodes).toEqual([k2.id]);
+
+    // Cap the loose end with a 120Ω terminator → clean
+    const term = node('canterminator', 'TERM', { ports: [port('t', 'CAN')] });
+    const e3 = edge('e3', k2.id, 'k2', term.id, 't', 'CAN'); // now k2 has degree 2
+    res = runDrc({ nodes: [rio, k1, k2, term], edges: [e1, e2, e3] });
+    expect(findIds(res, 'can-termination')).toHaveLength(0);
+  });
+
+  it('CAN termination: flags a bus with no controller', () => {
+    const c1 = node('cancoder', 'C1', { ports: [port('a', 'CAN')] });
+    const c2 = node('cancoder', 'C2', { ports: [port('b', 'CAN')] });
+    const e = edge('e1', c1.id, 'a', c2.id, 'b', 'CAN');
+    const t = findIds(runDrc({ nodes: [c1, c2], edges: [e] }), 'can-termination');
+    expect(t.some((v) => /no controller/.test(v.message))).toBe(true);
+  });
+
   it('applies per-rule severity overrides (and off = skip)', () => {
     const k = node('krakenx60', 'K', { canId: 1, ports: [port('k-can', 'CAN')] });
     // unconnected-can defaults to warning; override to error

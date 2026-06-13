@@ -188,6 +188,79 @@ export const DRC_RULES = [
     },
   },
   {
+    id: 'can-termination',
+    label: 'CAN bus termination',
+    description:
+      'A CAN bus must include a controller (roboRIO/CANivore) and be terminated at each end by a PDH, CANivore, or 120Ω terminator (R-spec / hardware).',
+    severity: 'warning',
+    run(ctx) {
+      const CONTROLLERS = new Set(['roborio2', 'canivore']);
+      const TERMINATORS = new Set(['roborio2', 'canivore', 'pdh', 'pdp2', 'pdp_legacy', 'canterminator']);
+      const canNodes = new Set(ctx.nodes.filter((n) => ctx.portsOfType(n, 'CAN').length).map((n) => n.id));
+      const adj = new Map();
+      const deg = new Map();
+      const add = (a, b) => {
+        if (!adj.has(a)) adj.set(a, new Set());
+        adj.get(a).add(b);
+      };
+      let canEdgeCount = 0;
+      for (const e of ctx.edges) {
+        if (e.data.type !== 'CAN') continue;
+        if (!canNodes.has(e.source) || !canNodes.has(e.target)) continue;
+        add(e.source, e.target);
+        add(e.target, e.source);
+        deg.set(e.source, (deg.get(e.source) ?? 0) + 1);
+        deg.set(e.target, (deg.get(e.target) ?? 0) + 1);
+        canEdgeCount++;
+      }
+      if (!canEdgeCount) return [];
+      const defId = (id) => ctx.defOf(ctx.nodeById.get(id))?.id;
+      const labelOf = (id) => ctx.nodeById.get(id)?.data.label ?? 'device';
+
+      const seen = new Set();
+      const out = [];
+      for (const start of adj.keys()) {
+        if (seen.has(start)) continue;
+        const comp = [];
+        const stack = [start];
+        seen.add(start);
+        while (stack.length) {
+          const cur = stack.pop();
+          comp.push(cur);
+          for (const nb of adj.get(cur) ?? []) {
+            if (!seen.has(nb)) {
+              seen.add(nb);
+              stack.push(nb);
+            }
+          }
+        }
+        // The bus must start at a controller (roboRIO or CANivore).
+        if (!comp.some((id) => CONTROLLERS.has(defId(id)))) {
+          out.push({
+            ruleId: this.id,
+            severity: this.severity,
+            message: 'CAN bus has no controller — it must connect to a roboRIO or CANivore',
+            nodes: comp,
+            edges: [],
+          });
+        }
+        // Each physical end of the chain (a single CAN link) must be a terminator.
+        for (const id of comp) {
+          if ((deg.get(id) ?? 0) === 1 && !TERMINATORS.has(defId(id))) {
+            out.push({
+              ruleId: this.id,
+              severity: this.severity,
+              message: `CAN bus is unterminated at ${labelOf(id)} — end it on a PDH/roboRIO/CANivore or add a 120Ω terminator`,
+              nodes: [id],
+              edges: [],
+            });
+          }
+        }
+      }
+      return out;
+    },
+  },
+  {
     id: 'unpowered-device',
     label: 'Unpowered device',
     description: 'A non-power component with a power port has no power wiring.',

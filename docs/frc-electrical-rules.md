@@ -49,6 +49,10 @@ quick reference for the wiring tool + the DRC rules it enforces.
 | `breaker-too-large` | R619 | a PD output port's breaker is ≤ 40 A |
 | `roborio-power-breaker` | R615 | the channel feeding the roboRIO is rated 10 A |
 | `channel-oversubscribed` | R610/R618/R621 | a single power port drives only one wire |
+| `can-termination` | §8.8 / hardware | bus has a controller (roboRIO/CANivore) and each end is a PDH/CANivore/roboRIO or a 120Ω terminator |
+
+A **CAN Terminator (120Ω)** component (single CAN port) is available to cap the
+far end of a bus that doesn't end on a PDH/roboRIO/CANivore.
 
 Breaker ratings are set per-port on the PD (PDH/PDP/MPM) in the component config
 modal. Rules that need data the model doesn't carry (frame isolation R611,

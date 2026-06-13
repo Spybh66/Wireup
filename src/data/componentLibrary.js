@@ -268,6 +268,9 @@ export const COMPONENT_LIBRARY = [
     ...pwr('PWR', 'left', '18 AWG', FERRULE),
     ...data('Din', 'left'),
   ]),
+  def('canterminator', 'CAN Terminator (120Ω)', 'Other', 'canjunction', 96, 48, [], [
+    ...can('CAN', 'left'),
+  ]),
 ];
 
 // Category display order for the sidebar.
