@@ -250,6 +250,11 @@ export const COMPONENT_LIBRARY = [
     ...eth('4', 'top'),
     ...eth('5', 'top'),
   ]),
+  def('canivore', 'CANivore (CTRE)', 'Networking', 'canjunction', 120, 80, [], [
+    ...usb('USB', 'left'),
+    ...can('CAN', 'right'),
+    ...pwr('V+/V-', 'bottom'),
+  ]),
 
   // ---------------- Other ----------------
   def('rsl', 'Robot Signal Light (RSL)', 'Other', 'rsl', 100, 60, [], [
