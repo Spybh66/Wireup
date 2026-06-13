@@ -83,6 +83,27 @@ export function ampacityForGauge(gauge) {
   return GAUGE_AMPACITY[gauge] ?? null;
 }
 
+// Numeric AWG of a gauge string ('12 AWG' → 12). Lower = thicker. null if N/A.
+export function awgNumber(gauge) {
+  const n = parseInt(gauge, 10);
+  return Number.isFinite(n) ? n : null;
+}
+
+// FRC R622 — minimum wire gauge required for a branch breaker rating, as an AWG
+// number (wire's AWG number must be ≤ this). null = no specific minimum (≤10 A).
+export function requiredAwgForBreaker(amps) {
+  if (amps > 30) return 12; // up to 40 A
+  if (amps > 20) return 14; // 21–30 A
+  if (amps > 10) return 18; // 11–20 A
+  return null;
+}
+
+// The required minimum gauge as a label ('12 AWG'), or null.
+export function requiredGaugeForBreaker(amps) {
+  const n = requiredAwgForBreaker(amps);
+  return n == null ? null : `${n} AWG`;
+}
+
 // Smallest gauge from GAUGE_OPTIONS rated for the given current (or null).
 export function minGaugeForAmps(amps) {
   for (let i = GAUGE_OPTIONS.length - 1; i >= 0; i--) {

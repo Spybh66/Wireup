@@ -107,6 +107,31 @@ describe('DRC engine', () => {
     expect(g[0].edges).toEqual(['bad']);
   });
 
+  it('flags a main power run thinner than 6 AWG (R609)', () => {
+    const bat = node('battery', 'Bat', { ports: [port('b', 'PWR', 'BAT', 'right')] });
+    const mb = node('mainbreaker', 'MB', { ports: [port('m', 'PWR', 'IN', 'left')] });
+    const e = edge('e1', bat.id, 'b', mb.id, 'm', 'PWR');
+    e.data = { ...e.data, label: 'PWR1', wireGauge: '10 AWG' };
+    expect(findIds(runDrc({ nodes: [bat, mb], edges: [e] }), 'main-run-gauge')).toHaveLength(1);
+    e.data.wireGauge = '6 AWG';
+    expect(findIds(runDrc({ nodes: [bat, mb], edges: [e] }), 'main-run-gauge')).toHaveLength(0);
+  });
+
+  it('flags a breaker over 40 A (R619)', () => {
+    const pdh = node('pdh', 'PDH', { ports: [{ ...port('c', 'PWR', 'CH0', 'right'), breaker: 50 }] });
+    expect(findIds(runDrc({ nodes: [pdh], edges: [] }), 'breaker-too-large')).toHaveLength(1);
+  });
+
+  it('flags a roboRIO not on a 10 A circuit (R615)', () => {
+    const pdh = node('pdh', 'PDH', { ports: [{ ...port('c', 'PWR', 'CH0', 'right'), breaker: 40 }] });
+    const rio = node('roborio2', 'RIO', { ports: [port('r', 'PWR', 'PWR', 'top')] });
+    const e = edge('e1', pdh.id, 'c', rio.id, 'r', 'PWR');
+    e.data = { ...e.data, label: 'PWR1' };
+    expect(findIds(runDrc({ nodes: [pdh, rio], edges: [e] }), 'roborio-power-breaker')).toHaveLength(1);
+    pdh.data.ports[0].breaker = 10;
+    expect(findIds(runDrc({ nodes: [pdh, rio], edges: [e] }), 'roborio-power-breaker')).toHaveLength(0);
+  });
+
   it('applies per-rule severity overrides (and off = skip)', () => {
     const k = node('krakenx60', 'K', { canId: 1, ports: [port('k-can', 'CAN')] });
     // unconnected-can defaults to warning; override to error

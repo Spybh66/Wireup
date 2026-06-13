@@ -11,9 +11,12 @@
 //   typeEdges(node, t) — edges of wire-type `t` attached to a node
 //   portsOfType(node,t)— node ports of a given type
 
-import { ampacityForGauge, minGaugeForAmps } from '../../data/wireTypes';
+import { awgNumber, requiredAwgForBreaker, requiredGaugeForBreaker } from '../../data/wireTypes';
 
 const isBlank = (v) => v === null || v === undefined || String(v).trim() === '';
+
+// Components that form the protected main power run (R609).
+const MAIN_RUN_DEFS = new Set(['battery', 'mainbreaker', 'pdh', 'pdp2', 'pdp_legacy']);
 
 function pluralDef(count, name) {
   return `${count}× ${name}`;
@@ -235,7 +238,7 @@ export const DRC_RULES = [
     id: 'undersized-gauge',
     label: 'Undersized wire gauge',
     description:
-      'A power wire’s gauge is too small for the breaker protecting it (set the breaker on the PDH/MPM port).',
+      'A branch wire’s gauge is thinner than FRC R622 requires for the breaker protecting it (set the breaker on the PDH/MPM port).',
     severity: 'warning',
     run(ctx) {
       const out = [];
@@ -249,16 +252,95 @@ export const DRC_RULES = [
         if (e.data.type !== 'PWR') continue;
         const amps = Math.max(breakerOf(e.source, e.sourceHandle), breakerOf(e.target, e.targetHandle));
         if (amps <= 0) continue;
-        const cap = ampacityForGauge(e.data.wireGauge);
-        if (cap == null || cap >= amps) continue;
-        const rec = minGaugeForAmps(amps);
+        const reqAwg = requiredAwgForBreaker(amps);
+        const wireAwg = awgNumber(e.data.wireGauge);
+        if (reqAwg == null || wireAwg == null || wireAwg <= reqAwg) continue; // adequate
         out.push({
           ruleId: this.id,
           severity: this.severity,
-          message: `${e.data.label}: ${e.data.wireGauge} (~${cap} A) on a ${amps} A breaker${rec ? ` — use ${rec}` : ''}`,
+          message: `${e.data.label}: ${e.data.wireGauge} on a ${amps} A breaker — R622 needs ${requiredGaugeForBreaker(amps)} or thicker`,
           nodes: [e.source, e.target],
           edges: [e.id],
         });
+      }
+      return out;
+    },
+  },
+  {
+    id: 'main-run-gauge',
+    label: 'Main power run too thin',
+    description: 'Battery ↔ main breaker ↔ power distribution wiring must be 6 AWG or thicker (R609).',
+    severity: 'warning',
+    run(ctx) {
+      const out = [];
+      for (const e of ctx.edges) {
+        if (e.data.type !== 'PWR') continue;
+        const sDef = ctx.defOf(ctx.nodeById.get(e.source))?.id;
+        const tDef = ctx.defOf(ctx.nodeById.get(e.target))?.id;
+        if (!MAIN_RUN_DEFS.has(sDef) || !MAIN_RUN_DEFS.has(tDef)) continue;
+        const awg = awgNumber(e.data.wireGauge);
+        if (awg == null || awg <= 6) continue; // 6 AWG or thicker is fine
+        out.push({
+          ruleId: this.id,
+          severity: this.severity,
+          message: `${e.data.label}: main power run is ${e.data.wireGauge} — R609 requires 6 AWG or thicker`,
+          nodes: [e.source, e.target],
+          edges: [e.id],
+        });
+      }
+      return out;
+    },
+  },
+  {
+    id: 'breaker-too-large',
+    label: 'Breaker over 40 A',
+    description: 'A power-distribution branch breaker exceeds the 40 A maximum (R619).',
+    severity: 'error',
+    run(ctx) {
+      const out = [];
+      for (const n of ctx.nodes) {
+        for (const p of ctx.portsOfType(n, 'PWR')) {
+          const v = Number(p.breaker);
+          if (Number.isFinite(v) && v > 40) {
+            out.push({
+              ruleId: this.id,
+              severity: this.severity,
+              message: `${n.data.label} · ${p.label}: ${v} A breaker exceeds the 40 A branch limit`,
+              nodes: [n.id],
+              edges: [],
+            });
+          }
+        }
+      }
+      return out;
+    },
+  },
+  {
+    id: 'roborio-power-breaker',
+    label: 'roboRIO not on a 10 A circuit',
+    description: 'The roboRIO must be powered from a dedicated 10 A circuit (R615).',
+    severity: 'warning',
+    run(ctx) {
+      const out = [];
+      for (const n of ctx.nodes) {
+        if (ctx.defOf(n)?.id !== 'roborio2') continue;
+        for (const e of ctx.edges) {
+          if (e.data.type !== 'PWR') continue;
+          const otherId = e.source === n.id ? e.target : e.target === n.id ? e.source : null;
+          if (!otherId) continue;
+          const otherHandle = e.source === n.id ? e.targetHandle : e.sourceHandle;
+          const port = ctx.nodeById.get(otherId)?.data.ports.find((p) => p.id === otherHandle);
+          const v = Number(port?.breaker);
+          if (Number.isFinite(v) && v > 0 && v !== 10) {
+            out.push({
+              ruleId: this.id,
+              severity: this.severity,
+              message: `${n.data.label} is on a ${v} A circuit — R615 requires a dedicated 10 A breaker`,
+              nodes: [n.id, otherId],
+              edges: [e.id],
+            });
+          }
+        }
       }
       return out;
     },
