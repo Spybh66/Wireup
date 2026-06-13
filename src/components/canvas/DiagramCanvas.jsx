@@ -1,7 +1,7 @@
 // §4.2 Canvas root — React Flow v12 wiring, DnD, selection, drag history.
 // RF owns node view-state (so it measures nodes / handle bounds); the Zustand
 // store is the structural + undo source and is synced in/out.
-import { useCallback, useMemo, useRef, useEffect } from 'react';
+import { useCallback, useMemo, useRef, useEffect, useState } from 'react';
 import {
   ReactFlow,
   ReactFlowProvider,
@@ -15,6 +15,7 @@ import ComponentNode from './ComponentNode';
 import WireEdge from './WireEdge';
 import { RoutingContext } from './RoutingContext';
 import { DrcContext } from './DrcContext';
+import { ConnectContext } from './ConnectContext';
 import { canvasBridge } from './canvasBridge';
 import useDiagramStore from '../../store/diagramStore';
 import { useDrc } from '../../store/useDrc';
@@ -194,6 +195,14 @@ function Flow({ onOpenNodeConfig }) {
     setDraggingNodeIds([]);
   }, [rfNodes, setDraggingNodeIds]);
 
+  const [connectType, setConnectType] = useState(null);
+  const onConnectStart = useCallback((_e, { nodeId, handleId }) => {
+    const node = useDiagramStore.getState().nodes.find((n) => n.id === nodeId);
+    const port = node?.data.ports.find((p) => p.id === handleId);
+    setConnectType(port?.type ?? null);
+  }, []);
+  const onConnectEnd = useCallback(() => setConnectType(null), []);
+
   const onConnect = useCallback((conn) => {
     useDiagramStore.getState().addEdge(conn);
   }, []);
@@ -268,6 +277,7 @@ function Flow({ onOpenNodeConfig }) {
   return (
     <RoutingContext.Provider value={routes}>
      <DrcContext.Provider value={drcMarks}>
+      <ConnectContext.Provider value={connectType}>
       <div className="h-full w-full" onDrop={onDrop} onDragOver={onDragOver}>
         <ReactFlow
           nodes={rfNodes}
@@ -279,6 +289,8 @@ function Flow({ onOpenNodeConfig }) {
           onNodeDragStart={onNodeDragStart}
           onNodeDragStop={onNodeDragStop}
           onConnect={onConnect}
+          onConnectStart={onConnectStart}
+          onConnectEnd={onConnectEnd}
           onReconnect={onReconnect}
           onSelectionChange={onSelectionChange}
           onNodeDoubleClick={onNodeDoubleClick}
@@ -300,6 +312,7 @@ function Flow({ onOpenNodeConfig }) {
           <Controls />
         </ReactFlow>
       </div>
+      </ConnectContext.Provider>
      </DrcContext.Provider>
     </RoutingContext.Provider>
   );

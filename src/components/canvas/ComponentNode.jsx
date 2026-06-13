@@ -8,6 +8,7 @@ import { typeColor, typeHasGaugeFitting } from '../../data/wireTypes';
 import { portSnappedFraction } from '../../utils/geometry';
 import useDiagramStore from '../../store/diagramStore';
 import { useDrcMarks } from './DrcContext';
+import { useConnectType } from './ConnectContext';
 
 const DRC_BADGE = {
   error: { Icon: CircleAlert, color: '#f87171' },
@@ -84,6 +85,7 @@ function ComponentNode({ id, data, selected }) {
   const showPortLabels = useDiagramStore((s) => s.settings.showPortLabels);
   const drcMarks = useDrcMarks();
   const drcSeverity = drcMarks.nodes.get(id);
+  const connectType = useConnectType();
   const def = getDefinition(data.definitionId, customDefinitions);
   if (!def) return null;
   const Icon = getIcon(def.icon);
@@ -165,7 +167,19 @@ function ComponentNode({ id, data, selected }) {
           source and a target handle (same id/position) per port. */}
       {data.ports.map((p) => {
         const style = handleStyle(p, snapFrac(p));
-        const title = `${p.label} (${p.type})${typeHasGaugeFitting(p.type) && p.gauge ? ` · ${p.gauge}` : ''}`;
+        const fit = typeHasGaugeFitting(p.type) && p.fitting ? ` · ${p.fitting}` : '';
+        const gauge = typeHasGaugeFitting(p.type) && p.gauge ? ` · ${p.gauge}` : '';
+        const title = `${p.label} (${p.type})${gauge}${fit}`;
+        // Connection affordance: while dragging a wire, ring compatible ports
+        // (same type) and dim incompatible ones.
+        let aff = null;
+        if (connectType) aff = p.type === connectType ? 'match' : 'dim';
+        const affStyle =
+          aff === 'match'
+            ? { boxShadow: `0 0 0 3px ${typeColor(p.type)}66`, transform: 'scale(1.35)' }
+            : aff === 'dim'
+              ? { opacity: 0.2 }
+              : null;
         return (
           <div key={p.id}>
             <Handle
@@ -182,7 +196,7 @@ function ComponentNode({ id, data, selected }) {
               position={SIDE_POSITION[p.side]}
               isConnectableStart
               isConnectableEnd
-              style={{ ...style, zIndex: 1 }}
+              style={{ ...style, zIndex: 1, ...affStyle }}
               title={title}
             />
           </div>
