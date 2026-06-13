@@ -196,6 +196,7 @@ export function computeAllRoutes({
       color: m.color,
       color2: m.color2,
       type: m.type,
+      hopCount: hops.length,
     });
   }
   return { routes: result, fallbacks };

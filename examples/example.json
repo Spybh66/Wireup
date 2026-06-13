@@ -1,20 +1,20 @@
 {
   "app": "wireup",
   "version": 1,
-  "savedAt": "2026-06-13T02:17:38.931Z",
+  "savedAt": "2026-06-12T22:49:41.748Z",
   "projectName": "Untitled Project",
   "nodes": [
     {
-      "id": "38b2bb5d-20d9-4249-9d67-9b5a6a2c27d0",
+      "id": "a093b1fd-6240-4009-b1d6-f73a3545d9ac",
       "type": "component",
       "position": {
-        "x": 1104,
-        "y": 240
+        "x": 64,
+        "y": 352
       },
       "draggable": true,
       "data": {
-        "definitionId": "krakenx60",
-        "label": "Kraken X60`",
+        "definitionId": "battery",
+        "label": "Battery (12V)",
         "color": null,
         "notes": "",
         "locked": false,
@@ -65,8 +65,8 @@
             "label": "IN",
             "side": "left",
             "order": 0,
-            "gauge": "12 AWG",
-            "fitting": "Ferrule"
+            "gauge": "6 AWG",
+            "fitting": "Anderson SB50"
           },
           {
             "id": "mainbreaker-p1",
@@ -74,27 +74,18 @@
             "label": "OUT",
             "side": "right",
             "order": 0,
-            "gauge": null,
-            "fitting": null
-          },
-          {
-            "id": "krakenx60-p2",
-            "type": "CAN",
-            "label": "CAN OUT",
-            "side": "right",
-            "order": 1,
-            "gauge": null,
-            "fitting": null
+            "gauge": "6 AWG",
+            "fitting": "Anderson SB50"
           }
         ]
       }
     },
     {
-      "id": "5c4d863e-32db-404b-998a-3ce784858ced",
+      "id": "d0560b94-2b31-4df8-8802-74f992b1184d",
       "type": "component",
       "position": {
-        "x": 576,
-        "y": 80
+        "x": 624,
+        "y": -48
       },
       "draggable": true,
       "data": {
@@ -121,8 +112,8 @@
             "label": "V-",
             "side": "bottom",
             "order": 1,
-            "gauge": null,
-            "fitting": null
+            "gauge": "6 AWG",
+            "fitting": "Anderson SB50"
           },
           {
             "id": "pdh-p2",
@@ -165,7 +156,7 @@
             "type": "PWR",
             "label": "CH0+",
             "side": "right",
-            "order": 3,
+            "order": 0,
             "gauge": "12 AWG",
             "fitting": "Ferrule"
           },
@@ -596,125 +587,11 @@
       }
     },
     {
-      "id": "6dd399b5-d841-4861-be1f-1be89190134b",
+      "id": "c77545d2-f9a3-4568-ac9b-8a0aa9e2b47e",
       "type": "component",
       "position": {
         "x": 1104,
-        "y": 320
-      },
-      "draggable": true,
-      "data": {
-        "definitionId": "krakenx60",
-        "label": "Kraken X60`",
-        "color": null,
-        "notes": "",
-        "locked": false,
-        "canId": null,
-        "ipAddress": null,
-        "ports": [
-          {
-            "id": "krakenx60-p0",
-            "type": "PWR",
-            "label": "PWR",
-            "side": "left",
-            "order": 0,
-            "gauge": "12 AWG",
-            "fitting": "Ferrule"
-          },
-          {
-            "id": "krakenx60-p1",
-            "type": "CAN",
-            "label": "CAN IN",
-            "side": "right",
-            "order": 0,
-            "gauge": null,
-            "fitting": null
-          },
-          {
-            "id": "krakenx60-p2",
-            "type": "CAN",
-            "label": "CAN OUT",
-            "side": "right",
-            "order": 1,
-            "gauge": null,
-            "fitting": null
-          }
-        ]
-      }
-    },
-    {
-      "id": "fb7db487-20f2-4876-adc4-099933fff50a",
-      "type": "component",
-      "position": {
-        "x": 160,
-        "y": 656
-      },
-      "draggable": true,
-      "data": {
-        "definitionId": "battery",
-        "label": "Battery (12V)",
-        "color": null,
-        "notes": "",
-        "locked": false,
-        "canId": null,
-        "ipAddress": null,
-        "ports": [
-          {
-            "id": "battery-p0",
-            "type": "PWR",
-            "label": "BAT",
-            "side": "right",
-            "order": 0,
-            "gauge": "6 AWG",
-            "fitting": "Anderson SB50"
-          }
-        ]
-      }
-    },
-    {
-      "id": "ef734ae3-b0e2-4755-a65f-95a1c9a37a18",
-      "type": "component",
-      "position": {
-        "x": 368,
-        "y": 656
-      },
-      "draggable": true,
-      "data": {
-        "definitionId": "mainbreaker",
-        "label": "Main Breaker (120A)",
-        "color": null,
-        "notes": "",
-        "locked": false,
-        "canId": null,
-        "ipAddress": null,
-        "ports": [
-          {
-            "id": "mainbreaker-p0",
-            "type": "PWR",
-            "label": "IN",
-            "side": "left",
-            "order": 0,
-            "gauge": "6 AWG",
-            "fitting": "Anderson SB50"
-          },
-          {
-            "id": "mainbreaker-p1",
-            "type": "PWR",
-            "label": "OUT",
-            "side": "right",
-            "order": 0,
-            "gauge": "6 AWG",
-            "fitting": "Anderson SB50"
-          }
-        ]
-      }
-    },
-    {
-      "id": "c55266ab-3b64-45c8-bc4e-1a1ac3bb31b9",
-      "type": "component",
-      "position": {
-        "x": 1312,
-        "y": 560
+        "y": 432
       },
       "draggable": true,
       "data": {
@@ -764,10 +641,10 @@
           },
           {
             "id": "roborio2-p4",
-            "type": "USB",
-            "label": "USB2",
-            "side": "right",
-            "order": 1,
+            "type": "ETH",
+            "label": "ETH",
+            "side": "top",
+            "order": 2,
             "gauge": null,
             "fitting": null
           },
@@ -811,7 +688,7 @@
       }
     },
     {
-      "id": "9cc11703-36d9-4d4b-ae86-032b4e67ee90",
+      "id": "41aa248f-6dd5-47d3-8b91-77bdddea2426",
       "type": "component",
       "position": {
         "x": 1136,
@@ -1134,16 +1011,16 @@
       }
     },
     {
-      "id": "3bccd54b-34f7-4e90-84ad-46f6ecdd90d6",
+      "id": "9766bd0d-9363-4285-bfa5-38c3d77cc515",
       "type": "component",
       "position": {
-        "x": 1040,
-        "y": 624
+        "x": 1056,
+        "y": -128
       },
       "draggable": true,
       "data": {
-        "definitionId": "lasercan",
-        "label": "LaserCAN (Grapple)",
+        "definitionId": "mitocandria",
+        "label": "MitoCANDria (ThriftyBot)",
         "color": null,
         "notes": "",
         "locked": false,
@@ -1174,8 +1051,8 @@
             "label": "CAN H",
             "side": "bottom",
             "order": 0,
-            "gauge": "22 AWG",
-            "fitting": "Ferrule"
+            "gauge": null,
+            "fitting": null
           },
           {
             "id": "mitocandria-p3",
@@ -1191,15 +1068,6 @@
             "type": "USB",
             "label": "5V USBC",
             "side": "top",
-            "order": 0,
-            "gauge": "22 AWG",
-            "fitting": "Ferrule"
-          },
-          {
-            "id": "lasercan-p2",
-            "type": "CAN",
-            "label": "CAN IN",
-            "side": "left",
             "order": 0,
             "gauge": null,
             "fitting": null
@@ -1271,11 +1139,11 @@
       }
     },
     {
-      "id": "8fb19c14-4a89-42ea-bb9c-bd2fa2890aff",
+      "id": "abcfef93-9811-470f-91bd-5d15a83a525e",
       "type": "component",
       "position": {
-        "x": 1104,
-        "y": 400
+        "x": 1136,
+        "y": 240
       },
       "draggable": true,
       "data": {
@@ -1327,7 +1195,7 @@
       }
     },
     {
-      "id": "a7f4196c-8521-4afe-a2aa-f986a8c95426",
+      "id": "b16c0f43-aa9b-4b1f-afa0-862799af02f8",
       "type": "component",
       "position": {
         "x": 688,
@@ -1512,7 +1380,7 @@
             "fitting": null
           },
           {
-            "id": "vh109-p4",
+            "id": "vh109-p5",
             "type": "ETH",
             "label": "DS",
             "side": "right",
@@ -1522,220 +1390,23 @@
           }
         ]
       }
-    },
-    {
-      "id": "2e353a21-b108-4a98-ab4e-e6a9201e23ad",
-      "type": "component",
-      "position": {
-        "x": 1008,
-        "y": 832
-      },
-      "draggable": true,
-      "data": {
-        "definitionId": "mitocandria",
-        "label": "MitoCANDria (ThriftyBot)",
-        "color": null,
-        "notes": "",
-        "locked": false,
-        "canId": null,
-        "ipAddress": null,
-        "ports": [
-          {
-            "id": "mitocandria-p0",
-            "type": "PWR",
-            "label": "PWR",
-            "side": "left",
-            "order": 0,
-            "gauge": "18 AWG",
-            "fitting": "Ferrule"
-          },
-          {
-            "id": "mitocandria-p1",
-            "type": "CAN",
-            "label": "CAN",
-            "side": "bottom",
-            "order": 0,
-            "gauge": null,
-            "fitting": null
-          },
-          {
-            "id": "mitocandria-p2",
-            "type": "USB",
-            "label": "5V USBC",
-            "side": "top",
-            "order": 0,
-            "gauge": null,
-            "fitting": null
-          },
-          {
-            "id": "mitocandria-p3",
-            "type": "USB",
-            "label": "5V USBC",
-            "side": "top",
-            "order": 1,
-            "gauge": null,
-            "fitting": null
-          },
-          {
-            "id": "mitocandria-p4",
-            "type": "PWR",
-            "label": "BOOST",
-            "side": "right",
-            "order": 0,
-            "gauge": "20 AWG",
-            "fitting": "Ferrule"
-          },
-          {
-            "id": "mitocandria-p5",
-            "type": "PWR",
-            "label": "5VA",
-            "side": "right",
-            "order": 1,
-            "gauge": "20 AWG",
-            "fitting": "Ferrule"
-          },
-          {
-            "id": "mitocandria-p6",
-            "type": "PWR",
-            "label": "5VB",
-            "side": "right",
-            "order": 2,
-            "gauge": "20 AWG",
-            "fitting": "Ferrule"
-          }
-        ]
-      }
-    },
-    {
-      "id": "e070180b-8ca1-4fd4-b3b5-ab5cd4210c8d",
-      "type": "component",
-      "position": {
-        "x": 1344,
-        "y": 832
-      },
-      "draggable": true,
-      "data": {
-        "definitionId": "orangepi5",
-        "label": "Orange Pi 5",
-        "color": null,
-        "notes": "",
-        "locked": false,
-        "canId": null,
-        "ipAddress": null,
-        "ports": [
-          {
-            "id": "orangepi5-p0",
-            "type": "PWR",
-            "label": "PWR",
-            "side": "left",
-            "order": 0,
-            "gauge": null,
-            "fitting": null
-          },
-          {
-            "id": "orangepi5-p1",
-            "type": "ETH",
-            "label": "ETH",
-            "side": "top",
-            "order": 0,
-            "gauge": null,
-            "fitting": null
-          },
-          {
-            "id": "orangepi5-p2",
-            "type": "USB",
-            "label": "USB1",
-            "side": "right",
-            "order": 0,
-            "gauge": null,
-            "fitting": null
-          },
-          {
-            "id": "orangepi5-p3",
-            "type": "USB",
-            "label": "USB2",
-            "side": "right",
-            "order": 1,
-            "gauge": null,
-            "fitting": null
-          }
-        ]
-      }
-    },
-    {
-      "id": "ca7934b1-06d9-436c-9ed6-5f3fa63dcb41",
-      "type": "component",
-      "position": {
-        "x": 1568,
-        "y": 848
-      },
-      "draggable": true,
-      "data": {
-        "definitionId": "thriftycam",
-        "label": "ThriftyCAM (ThriftyBot)",
-        "color": null,
-        "notes": "",
-        "locked": false,
-        "canId": null,
-        "ipAddress": null,
-        "ports": [
-          {
-            "id": "thriftycam-p0",
-            "type": "USB",
-            "label": "USB",
-            "side": "left",
-            "order": 0,
-            "gauge": null,
-            "fitting": null
-          }
-        ]
-      }
-    },
-    {
-      "id": "7fb6e4f8-eafe-4025-89d9-304587de1ff7",
-      "type": "component",
-      "position": {
-        "x": 1440,
-        "y": 704
-      },
-      "draggable": true,
-      "data": {
-        "definitionId": "rsl",
-        "label": "Robot Signal Light (RSL)",
-        "color": null,
-        "notes": "",
-        "locked": false,
-        "canId": null,
-        "ipAddress": null,
-        "ports": [
-          {
-            "id": "rsl-p0",
-            "type": "PWR",
-            "label": "PWR",
-            "side": "left",
-            "order": 0,
-            "gauge": "18 AWG",
-            "fitting": "Ferrule"
-          }
-        ]
-      }
     }
   ],
   "edges": [
     {
-      "id": "7fba558f-0340-4d18-a60c-0f21f6f2cfd7",
-      "source": "38b2bb5d-20d9-4249-9d67-9b5a6a2c27d0",
-      "target": "5c4d863e-32db-404b-998a-3ce784858ced",
-      "sourceHandle": "krakenx60-p0",
-      "targetHandle": "pdh-p4",
+      "id": "d7114fad-bbbc-4bef-8947-97e366c5e4b7",
+      "source": "a093b1fd-6240-4009-b1d6-f73a3545d9ac",
+      "target": "49b867d4-ec29-4bc6-bc4a-ce624ddac3aa",
+      "sourceHandle": "battery-p0",
+      "targetHandle": "mainbreaker-p0",
       "type": "wire",
       "data": {
         "type": "PWR",
         "layerId": "power",
         "color": null,
-        "wireGauge": "12 AWG",
-        "wireFittingFrom": "Ferrule",
-        "wireFittingTo": "Ferrule",
+        "wireGauge": "6 AWG",
+        "wireFittingFrom": "Anderson SB50",
+        "wireFittingTo": "Anderson SB50",
         "label": "PWR001",
         "labelEdited": false,
         "length": null,
@@ -1743,19 +1414,19 @@
       }
     },
     {
-      "id": "d5fec4e1-a94d-49ec-83fd-b6b860615b72",
-      "source": "5c4d863e-32db-404b-998a-3ce784858ced",
-      "target": "6dd399b5-d841-4861-be1f-1be89190134b",
-      "sourceHandle": "pdh-p5",
-      "targetHandle": "krakenx60-p0",
+      "id": "7723ca43-b2aa-4dd0-931d-14c0a33e7366",
+      "source": "d0560b94-2b31-4df8-8802-74f992b1184d",
+      "target": "49b867d4-ec29-4bc6-bc4a-ce624ddac3aa",
+      "sourceHandle": "pdh-p0",
+      "targetHandle": "mainbreaker-p1",
       "type": "wire",
       "data": {
         "type": "PWR",
         "layerId": "power",
         "color": null,
-        "wireGauge": "12 AWG",
-        "wireFittingFrom": "Ferrule",
-        "wireFittingTo": "Ferrule",
+        "wireGauge": "6 AWG",
+        "wireFittingFrom": "Anderson SB50",
+        "wireFittingTo": "Anderson SB50",
         "label": "PWR002",
         "labelEdited": false,
         "length": null,
@@ -1763,11 +1434,11 @@
       }
     },
     {
-      "id": "606bdfea-bcaa-4c46-9cfb-a65f4c1ffa2b",
-      "source": "ef734ae3-b0e2-4755-a65f-95a1c9a37a18",
-      "target": "fb7db487-20f2-4876-adc4-099933fff50a",
-      "sourceHandle": "mainbreaker-p0",
-      "targetHandle": "battery-p0",
+      "id": "fb3c5afe-38ea-4ec2-b92f-d5121bfe9af0",
+      "source": "a093b1fd-6240-4009-b1d6-f73a3545d9ac",
+      "target": "d0560b94-2b31-4df8-8802-74f992b1184d",
+      "sourceHandle": "battery-p1",
+      "targetHandle": "pdh-p1",
       "type": "wire",
       "data": {
         "type": "PWR",
@@ -1783,31 +1454,11 @@
       }
     },
     {
-      "id": "28fe9bd6-d801-43cb-994a-95234ca16d34",
-      "source": "5c4d863e-32db-404b-998a-3ce784858ced",
-      "target": "ef734ae3-b0e2-4755-a65f-95a1c9a37a18",
-      "sourceHandle": "pdh-p0",
-      "targetHandle": "mainbreaker-p1",
-      "type": "wire",
-      "data": {
-        "type": "CAN",
-        "layerId": "canbus",
-        "color": null,
-        "wireGauge": "6 AWG",
-        "wireFittingFrom": "Anderson SB50",
-        "wireFittingTo": "Anderson SB50",
-        "label": "PWR004",
-        "labelEdited": false,
-        "length": null,
-        "notes": ""
-      }
-    },
-    {
-      "id": "fc05ed71-ace4-4e35-8000-98971df0ae49",
-      "source": "38b2bb5d-20d9-4249-9d67-9b5a6a2c27d0",
-      "target": "c55266ab-3b64-45c8-bc4e-1a1ac3bb31b9",
-      "sourceHandle": "krakenx60-p1",
-      "targetHandle": "roborio2-p1",
+      "id": "a8a153f9-b3de-4f4e-aa1a-611ee65f2005",
+      "source": "d3b7ce18-9148-4626-b107-2fa0785484b7",
+      "target": "c77545d2-f9a3-4568-ac9b-8a0aa9e2b47e",
+      "sourceHandle": "krakenx60-p4",
+      "targetHandle": "roborio2-p2",
       "type": "wire",
       "data": {
         "type": "CAN",
@@ -1816,65 +1467,23 @@
         "wireGauge": "22 AWG",
         "wireFittingFrom": "Wago Lever Nut",
         "wireFittingTo": "Wago Lever Nut",
-        "label": "CAN001",
+        "label": "CAN003",
         "labelEdited": false,
         "length": null,
         "notes": ""
       }
     },
     {
-      "id": "e17f6643-92ce-42de-bc08-bad3601e6d86",
-      "source": "6dd399b5-d841-4861-be1f-1be89190134b",
-      "target": "38b2bb5d-20d9-4249-9d67-9b5a6a2c27d0",
-      "sourceHandle": "krakenx60-p1",
-      "targetHandle": "krakenx60-p2",
+      "id": "19c6864c-a5ef-4aa2-8575-74be82031ee8",
+      "source": "d3b7ce18-9148-4626-b107-2fa0785484b7",
+      "target": "c77545d2-f9a3-4568-ac9b-8a0aa9e2b47e",
+      "sourceHandle": "krakenx60-p5",
+      "targetHandle": "roborio2-p3",
       "type": "wire",
       "data": {
         "type": "CAN",
         "layerId": "canbus",
         "color": null,
-        "wireGauge": "22 AWG",
-        "wireFittingFrom": "Wago Lever Nut",
-        "wireFittingTo": "Wago Lever Nut",
-        "label": "CAN002",
-        "labelEdited": false,
-        "length": null,
-        "notes": ""
-      }
-    },
-    {
-      "id": "7d723e06-8f08-431d-ad4f-791698d137fc",
-      "source": "5c4d863e-32db-404b-998a-3ce784858ced",
-      "target": "9cc11703-36d9-4d4b-ae86-032b4e67ee90",
-      "sourceHandle": "pdh-p6",
-      "targetHandle": "mpm-p0",
-      "type": "wire",
-      "data": {
-        "type": "PWR",
-        "layerId": "power",
-        "color": null,
-        "color2": null,
-        "wireGauge": "12 AWG",
-        "wireFittingFrom": "Ferrule",
-        "wireFittingTo": "Ferrule",
-        "label": "PWR005",
-        "labelEdited": false,
-        "length": null,
-        "notes": ""
-      }
-    },
-    {
-      "id": "406e6c4c-b454-4c40-8a48-cc96cebd6160",
-      "source": "8fb19c14-4a89-42ea-bb9c-bd2fa2890aff",
-      "target": "6dd399b5-d841-4861-be1f-1be89190134b",
-      "sourceHandle": "cancoder-p1",
-      "targetHandle": "krakenx60-p2",
-      "type": "wire",
-      "data": {
-        "type": "CAN",
-        "layerId": "canbus",
-        "color": null,
-        "color2": null,
         "wireGauge": "22 AWG",
         "wireFittingFrom": "Wago Lever Nut",
         "wireFittingTo": "Wago Lever Nut",
@@ -1885,11 +1494,11 @@
       }
     },
     {
-      "id": "244e7bc4-d1c8-4582-901f-2f2cd150af0b",
-      "source": "8fb19c14-4a89-42ea-bb9c-bd2fa2890aff",
-      "target": "9cc11703-36d9-4d4b-ae86-032b4e67ee90",
-      "sourceHandle": "cancoder-p0",
-      "targetHandle": "mpm-p1",
+      "id": "c2b7b94b-e3b4-4449-93dc-0f37cbf38150",
+      "source": "41aa248f-6dd5-47d3-8b91-77bdddea2426",
+      "target": "d3b7ce18-9148-4626-b107-2fa0785484b7",
+      "sourceHandle": "krakenx60-p5",
+      "targetHandle": "krakenx60-p3",
       "type": "wire",
       "data": {
         "type": "CAN",
@@ -1975,7 +1584,6 @@
         "type": "PWR",
         "layerId": "power",
         "color": null,
-        "color2": null,
         "wireGauge": "18 AWG",
         "wireFittingFrom": "Ferrule",
         "wireFittingTo": "Ferrule",
@@ -1986,18 +1594,17 @@
       }
     },
     {
-      "id": "b73b7e04-b711-4bb1-b052-4ccb69f227ae",
-      "source": "3bccd54b-34f7-4e90-84ad-46f6ecdd90d6",
-      "target": "9cc11703-36d9-4d4b-ae86-032b4e67ee90",
-      "sourceHandle": "lasercan-p1",
-      "targetHandle": "mpm-p2",
+      "id": "6744e2e3-e445-4153-beaa-8d3593c90ddb",
+      "source": "d0560b94-2b31-4df8-8802-74f992b1184d",
+      "target": "9766bd0d-9363-4285-bfa5-38c3d77cc515",
+      "sourceHandle": "pdh-p7",
+      "targetHandle": "mitocandria-p1",
       "type": "wire",
       "data": {
         "type": "PWR",
         "layerId": "power",
         "color": null,
-        "color2": null,
-        "wireGauge": "22 AWG",
+        "wireGauge": "12 AWG",
         "wireFittingFrom": "Ferrule",
         "wireFittingTo": "Ferrule",
         "label": "PWR007",
@@ -2007,18 +1614,17 @@
       }
     },
     {
-      "id": "8116c969-3ffc-43d1-b79c-8917059daa08",
-      "source": "8fb19c14-4a89-42ea-bb9c-bd2fa2890aff",
-      "target": "3bccd54b-34f7-4e90-84ad-46f6ecdd90d6",
-      "sourceHandle": "2a8427ec-d55d-4534-9ba0-3acdde91d098",
-      "targetHandle": "lasercan-p3",
+      "id": "74113402-058e-470f-a6f6-43f292673215",
+      "source": "41aa248f-6dd5-47d3-8b91-77bdddea2426",
+      "target": "d0560b94-2b31-4df8-8802-74f992b1184d",
+      "sourceHandle": "krakenx60-p0",
+      "targetHandle": "pdh-p8",
       "type": "wire",
       "data": {
         "type": "PWR",
         "layerId": "power",
         "color": null,
-        "color2": null,
-        "wireGauge": "18 AWG",
+        "wireGauge": "12 AWG",
         "wireFittingFrom": "Ferrule",
         "wireFittingTo": "Ferrule",
         "label": "PWR008",
@@ -2028,18 +1634,17 @@
       }
     },
     {
-      "id": "716690b9-20d3-4b06-b8db-be3388c64064",
-      "source": "2e353a21-b108-4a98-ab4e-e6a9201e23ad",
-      "target": "5c4d863e-32db-404b-998a-3ce784858ced",
-      "sourceHandle": "mitocandria-p0",
-      "targetHandle": "pdh-p7",
+      "id": "089d4357-efe7-4af5-939e-d1424289fcf4",
+      "source": "d0560b94-2b31-4df8-8802-74f992b1184d",
+      "target": "41aa248f-6dd5-47d3-8b91-77bdddea2426",
+      "sourceHandle": "pdh-p9",
+      "targetHandle": "krakenx60-p1",
       "type": "wire",
       "data": {
         "type": "PWR",
         "layerId": "power",
         "color": null,
-        "color2": null,
-        "wireGauge": "18 AWG",
+        "wireGauge": "12 AWG",
         "wireFittingFrom": "Ferrule",
         "wireFittingTo": "Ferrule",
         "label": "PWR009",
@@ -2299,7 +1904,6 @@
         "type": "USB",
         "layerId": "usb",
         "color": null,
-        "color2": null,
         "wireGauge": null,
         "wireFittingFrom": null,
         "wireFittingTo": null,
@@ -2310,17 +1914,16 @@
       }
     },
     {
-      "id": "1b97c7c8-321d-468b-af1f-68ce8fbe82fb",
-      "source": "ca7934b1-06d9-436c-9ed6-5f3fa63dcb41",
-      "target": "e070180b-8ca1-4fd4-b3b5-ab5cd4210c8d",
-      "sourceHandle": "thriftycam-p0",
-      "targetHandle": "orangepi5-p3",
+      "id": "50ce246b-5588-4ae2-9a83-3ed3c46809e0",
+      "source": "9324a52e-05dc-43f7-8ba6-cd527183ac03",
+      "target": "e1d6f4b4-9b38-40f3-9ce5-cfef5ed206bb",
+      "sourceHandle": "orangepi5-p4",
+      "targetHandle": "thriftycam-p0",
       "type": "wire",
       "data": {
         "type": "USB",
         "layerId": "usb",
         "color": null,
-        "color2": null,
         "wireGauge": null,
         "wireFittingFrom": null,
         "wireFittingTo": null,
@@ -2461,7 +2064,6 @@
         "type": "ETH",
         "layerId": "ethernet",
         "color": null,
-        "color2": null,
         "wireGauge": null,
         "wireFittingFrom": null,
         "wireFittingTo": null,
@@ -2472,42 +2074,20 @@
       }
     },
     {
-      "id": "539dbef1-ee0a-4261-994f-e6ce8a21f1bf",
-      "source": "e070180b-8ca1-4fd4-b3b5-ab5cd4210c8d",
-      "target": "a7f4196c-8521-4afe-a2aa-f986a8c95426",
-      "sourceHandle": "orangepi5-p1",
-      "targetHandle": "vh109-p3",
+      "id": "8e13cb0c-adfc-4538-87e6-79ef9ef420e5",
+      "source": "9324a52e-05dc-43f7-8ba6-cd527183ac03",
+      "target": "239ddcf0-b970-49c2-a88d-bac9909e14d8",
+      "sourceHandle": "orangepi5-p2",
+      "targetHandle": "vh109-p4",
       "type": "wire",
       "data": {
         "type": "ETH",
         "layerId": "ethernet",
         "color": null,
-        "color2": null,
         "wireGauge": null,
         "wireFittingFrom": null,
         "wireFittingTo": null,
         "label": "ETH002",
-        "labelEdited": false,
-        "length": null,
-        "notes": ""
-      }
-    },
-    {
-      "id": "8bfd630a-102f-472c-9746-e790ea1695ea",
-      "source": "c55266ab-3b64-45c8-bc4e-1a1ac3bb31b9",
-      "target": "7fb6e4f8-eafe-4025-89d9-304587de1ff7",
-      "sourceHandle": "roborio2-p5",
-      "targetHandle": "rsl-p0",
-      "type": "wire",
-      "data": {
-        "type": "PWR",
-        "layerId": "power",
-        "color": null,
-        "color2": null,
-        "wireGauge": "12 AWG",
-        "wireFittingFrom": "Ferrule",
-        "wireFittingTo": "Ferrule",
-        "label": "PWR010",
         "labelEdited": false,
         "length": null,
         "notes": ""
