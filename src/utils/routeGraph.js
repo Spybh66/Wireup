@@ -117,10 +117,11 @@ export function computeAllRoutes({
   const visibleLayers = new Set(layers.filter((l) => l.visible).map((l) => l.id));
   const dragging = new Set(draggingIds);
 
-  const nodeRects = nodes.map((n) => {
-    const def = getDefinition(n.data.definitionId, customDefinitions);
-    return nodeRect(n, def ?? { width: 120, height: 70 });
-  });
+  // Only real components are obstacles / get rectangles; annotation nodes
+  // (notes, zones) carry no definition and must not deflect wires.
+  const nodeRects = nodes
+    .filter((n) => getDefinition(n.data.definitionId, customDefinitions))
+    .map((n) => nodeRect(n, getDefinition(n.data.definitionId, customDefinitions)));
   const obstacles = nodeRects.map((r) => inflate(r, PAD));
 
   // Pass 0: resolve EVERY edge's endpoints (not just visible ones). Routing all

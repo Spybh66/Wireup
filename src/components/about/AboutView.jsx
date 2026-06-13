@@ -116,6 +116,10 @@ export default function AboutView() {
               <Step>Each wire type lives on a layer (Power, CAN Bus, Ethernet, USB, Data).</Step>
               <Step>Toggle layer visibility from the panel in the bottom-right of the canvas.</Step>
               <Step>Customize wire labels with the template editor in the Sheet tab.</Step>
+              <Step>
+                Add <strong>Notes</strong> and <strong>Zone</strong> boxes (top-left toolbar) to
+                annotate and group regions; save a selection as a reusable <strong>subsystem</strong>.
+              </Step>
             </ul>
           </Section>
         </div>

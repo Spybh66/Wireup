@@ -165,6 +165,23 @@ const useDiagramStore = create(
         return node.id;
       },
 
+      // Add an annotation node ('note' = free text, 'zone' = labeled box). These
+      // live in `nodes` (so drag/undo/save just work) but carry no definitionId,
+      // so routing, DRC, and the sheet skip them.
+      addAnnotation: (kind, position) => {
+        const base = { id: uuid(), position: { ...position }, draggable: true };
+        const node =
+          kind === 'zone'
+            ? { ...base, type: 'zone', zIndex: -1, data: { text: 'Zone', color: '#3b82f6', width: 240, height: 160 } }
+            : { ...base, type: 'note', data: { text: 'Note', color: '#d4d4d8' } };
+        set((s) => ({
+          nodes: [...s.nodes, node],
+          selection: { nodes: [node.id], edges: [] },
+          dirty: true,
+        }));
+        return node.id;
+      },
+
       updateNodeData: (id, patch) =>
         set((s) => ({
           nodes: s.nodes.map((n) =>

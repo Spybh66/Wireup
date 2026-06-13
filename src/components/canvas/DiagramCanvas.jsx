@@ -7,11 +7,15 @@ import {
   ReactFlowProvider,
   Background,
   Controls,
+  Panel,
   useReactFlow,
   useNodesState,
   useStoreApi,
 } from '@xyflow/react';
+import { StickyNote, Square } from 'lucide-react';
 import ComponentNode from './ComponentNode';
+import NoteNode from './NoteNode';
+import ZoneNode from './ZoneNode';
 import WireEdge from './WireEdge';
 import { RoutingContext } from './RoutingContext';
 import { DrcContext } from './DrcContext';
@@ -23,7 +27,7 @@ import { computeAllRoutes } from '../../utils/routeGraph';
 
 const SEV_RANK = { error: 0, warning: 1, info: 2 };
 
-const nodeTypes = { component: ComponentNode };
+const nodeTypes = { component: ComponentNode, note: NoteNode, zone: ZoneNode };
 const edgeTypes = { wire: WireEdge };
 
 function Flow({ onOpenNodeConfig }) {
@@ -53,7 +57,7 @@ function Flow({ onOpenNodeConfig }) {
   useEffect(() => {
     let cancelled = false;
     let tries = 0;
-    const sigOf = (n) => n.data.ports.map((p) => p.id + p.side + p.order).join(',');
+    const sigOf = (n) => (n.data.ports ?? []).map((p) => p.id + p.side + p.order).join(',');
     const attempt = () => {
       if (cancelled) return;
       const updates = new Map();
@@ -116,7 +120,7 @@ function Flow({ onOpenNodeConfig }) {
         .map(
           (n) =>
             `${n.id}:${n.position.x},${n.position.y}:${n.data.definitionId}:` +
-            n.data.ports.map((p) => p.id + p.side + p.order).join('|')
+            (n.data.ports ?? []).map((p) => p.id + p.side + p.order).join('|')
         )
         .join(';'),
     [rfNodes]
@@ -306,6 +310,30 @@ function Flow({ onOpenNodeConfig }) {
           maxZoom={2.5}
           proOptions={{ hideAttribution: true }}
         >
+          <Panel position="top-left" className="flex gap-1">
+            <button
+              onClick={() =>
+                useDiagramStore
+                  .getState()
+                  .addAnnotation('note', screenToFlowPosition({ x: window.innerWidth / 2, y: window.innerHeight / 2 }))
+              }
+              title="Add a text note"
+              className="flex items-center gap-1 rounded border border-edge bg-surface-1 px-2 py-1 text-xs text-silver shadow hover:bg-surface-2"
+            >
+              <StickyNote size={13} /> Note
+            </button>
+            <button
+              onClick={() =>
+                useDiagramStore
+                  .getState()
+                  .addAnnotation('zone', screenToFlowPosition({ x: window.innerWidth / 2, y: window.innerHeight / 2 }))
+              }
+              title="Add a zone box"
+              className="flex items-center gap-1 rounded border border-edge bg-surface-1 px-2 py-1 text-xs text-silver shadow hover:bg-surface-2"
+            >
+              <Square size={13} /> Zone
+            </button>
+          </Panel>
           {settings.gridVisible && (
             <Background variant="dots" gap={settings.gridSize} size={1.5} color="#4a4a55" />
           )}

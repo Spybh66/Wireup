@@ -28,6 +28,7 @@ export function buildValidationRows(state) {
 export function buildComponentRows(state) {
   const { nodes, customDefinitions } = state;
   return nodes
+    .filter((n) => n.data?.definitionId) // skip annotation nodes
     .map((n) => {
       const def = getDefinition(n.data.definitionId, customDefinitions);
       return {

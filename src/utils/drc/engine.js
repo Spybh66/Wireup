@@ -4,7 +4,9 @@ import { getDefinition } from '../../data/componentLibrary';
 import { DRC_RULES, SEVERITY_ORDER } from './rules';
 
 // Build the context the rules read from.
-function buildContext({ nodes, edges, customDefinitions = [] }) {
+function buildContext({ nodes: allNodes, edges, customDefinitions = [] }) {
+  // Annotation nodes (notes/zones) have no definitionId — exclude from checks.
+  const nodes = allNodes.filter((n) => n.data?.definitionId);
   const nodeById = new Map(nodes.map((n) => [n.id, n]));
   const defCache = new Map();
   const defOf = (node) => {
