@@ -11,6 +11,8 @@
 //   typeEdges(node, t) — edges of wire-type `t` attached to a node
 //   portsOfType(node,t)— node ports of a given type
 
+import { ampacityForGauge, minGaugeForAmps } from '../../data/wireTypes';
+
 const isBlank = (v) => v === null || v === undefined || String(v).trim() === '';
 
 function pluralDef(count, name) {
@@ -225,6 +227,32 @@ export const DRC_RULES = [
             });
           }
         }
+      }
+      return out;
+    },
+  },
+  {
+    id: 'undersized-gauge',
+    label: 'Undersized wire gauge',
+    description:
+      'A power wire’s gauge is too small for its breaker / current rating.',
+    severity: 'warning',
+    run(ctx) {
+      const out = [];
+      for (const e of ctx.edges) {
+        if (e.data.type !== 'PWR') continue;
+        const amps = Number(e.data.wireAmps);
+        if (!Number.isFinite(amps) || amps <= 0) continue;
+        const cap = ampacityForGauge(e.data.wireGauge);
+        if (cap == null || cap >= amps) continue;
+        const rec = minGaugeForAmps(amps);
+        out.push({
+          ruleId: this.id,
+          severity: this.severity,
+          message: `${e.data.label}: ${e.data.wireGauge} (~${cap} A) carries ${amps} A${rec ? ` — use ${rec}` : ''}`,
+          nodes: [e.source, e.target],
+          edges: [e.id],
+        });
       }
       return out;
     },

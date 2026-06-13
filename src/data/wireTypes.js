@@ -62,6 +62,35 @@ export const FITTING_OPTIONS = [
   'Bare Wire',
 ];
 
+// Approximate continuous current capacity (amps) per gauge for chassis/robot
+// power wiring. Advisory values used by the DRC gauge-vs-current check.
+export const GAUGE_AMPACITY = {
+  '2 AWG': 200,
+  '4 AWG': 150,
+  '6 AWG': 115,
+  '8 AWG': 73,
+  '10 AWG': 55,
+  '12 AWG': 41,
+  '14 AWG': 32,
+  '16 AWG': 22,
+  '18 AWG': 16,
+  '20 AWG': 11,
+  '22 AWG': 7,
+};
+
+// Max continuous amps a gauge can carry (null if unknown).
+export function ampacityForGauge(gauge) {
+  return GAUGE_AMPACITY[gauge] ?? null;
+}
+
+// Smallest gauge from GAUGE_OPTIONS rated for the given current (or null).
+export function minGaugeForAmps(amps) {
+  for (let i = GAUGE_OPTIONS.length - 1; i >= 0; i--) {
+    if (ampacityForGauge(GAUGE_OPTIONS[i]) >= amps) return GAUGE_OPTIONS[i];
+  }
+  return null;
+}
+
 // §3.4 — type defaults when a port doesn't specify gauge/fitting.
 export function defaultGaugeForType(type) {
   if (type === 'CAN') return '22 AWG';

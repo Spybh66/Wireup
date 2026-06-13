@@ -220,6 +220,7 @@ const useDiagramStore = create(
             wireGauge: srcPort.gauge ?? defaultGaugeForType(type),
             wireFittingFrom: srcPort.fitting ?? defaultFittingForType(type),
             wireFittingTo: tgtPort?.fitting ?? defaultFittingForType(type),
+            wireAmps: null, // breaker / continuous current rating (A), for gauge check
             label,
             labelEdited: false,
             length: null,

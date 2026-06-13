@@ -166,6 +166,24 @@ export default function WireConfigPanel({ edgeId, onClose }) {
                 ))}
               </select>
             </label>
+            {d.type === 'PWR' && (
+              <label className="block">
+                <span className="mb-1 block text-neutral-400" title="Breaker or continuous current rating; checked against the wire gauge">
+                  Breaker / current (A)
+                </span>
+                <input
+                  type="number"
+                  min={0}
+                  value={d.wireAmps ?? ''}
+                  onChange={(e) =>
+                    updateEdgeData(edgeId, {
+                      wireAmps: e.target.value === '' ? null : Math.max(0, Number(e.target.value)),
+                    })
+                  }
+                  className="w-full rounded border border-edge bg-surface-0 px-2 py-1 text-silver outline-none focus:border-silver"
+                />
+              </label>
+            )}
             <div className="grid grid-cols-2 gap-2">
               <label className="block">
                 <span className="mb-1 block text-neutral-400" title={`Fitting at ${fromNode?.data.label ?? 'from'}`}>
