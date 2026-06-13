@@ -1,14 +1,12 @@
 // §3 Wire Type System — colors, label groups, default layers, gauges, fittings.
 
 // Port/wire types (§2.3)
-export const PORT_TYPES = ['PWR+', 'PWR-', 'CANH', 'CANL', 'ETH', 'USB', 'DATA'];
+export const PORT_TYPES = ['PWR', 'CAN', 'ETH', 'USB', 'DATA'];
 
 // §3.1 — default color (hex), label group, default layer name per type.
 export const WIRE_TYPE_INFO = {
-  'PWR+': { color: '#ef4444', group: 'PWR', layer: 'Power' },
-  'PWR-': { color: '#525252', group: 'PWR', layer: 'Power' },
-  CANH: { color: '#eab308', group: 'CAN', layer: 'CAN Bus' },
-  CANL: { color: '#22c55e', group: 'CAN', layer: 'CAN Bus' },
+  PWR: { color: '#ef4444', group: 'PWR', layer: 'Power' },
+  CAN: { color: '#eab308', group: 'CAN', layer: 'CAN Bus' },
   ETH: { color: '#3b82f6', group: 'ETH', layer: 'Ethernet' },
   USB: { color: '#a855f7', group: 'USB', layer: 'USB' },
   DATA: { color: '#9ca3af', group: 'DATA', layer: 'Data' },
@@ -26,9 +24,9 @@ export function defaultLayerNameForType(type) {
   return WIRE_TYPE_INFO[type]?.layer ?? 'Data';
 }
 
-// Types that carry a gauge + fitting (PWR* and CAN*). ETH/USB/DATA do not.
+// Types that carry a gauge + fitting (PWR and CAN). ETH/USB/DATA do not.
 export function typeHasGaugeFitting(type) {
-  return type === 'PWR+' || type === 'PWR-' || type === 'CANH' || type === 'CANL';
+  return type === 'PWR' || type === 'CAN';
 }
 
 // §3.4 — option lists
@@ -58,14 +56,14 @@ export const FITTING_OPTIONS = [
 
 // §3.4 — type defaults when a port doesn't specify gauge/fitting.
 export function defaultGaugeForType(type) {
-  if (type === 'CANH' || type === 'CANL') return '22 AWG';
-  if (type === 'PWR+' || type === 'PWR-') return '12 AWG';
+  if (type === 'CAN') return '22 AWG';
+  if (type === 'PWR') return '12 AWG';
   return null;
 }
 
 export function defaultFittingForType(type) {
-  if (type === 'CANH' || type === 'CANL') return 'Wago Lever Nut';
-  if (type === 'PWR+' || type === 'PWR-') return 'Ferrule';
+  if (type === 'CAN') return 'Wago Lever Nut';
+  if (type === 'PWR') return 'Ferrule';
   return null;
 }
 

@@ -23,7 +23,7 @@
         "ports": [
           {
             "id": "battery-p0",
-            "type": "PWR+",
+            "type": "PWR",
             "label": "BAT+",
             "side": "right",
             "order": 0,
@@ -32,7 +32,7 @@
           },
           {
             "id": "battery-p1",
-            "type": "PWR-",
+            "type": "PWR",
             "label": "BAT-",
             "side": "right",
             "order": 1,
@@ -61,7 +61,7 @@
         "ports": [
           {
             "id": "mainbreaker-p0",
-            "type": "PWR+",
+            "type": "PWR",
             "label": "IN",
             "side": "left",
             "order": 0,
@@ -70,7 +70,7 @@
           },
           {
             "id": "mainbreaker-p1",
-            "type": "PWR+",
+            "type": "PWR",
             "label": "OUT",
             "side": "right",
             "order": 0,
@@ -99,7 +99,7 @@
         "ports": [
           {
             "id": "pdh-p0",
-            "type": "PWR+",
+            "type": "PWR",
             "label": "V+",
             "side": "bottom",
             "order": 0,
@@ -108,7 +108,7 @@
           },
           {
             "id": "pdh-p1",
-            "type": "PWR-",
+            "type": "PWR",
             "label": "V-",
             "side": "bottom",
             "order": 1,
@@ -117,7 +117,7 @@
           },
           {
             "id": "pdh-p2",
-            "type": "CANH",
+            "type": "CAN",
             "label": "CAN H",
             "side": "bottom",
             "order": 2,
@@ -126,7 +126,7 @@
           },
           {
             "id": "pdh-p3",
-            "type": "CANL",
+            "type": "CAN",
             "label": "CAN L",
             "side": "bottom",
             "order": 3,
@@ -135,7 +135,7 @@
           },
           {
             "id": "pdh-p4",
-            "type": "CANH",
+            "type": "CAN",
             "label": "CAN H",
             "side": "bottom",
             "order": 4,
@@ -144,7 +144,7 @@
           },
           {
             "id": "pdh-p5",
-            "type": "CANL",
+            "type": "CAN",
             "label": "CAN L",
             "side": "bottom",
             "order": 5,
@@ -153,7 +153,7 @@
           },
           {
             "id": "pdh-p6",
-            "type": "PWR+",
+            "type": "PWR",
             "label": "CH0+",
             "side": "right",
             "order": 0,
@@ -162,7 +162,7 @@
           },
           {
             "id": "pdh-p7",
-            "type": "PWR-",
+            "type": "PWR",
             "label": "CH0-",
             "side": "right",
             "order": 1,
@@ -171,7 +171,7 @@
           },
           {
             "id": "pdh-p8",
-            "type": "PWR+",
+            "type": "PWR",
             "label": "CH1+",
             "side": "right",
             "order": 2,
@@ -180,7 +180,7 @@
           },
           {
             "id": "pdh-p9",
-            "type": "PWR-",
+            "type": "PWR",
             "label": "CH1-",
             "side": "right",
             "order": 3,
@@ -189,7 +189,7 @@
           },
           {
             "id": "pdh-p10",
-            "type": "PWR+",
+            "type": "PWR",
             "label": "CH2+",
             "side": "right",
             "order": 4,
@@ -198,7 +198,7 @@
           },
           {
             "id": "pdh-p11",
-            "type": "PWR-",
+            "type": "PWR",
             "label": "CH2-",
             "side": "right",
             "order": 5,
@@ -207,7 +207,7 @@
           },
           {
             "id": "pdh-p12",
-            "type": "PWR+",
+            "type": "PWR",
             "label": "CH3+",
             "side": "right",
             "order": 6,
@@ -216,7 +216,7 @@
           },
           {
             "id": "pdh-p13",
-            "type": "PWR-",
+            "type": "PWR",
             "label": "CH3-",
             "side": "right",
             "order": 7,
@@ -225,7 +225,7 @@
           },
           {
             "id": "pdh-p14",
-            "type": "PWR+",
+            "type": "PWR",
             "label": "CH4+",
             "side": "right",
             "order": 8,
@@ -234,7 +234,7 @@
           },
           {
             "id": "pdh-p15",
-            "type": "PWR-",
+            "type": "PWR",
             "label": "CH4-",
             "side": "right",
             "order": 9,
@@ -243,7 +243,7 @@
           },
           {
             "id": "pdh-p16",
-            "type": "PWR+",
+            "type": "PWR",
             "label": "CH5+",
             "side": "right",
             "order": 10,
@@ -252,7 +252,7 @@
           },
           {
             "id": "pdh-p17",
-            "type": "PWR-",
+            "type": "PWR",
             "label": "CH5-",
             "side": "right",
             "order": 11,
@@ -261,7 +261,7 @@
           },
           {
             "id": "pdh-p18",
-            "type": "PWR+",
+            "type": "PWR",
             "label": "CH6+",
             "side": "right",
             "order": 12,
@@ -270,7 +270,7 @@
           },
           {
             "id": "pdh-p19",
-            "type": "PWR-",
+            "type": "PWR",
             "label": "CH6-",
             "side": "right",
             "order": 13,
@@ -279,7 +279,7 @@
           },
           {
             "id": "pdh-p20",
-            "type": "PWR+",
+            "type": "PWR",
             "label": "CH7+",
             "side": "right",
             "order": 14,
@@ -288,7 +288,7 @@
           },
           {
             "id": "pdh-p21",
-            "type": "PWR-",
+            "type": "PWR",
             "label": "CH7-",
             "side": "right",
             "order": 15,
@@ -297,7 +297,7 @@
           },
           {
             "id": "pdh-p22",
-            "type": "PWR+",
+            "type": "PWR",
             "label": "CH8+",
             "side": "right",
             "order": 16,
@@ -306,7 +306,7 @@
           },
           {
             "id": "pdh-p23",
-            "type": "PWR-",
+            "type": "PWR",
             "label": "CH8-",
             "side": "right",
             "order": 17,
@@ -315,7 +315,7 @@
           },
           {
             "id": "pdh-p24",
-            "type": "PWR+",
+            "type": "PWR",
             "label": "CH9+",
             "side": "right",
             "order": 18,
@@ -324,7 +324,7 @@
           },
           {
             "id": "pdh-p25",
-            "type": "PWR-",
+            "type": "PWR",
             "label": "CH9-",
             "side": "right",
             "order": 19,
@@ -333,7 +333,7 @@
           },
           {
             "id": "pdh-p26",
-            "type": "PWR+",
+            "type": "PWR",
             "label": "CH10+",
             "side": "left",
             "order": 0,
@@ -342,7 +342,7 @@
           },
           {
             "id": "pdh-p27",
-            "type": "PWR-",
+            "type": "PWR",
             "label": "CH10-",
             "side": "left",
             "order": 1,
@@ -351,7 +351,7 @@
           },
           {
             "id": "pdh-p28",
-            "type": "PWR+",
+            "type": "PWR",
             "label": "CH11+",
             "side": "left",
             "order": 2,
@@ -360,7 +360,7 @@
           },
           {
             "id": "pdh-p29",
-            "type": "PWR-",
+            "type": "PWR",
             "label": "CH11-",
             "side": "left",
             "order": 3,
@@ -369,7 +369,7 @@
           },
           {
             "id": "pdh-p30",
-            "type": "PWR+",
+            "type": "PWR",
             "label": "CH12+",
             "side": "left",
             "order": 4,
@@ -378,7 +378,7 @@
           },
           {
             "id": "pdh-p31",
-            "type": "PWR-",
+            "type": "PWR",
             "label": "CH12-",
             "side": "left",
             "order": 5,
@@ -387,7 +387,7 @@
           },
           {
             "id": "pdh-p32",
-            "type": "PWR+",
+            "type": "PWR",
             "label": "CH13+",
             "side": "left",
             "order": 6,
@@ -396,7 +396,7 @@
           },
           {
             "id": "pdh-p33",
-            "type": "PWR-",
+            "type": "PWR",
             "label": "CH13-",
             "side": "left",
             "order": 7,
@@ -405,7 +405,7 @@
           },
           {
             "id": "pdh-p34",
-            "type": "PWR+",
+            "type": "PWR",
             "label": "CH14+",
             "side": "left",
             "order": 8,
@@ -414,7 +414,7 @@
           },
           {
             "id": "pdh-p35",
-            "type": "PWR-",
+            "type": "PWR",
             "label": "CH14-",
             "side": "left",
             "order": 9,
@@ -423,7 +423,7 @@
           },
           {
             "id": "pdh-p36",
-            "type": "PWR+",
+            "type": "PWR",
             "label": "CH15+",
             "side": "left",
             "order": 10,
@@ -432,7 +432,7 @@
           },
           {
             "id": "pdh-p37",
-            "type": "PWR-",
+            "type": "PWR",
             "label": "CH15-",
             "side": "left",
             "order": 11,
@@ -441,7 +441,7 @@
           },
           {
             "id": "pdh-p38",
-            "type": "PWR+",
+            "type": "PWR",
             "label": "CH16+",
             "side": "left",
             "order": 12,
@@ -450,7 +450,7 @@
           },
           {
             "id": "pdh-p39",
-            "type": "PWR-",
+            "type": "PWR",
             "label": "CH16-",
             "side": "left",
             "order": 13,
@@ -459,7 +459,7 @@
           },
           {
             "id": "pdh-p40",
-            "type": "PWR+",
+            "type": "PWR",
             "label": "CH17+",
             "side": "left",
             "order": 14,
@@ -468,7 +468,7 @@
           },
           {
             "id": "pdh-p41",
-            "type": "PWR-",
+            "type": "PWR",
             "label": "CH17-",
             "side": "left",
             "order": 15,
@@ -477,7 +477,7 @@
           },
           {
             "id": "pdh-p42",
-            "type": "PWR+",
+            "type": "PWR",
             "label": "CH18+",
             "side": "left",
             "order": 16,
@@ -486,7 +486,7 @@
           },
           {
             "id": "pdh-p43",
-            "type": "PWR-",
+            "type": "PWR",
             "label": "CH18-",
             "side": "left",
             "order": 17,
@@ -495,7 +495,7 @@
           },
           {
             "id": "pdh-p44",
-            "type": "PWR+",
+            "type": "PWR",
             "label": "CH19+",
             "side": "left",
             "order": 18,
@@ -504,7 +504,7 @@
           },
           {
             "id": "pdh-p45",
-            "type": "PWR-",
+            "type": "PWR",
             "label": "CH19-",
             "side": "left",
             "order": 19,
@@ -513,7 +513,7 @@
           },
           {
             "id": "pdh-p46",
-            "type": "PWR+",
+            "type": "PWR",
             "label": "CH20+",
             "side": "left",
             "order": 20,
@@ -522,7 +522,7 @@
           },
           {
             "id": "pdh-p47",
-            "type": "PWR-",
+            "type": "PWR",
             "label": "CH20-",
             "side": "left",
             "order": 21,
@@ -531,7 +531,7 @@
           },
           {
             "id": "pdh-p48",
-            "type": "PWR+",
+            "type": "PWR",
             "label": "CH21+",
             "side": "left",
             "order": 22,
@@ -540,7 +540,7 @@
           },
           {
             "id": "pdh-p49",
-            "type": "PWR-",
+            "type": "PWR",
             "label": "CH21-",
             "side": "left",
             "order": 23,
@@ -549,7 +549,7 @@
           },
           {
             "id": "pdh-p50",
-            "type": "PWR+",
+            "type": "PWR",
             "label": "CH22+",
             "side": "left",
             "order": 24,
@@ -558,7 +558,7 @@
           },
           {
             "id": "pdh-p51",
-            "type": "PWR-",
+            "type": "PWR",
             "label": "CH22-",
             "side": "left",
             "order": 25,
@@ -567,7 +567,7 @@
           },
           {
             "id": "pdh-p52",
-            "type": "PWR+",
+            "type": "PWR",
             "label": "CH23+",
             "side": "left",
             "order": 26,
@@ -576,7 +576,7 @@
           },
           {
             "id": "pdh-p53",
-            "type": "PWR-",
+            "type": "PWR",
             "label": "CH23-",
             "side": "left",
             "order": 27,
@@ -605,7 +605,7 @@
         "ports": [
           {
             "id": "roborio2-p0",
-            "type": "PWR+",
+            "type": "PWR",
             "label": "V+",
             "side": "top",
             "order": 0,
@@ -614,7 +614,7 @@
           },
           {
             "id": "roborio2-p1",
-            "type": "PWR-",
+            "type": "PWR",
             "label": "V-",
             "side": "top",
             "order": 1,
@@ -623,7 +623,7 @@
           },
           {
             "id": "roborio2-p2",
-            "type": "CANH",
+            "type": "CAN",
             "label": "CAN H",
             "side": "left",
             "order": 0,
@@ -632,7 +632,7 @@
           },
           {
             "id": "roborio2-p3",
-            "type": "CANL",
+            "type": "CAN",
             "label": "CAN L",
             "side": "left",
             "order": 1,
@@ -668,7 +668,7 @@
           },
           {
             "id": "roborio2-p7",
-            "type": "PWR+",
+            "type": "PWR",
             "label": "RSL+",
             "side": "bottom",
             "order": 0,
@@ -677,7 +677,7 @@
           },
           {
             "id": "roborio2-p8",
-            "type": "PWR-",
+            "type": "PWR",
             "label": "RSL-",
             "side": "bottom",
             "order": 1,
@@ -706,7 +706,7 @@
         "ports": [
           {
             "id": "krakenx60-p0",
-            "type": "PWR+",
+            "type": "PWR",
             "label": "V+",
             "side": "left",
             "order": 0,
@@ -715,7 +715,7 @@
           },
           {
             "id": "krakenx60-p1",
-            "type": "PWR-",
+            "type": "PWR",
             "label": "V-",
             "side": "left",
             "order": 1,
@@ -724,7 +724,7 @@
           },
           {
             "id": "krakenx60-p2",
-            "type": "CANH",
+            "type": "CAN",
             "label": "CAN H",
             "side": "right",
             "order": 0,
@@ -733,7 +733,7 @@
           },
           {
             "id": "krakenx60-p3",
-            "type": "CANL",
+            "type": "CAN",
             "label": "CAN L",
             "side": "right",
             "order": 1,
@@ -742,7 +742,7 @@
           },
           {
             "id": "krakenx60-p4",
-            "type": "CANH",
+            "type": "CAN",
             "label": "CAN H",
             "side": "right",
             "order": 2,
@@ -751,7 +751,7 @@
           },
           {
             "id": "krakenx60-p5",
-            "type": "CANL",
+            "type": "CAN",
             "label": "CAN L",
             "side": "right",
             "order": 3,
@@ -780,7 +780,7 @@
         "ports": [
           {
             "id": "krakenx60-p0",
-            "type": "PWR+",
+            "type": "PWR",
             "label": "V+",
             "side": "left",
             "order": 0,
@@ -789,7 +789,7 @@
           },
           {
             "id": "krakenx60-p1",
-            "type": "PWR-",
+            "type": "PWR",
             "label": "V-",
             "side": "left",
             "order": 1,
@@ -798,7 +798,7 @@
           },
           {
             "id": "krakenx60-p2",
-            "type": "CANH",
+            "type": "CAN",
             "label": "CAN H",
             "side": "right",
             "order": 0,
@@ -807,7 +807,7 @@
           },
           {
             "id": "krakenx60-p3",
-            "type": "CANL",
+            "type": "CAN",
             "label": "CAN L",
             "side": "right",
             "order": 1,
@@ -816,7 +816,7 @@
           },
           {
             "id": "krakenx60-p4",
-            "type": "CANH",
+            "type": "CAN",
             "label": "CAN H",
             "side": "right",
             "order": 2,
@@ -825,7 +825,7 @@
           },
           {
             "id": "krakenx60-p5",
-            "type": "CANL",
+            "type": "CAN",
             "label": "CAN L",
             "side": "right",
             "order": 3,
@@ -845,7 +845,7 @@
       "targetHandle": "mainbreaker-p0",
       "type": "wire",
       "data": {
-        "type": "PWR+",
+        "type": "PWR",
         "layerId": "power",
         "color": null,
         "wireGauge": "6 AWG",
@@ -865,7 +865,7 @@
       "targetHandle": "mainbreaker-p1",
       "type": "wire",
       "data": {
-        "type": "PWR+",
+        "type": "PWR",
         "layerId": "power",
         "color": null,
         "wireGauge": "6 AWG",
@@ -885,7 +885,7 @@
       "targetHandle": "pdh-p1",
       "type": "wire",
       "data": {
-        "type": "PWR-",
+        "type": "PWR",
         "layerId": "power",
         "color": null,
         "wireGauge": "6 AWG",
@@ -905,7 +905,7 @@
       "targetHandle": "roborio2-p2",
       "type": "wire",
       "data": {
-        "type": "CANH",
+        "type": "CAN",
         "layerId": "canbus",
         "color": null,
         "wireGauge": "22 AWG",
@@ -925,7 +925,7 @@
       "targetHandle": "roborio2-p3",
       "type": "wire",
       "data": {
-        "type": "CANL",
+        "type": "CAN",
         "layerId": "canbus",
         "color": null,
         "wireGauge": "22 AWG",
@@ -945,7 +945,7 @@
       "targetHandle": "krakenx60-p3",
       "type": "wire",
       "data": {
-        "type": "CANL",
+        "type": "CAN",
         "layerId": "canbus",
         "color": null,
         "wireGauge": "22 AWG",
@@ -965,7 +965,7 @@
       "targetHandle": "krakenx60-p2",
       "type": "wire",
       "data": {
-        "type": "CANH",
+        "type": "CAN",
         "layerId": "canbus",
         "color": null,
         "wireGauge": "22 AWG",
@@ -985,7 +985,7 @@
       "targetHandle": "krakenx60-p3",
       "type": "wire",
       "data": {
-        "type": "CANL",
+        "type": "CAN",
         "layerId": "canbus",
         "color": null,
         "wireGauge": "22 AWG",
@@ -1005,7 +1005,7 @@
       "targetHandle": "krakenx60-p2",
       "type": "wire",
       "data": {
-        "type": "CANH",
+        "type": "CAN",
         "layerId": "canbus",
         "color": null,
         "wireGauge": "22 AWG",
