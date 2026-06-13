@@ -12,6 +12,7 @@ import {
 } from '../../data/wireTypes';
 
 const SIDES = ['top', 'right', 'bottom', 'left'];
+const BREAKER_OPTIONS = [10, 20, 30, 40]; // legal FRC branch breaker/fuse ratings (R619)
 const uuid = () => crypto.randomUUID();
 
 // Reassign per-side order based on array order (keeps handles evenly spaced).
@@ -89,7 +90,7 @@ export default function ComponentConfigModal({ nodeId, onClose, onSelectEdge }) 
         role="dialog"
         aria-modal="true"
         aria-label={`Edit ${data.label}`}
-        className="flex max-h-[88vh] w-[40rem] max-w-[94vw] flex-col rounded-lg border border-edge bg-surface-1 shadow-2xl"
+        className="flex max-h-[88vh] w-[46rem] max-w-[94vw] flex-col rounded-lg border border-edge bg-surface-1 shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         {/* header */}
@@ -192,12 +193,12 @@ export default function ComponentConfigModal({ nodeId, onClose, onSelectEdge }) 
               {data.ports.map((p) => {
                 const showGF = typeHasGaugeFitting(p.type);
                 return (
-                  <div key={p.id} className="flex flex-wrap items-center gap-2">
+                  <div key={p.id} className="flex items-center gap-2">
                     <select
                       value={p.type}
                       onChange={(e) => updatePort(p.id, { type: e.target.value })}
                       aria-label="Port type"
-                      className="w-20 rounded border border-edge bg-surface-0 px-1 py-1 text-sm text-silver"
+                      className="w-20 shrink-0 rounded border border-edge bg-surface-0 px-1 py-1 text-sm text-silver"
                     >
                       {PORT_TYPES.map((t) => (
                         <option key={t} value={t}>{t}</option>
@@ -207,13 +208,13 @@ export default function ComponentConfigModal({ nodeId, onClose, onSelectEdge }) 
                       value={p.label}
                       onChange={(e) => updatePort(p.id, { label: e.target.value })}
                       aria-label="Port label"
-                      className="w-24 flex-1 rounded border border-edge bg-surface-0 px-2 py-1 text-sm text-silver"
+                      className="min-w-0 flex-1 rounded border border-edge bg-surface-0 px-2 py-1 text-sm text-silver"
                     />
                     <select
                       value={p.side}
                       onChange={(e) => updatePort(p.id, { side: e.target.value })}
                       aria-label="Port side"
-                      className="w-20 rounded border border-edge bg-surface-0 px-1 py-1 text-sm text-silver"
+                      className="w-20 shrink-0 rounded border border-edge bg-surface-0 px-1 py-1 text-sm text-silver"
                     >
                       {SIDES.map((s) => (
                         <option key={s} value={s}>{s}</option>
@@ -225,7 +226,7 @@ export default function ComponentConfigModal({ nodeId, onClose, onSelectEdge }) 
                           value={p.gauge ?? ''}
                           onChange={(e) => updatePort(p.id, { gauge: e.target.value || null })}
                           aria-label="Port gauge"
-                          className="w-24 rounded border border-edge bg-surface-0 px-1 py-1 text-sm text-silver"
+                          className="w-24 shrink-0 rounded border border-edge bg-surface-0 px-1 py-1 text-sm text-silver"
                         >
                           <option value="">gauge…</option>
                           {GAUGE_OPTIONS.map((g) => (
@@ -236,7 +237,7 @@ export default function ComponentConfigModal({ nodeId, onClose, onSelectEdge }) 
                           value={p.fitting ?? ''}
                           onChange={(e) => updatePort(p.id, { fitting: e.target.value || null })}
                           aria-label="Port fitting"
-                          className="w-28 rounded border border-edge bg-surface-0 px-1 py-1 text-sm text-silver"
+                          className="w-28 shrink-0 rounded border border-edge bg-surface-0 px-1 py-1 text-sm text-silver"
                         >
                           <option value="">fitting…</option>
                           {FITTING_OPTIONS.map((f) => (
@@ -244,27 +245,27 @@ export default function ComponentConfigModal({ nodeId, onClose, onSelectEdge }) 
                           ))}
                         </select>
                         {p.type === 'PWR' && (
-                          <input
-                            type="number"
-                            min={0}
+                          <select
                             value={p.breaker ?? ''}
                             onChange={(e) =>
-                              updatePort(p.id, {
-                                breaker: e.target.value === '' ? null : Math.max(0, Number(e.target.value)),
-                              })
+                              updatePort(p.id, { breaker: e.target.value === '' ? null : Number(e.target.value) })
                             }
-                            placeholder="breaker A"
                             title="Breaker rating (A) protecting this output — checked against connected wire gauge"
                             aria-label="Port breaker amps"
-                            className="w-20 rounded border border-edge bg-surface-0 px-2 py-1 text-sm text-silver"
-                          />
+                            className="w-24 shrink-0 rounded border border-edge bg-surface-0 px-1 py-1 text-sm text-silver"
+                          >
+                            <option value="">breaker…</option>
+                            {BREAKER_OPTIONS.map((a) => (
+                              <option key={a} value={a}>{a} A</option>
+                            ))}
+                          </select>
                         )}
                       </>
                     )}
                     <button
                       onClick={() => removePort(nodeId, p.id)}
                       aria-label="Remove port"
-                      className="rounded p-1 text-neutral-400 hover:text-red-400"
+                      className="shrink-0 rounded p-1 text-neutral-400 hover:text-red-400"
                     >
                       <Trash2 size={15} />
                     </button>
