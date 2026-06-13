@@ -1,6 +1,6 @@
 // §6 Component sidebar — searchable accordion library, draggable items.
 import { useMemo, useState, useEffect } from 'react';
-import { ChevronDown, ChevronRight, Plus, Search, PanelLeftClose, PanelLeftOpen } from 'lucide-react';
+import { ChevronDown, ChevronRight, Plus, Search, PanelLeftClose, PanelLeftOpen, Boxes, Trash2 } from 'lucide-react';
 import { COMPONENT_LIBRARY, CATEGORY_ORDER } from '../../data/componentLibrary';
 import { getIcon } from '../../assets/icons';
 import useDiagramStore from '../../store/diagramStore';
@@ -29,6 +29,16 @@ export default function ComponentSidebar() {
   const sidebarOpen = useDiagramStore((s) => s.sidebarOpen);
   const toggleSidebar = useDiagramStore((s) => s.toggleSidebar);
   const customDefinitions = useDiagramStore((s) => s.customDefinitions);
+  const templates = useDiagramStore((s) => s.templates);
+  const selectionCount = useDiagramStore((s) => s.selection.nodes.length);
+  const saveTemplate = useDiagramStore((s) => s.saveTemplate);
+  const removeTemplate = useDiagramStore((s) => s.removeTemplate);
+  const instantiateTemplate = useDiagramStore((s) => s.instantiateTemplate);
+
+  const onSaveTemplate = () => {
+    const name = window.prompt('Name this subsystem:');
+    if (name !== null) saveTemplate(name);
+  };
 
   const [rawSearch, setRawSearch] = useState('');
   const [search, setSearch] = useState('');
@@ -94,6 +104,39 @@ export default function ComponentSidebar() {
       </div>
 
       <div className="flex-1 overflow-y-auto p-2">
+        {templates.length > 0 && (
+          <div className="mb-2">
+            <div className="flex items-center gap-1 px-1 py-1 text-xs font-semibold uppercase tracking-wide text-neutral-400">
+              <Boxes size={14} /> Subsystems
+              <span className="ml-auto text-neutral-600">{templates.length}</span>
+            </div>
+            <div className="ml-1">
+              {templates.map((t) => (
+                <div
+                  key={t.id}
+                  className="group flex items-center gap-2 rounded px-2 py-1.5 text-sm text-silver hover:bg-surface-2"
+                >
+                  <button
+                    onClick={() => instantiateTemplate(t.id)}
+                    className="flex min-w-0 flex-1 items-center gap-2 text-left"
+                    title={`Add "${t.name}" (${t.nodes.length} components)`}
+                  >
+                    <Boxes size={20} className="shrink-0 text-neutral-400" />
+                    <span className="truncate">{t.name}</span>
+                    <span className="ml-auto shrink-0 text-xs text-neutral-600">{t.nodes.length}</span>
+                  </button>
+                  <button
+                    onClick={() => removeTemplate(t.id)}
+                    aria-label={`Delete ${t.name}`}
+                    className="text-neutral-500 opacity-0 hover:text-red-400 group-hover:opacity-100"
+                  >
+                    <Trash2 size={14} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
         {categories.length === 0 && (
           <p className="px-2 py-4 text-center text-sm text-neutral-500">No matches.</p>
         )}
@@ -121,7 +164,15 @@ export default function ComponentSidebar() {
         })}
       </div>
 
-      <div className="border-t border-edge p-2">
+      <div className="space-y-2 border-t border-edge p-2">
+        <button
+          onClick={onSaveTemplate}
+          disabled={selectionCount === 0}
+          title={selectionCount === 0 ? 'Select components on the canvas first' : 'Save selection as a reusable subsystem'}
+          className="flex w-full items-center justify-center gap-1.5 rounded border border-edge bg-surface-2 py-2 text-sm text-silver hover:bg-surface-0 disabled:cursor-not-allowed disabled:opacity-40"
+        >
+          <Boxes size={16} /> Save selection as subsystem
+        </button>
         <button
           onClick={() => setCreateOpen(true)}
           className="flex w-full items-center justify-center gap-1.5 rounded border border-edge bg-surface-2 py-2 text-sm text-silver hover:bg-surface-0"

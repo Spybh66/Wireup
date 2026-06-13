@@ -61,6 +61,28 @@ function persistSettings(settings) {
   }
 }
 
+// ---- subsystem templates (reusable wired clusters), persisted ----
+const TEMPLATES_KEY = 'wireup_templates';
+
+function loadTemplates() {
+  try {
+    const raw = localStorage.getItem(TEMPLATES_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+}
+
+function persistTemplates(templates) {
+  try {
+    localStorage.setItem(TEMPLATES_KEY, JSON.stringify(templates));
+  } catch {
+    /* ignore */
+  }
+}
+
+const deepCopy = (o) => JSON.parse(JSON.stringify(o));
+
 // Resolve a layer id from a wire type using the current layer list (by name).
 function layerIdForType(layers, type) {
   const name = defaultLayerNameForType(type);
@@ -101,6 +123,7 @@ const useDiagramStore = create(
       customDefinitions: [],
 
       // ---- non-tracked UI state ----
+      templates: loadTemplates(), // reusable subsystems (not in undo history)
       activeTab: 'diagram', // 'diagram' | 'sheet'
       sidebarOpen: true,
       selection: { nodes: [], edges: [] },
@@ -315,6 +338,65 @@ const useDiagramStore = create(
           selection: { nodes: newNodes.map((n) => n.id), edges: [] },
           dirty: true,
         })),
+
+      // ---------- subsystem templates ----------
+      // Save the current selection (nodes + the edges among them) as a reusable
+      // template, with positions normalized to the selection's top-left corner.
+      saveTemplate: (name) => {
+        const s = get();
+        const ids = new Set(s.selection.nodes);
+        if (!ids.size) {
+          get().addToast('Select components first');
+          return;
+        }
+        const nodes = s.nodes.filter((n) => ids.has(n.id));
+        const edges = s.edges.filter((e) => ids.has(e.source) && ids.has(e.target));
+        const minX = Math.min(...nodes.map((n) => n.position.x));
+        const minY = Math.min(...nodes.map((n) => n.position.y));
+        const tpl = {
+          id: uuid(),
+          name: name?.trim() || `Subsystem ${s.templates.length + 1}`,
+          nodes: nodes.map((n) => ({
+            ...deepCopy(n),
+            position: { x: n.position.x - minX, y: n.position.y - minY },
+          })),
+          edges: edges.map((e) => deepCopy(e)),
+        };
+        const templates = [...s.templates, tpl];
+        persistTemplates(templates);
+        set({ templates });
+        get().addToast(`Saved "${tpl.name}"`);
+      },
+
+      removeTemplate: (id) => {
+        const templates = get().templates.filter((t) => t.id !== id);
+        persistTemplates(templates);
+        set({ templates });
+      },
+
+      // Stamp a template onto the canvas at `position` (top-left), with fresh ids.
+      instantiateTemplate: (id, position = { x: 80, y: 80 }) => {
+        const tpl = get().templates.find((t) => t.id === id);
+        if (!tpl) return;
+        const idMap = new Map();
+        const newNodes = tpl.nodes.map((n) => {
+          const nid = uuid();
+          idMap.set(n.id, nid);
+          return {
+            ...deepCopy(n),
+            id: nid,
+            position: { x: n.position.x + position.x, y: n.position.y + position.y },
+            data: { ...n.data, label: dedupeLabel(get().nodes, getDefinition(n.data.definitionId, get().customDefinitions)?.name ?? n.data.label) },
+          };
+        });
+        const newEdges = tpl.edges.map((e) => ({
+          ...deepCopy(e),
+          id: uuid(),
+          source: idMap.get(e.source),
+          target: idMap.get(e.target),
+        }));
+        get().pasteGraph(newNodes, newEdges);
+      },
 
       // §3.2 reconnection — re-derive type/layer/gauge/fitting from new source.
       reconnectEdge: (edgeId, connection) => {

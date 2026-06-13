@@ -144,6 +144,31 @@ describe('diagramStore', () => {
     expect(ips).toContain('10.0.0.2'); // first kept
   });
 
+  it('saves a selection as a subsystem template and instantiates it', () => {
+    const s = useDiagramStore.getState();
+    const a = s.addNode('krakenx60', { x: 100, y: 100 });
+    const b = s.addNode('cancoder', { x: 300, y: 100 });
+    let st = useDiagramStore.getState();
+    const sp = st.nodes.find((n) => n.id === a).data.ports.find((p) => p.type === 'CAN');
+    const tp = st.nodes.find((n) => n.id === b).data.ports.find((p) => p.type === 'CAN');
+    st.addEdge({ source: a, target: b, sourceHandle: sp.id, targetHandle: tp.id });
+    useDiagramStore.getState().setSelection({ nodes: [a, b], edges: [] });
+
+    useDiagramStore.getState().saveTemplate('Swerve');
+    const tpls = useDiagramStore.getState().templates;
+    const tpl = tpls.find((t) => t.name === 'Swerve');
+    expect(tpl).toBeTruthy();
+    expect(tpl.nodes).toHaveLength(2);
+    expect(tpl.edges).toHaveLength(1);
+
+    const before = useDiagramStore.getState().nodes.length;
+    useDiagramStore.getState().instantiateTemplate(tpl.id);
+    expect(useDiagramStore.getState().nodes.length).toBe(before + 2);
+    expect(useDiagramStore.getState().edges).toHaveLength(2);
+
+    useDiagramStore.getState().removeTemplate(tpl.id); // cleanup persisted state
+  });
+
   it('moves deleted-layer wires to Power', () => {
     const s = useDiagramStore.getState();
     s.addLayer();
