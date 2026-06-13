@@ -15,11 +15,11 @@ describe('diagramStore', () => {
     const a = s.addNode('roborio2', { x: 0, y: 0 });
     const b = s.addNode('pdh', { x: 400, y: 0 });
     const st = useDiagramStore.getState();
-    const srcPort = st.nodes.find((n) => n.id === a).data.ports.find((p) => p.type === 'CANH');
-    const tgtPort = st.nodes.find((n) => n.id === b).data.ports.find((p) => p.type === 'CANH');
+    const srcPort = st.nodes.find((n) => n.id === a).data.ports.find((p) => p.type === 'CAN');
+    const tgtPort = st.nodes.find((n) => n.id === b).data.ports.find((p) => p.type === 'CAN');
     st.addEdge({ source: a, target: b, sourceHandle: srcPort.id, targetHandle: tgtPort.id });
     const edge = useDiagramStore.getState().edges[0];
-    expect(edge.data.type).toBe('CANH');
+    expect(edge.data.type).toBe('CAN');
     expect(edge.data.label).toBe('CAN001');
     expect(edge.data.wireGauge).toBe('22 AWG');
     expect(edge.data.wireFittingFrom).toBe('Wago Lever Nut');
@@ -33,8 +33,8 @@ describe('diagramStore', () => {
     const a = s.addNode('roborio2', { x: 0, y: 0 });
     const b = s.addNode('pdh', { x: 400, y: 0 });
     const st = useDiagramStore.getState();
-    const srcPort = st.nodes.find((n) => n.id === a).data.ports.find((p) => p.type === 'CANH');
-    const tgtPort = st.nodes.find((n) => n.id === b).data.ports.find((p) => p.type === 'CANH');
+    const srcPort = st.nodes.find((n) => n.id === a).data.ports.find((p) => p.type === 'CAN');
+    const tgtPort = st.nodes.find((n) => n.id === b).data.ports.find((p) => p.type === 'CAN');
     st.addEdge({ source: a, target: b, sourceHandle: srcPort.id, targetHandle: tgtPort.id });
 
     expect(useDiagramStore.getState().edges).toHaveLength(1);
@@ -86,8 +86,8 @@ describe('diagramStore', () => {
     const a = s.addNode('roborio2', { x: 0, y: 0 });
     const b = s.addNode('pdh', { x: 400, y: 0 });
     const st = useDiagramStore.getState();
-    const sp = st.nodes.find((n) => n.id === a).data.ports.find((p) => p.type === 'CANH');
-    const tp = st.nodes.find((n) => n.id === b).data.ports.find((p) => p.type === 'CANH');
+    const sp = st.nodes.find((n) => n.id === a).data.ports.find((p) => p.type === 'CAN');
+    const tp = st.nodes.find((n) => n.id === b).data.ports.find((p) => p.type === 'CAN');
     st.addEdge({ source: a, target: b, sourceHandle: sp.id, targetHandle: tp.id });
     const eid = useDiagramStore.getState().edges[0].id;
     useDiagramStore.getState().updateEdgeData(eid, { layerId: custom.id });

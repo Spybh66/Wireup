@@ -1,5 +1,30 @@
 // §2.1 Project JSON serialize / validate / load helpers + filename sanitizing.
 
+// Wire type aliases for projects saved before the pair→unified refactor.
+const TYPE_ALIASES = { 'PWR+': 'PWR', 'PWR-': 'PWR', CANH: 'CAN', CANL: 'CAN' };
+
+function migrateTypes(data) {
+  const migrate = (t) => TYPE_ALIASES[t] ?? t;
+  return {
+    ...data,
+    nodes: data.nodes.map((n) => ({
+      ...n,
+      data: {
+        ...n.data,
+        ports: (n.data.ports ?? []).map((p) => ({ ...p, type: migrate(p.type) })),
+      },
+    })),
+    edges: data.edges.map((e) => ({
+      ...e,
+      data: { ...e.data, type: migrate(e.data?.type) },
+    })),
+    customDefinitions: (data.customDefinitions ?? []).map((d) => ({
+      ...d,
+      defaultPorts: (d.defaultPorts ?? []).map((p) => ({ ...p, type: migrate(p.type) })),
+    })),
+  };
+}
+
 export const SCHEMA_VERSION = 1;
 
 export function serializeProject(state) {
@@ -30,18 +55,16 @@ export function validateProject(obj) {
       return { ok: false, error: 'Invalid or corrupted project file.' };
     }
   }
-  return {
-    ok: true,
-    data: {
-      projectName: typeof obj.projectName === 'string' ? obj.projectName : 'Untitled Project',
-      nodes: obj.nodes,
-      edges: obj.edges,
-      layers: obj.layers,
-      wireLabelTemplate:
-        typeof obj.wireLabelTemplate === 'string' ? obj.wireLabelTemplate : '{type}{index}',
-      customDefinitions: Array.isArray(obj.customDefinitions) ? obj.customDefinitions : [],
-    },
+  const raw = {
+    projectName: typeof obj.projectName === 'string' ? obj.projectName : 'Untitled Project',
+    nodes: obj.nodes,
+    edges: obj.edges,
+    layers: obj.layers,
+    wireLabelTemplate:
+      typeof obj.wireLabelTemplate === 'string' ? obj.wireLabelTemplate : '{type}{index}',
+    customDefinitions: Array.isArray(obj.customDefinitions) ? obj.customDefinitions : [],
   };
+  return { ok: true, data: migrateTypes(raw) };
 }
 
 // §11 — strip illegal filename chars; fall back to a default.

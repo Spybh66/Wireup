@@ -21,8 +21,7 @@ export default function CreateComponentModal({ onClose }) {
   const [width, setWidth] = useState(120);
   const [height, setHeight] = useState(70);
   const [ports, setPorts] = useState([
-    { key: uuid(), type: 'PWR+', label: 'V+', side: 'left' },
-    { key: uuid(), type: 'PWR-', label: 'V-', side: 'left' },
+    { key: uuid(), type: 'PWR', label: 'PWR', side: 'left' },
   ]);
 
   useEffect(() => {

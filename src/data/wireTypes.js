@@ -1,14 +1,14 @@
 // §3 Wire Type System — colors, label groups, default layers, gauges, fittings.
 
 // Port/wire types (§2.3)
-export const PORT_TYPES = ['PWR+', 'PWR-', 'CANH', 'CANL', 'ETH', 'USB', 'DATA'];
+export const PORT_TYPES = ['PWR', 'CAN', 'ETH', 'USB', 'DATA'];
 
 // §3.1 — default color (hex), label group, default layer name per type.
+// `color2` (optional) makes a striped two-tone wire: PWR = red/black,
+// CAN = yellow/green (the FRC wiring convention).
 export const WIRE_TYPE_INFO = {
-  'PWR+': { color: '#ef4444', group: 'PWR', layer: 'Power' },
-  'PWR-': { color: '#525252', group: 'PWR', layer: 'Power' },
-  CANH: { color: '#eab308', group: 'CAN', layer: 'CAN Bus' },
-  CANL: { color: '#22c55e', group: 'CAN', layer: 'CAN Bus' },
+  PWR: { color: '#ef4444', color2: '#1a1a1a', group: 'PWR', layer: 'Power' },
+  CAN: { color: '#eab308', color2: '#22c55e', group: 'CAN', layer: 'CAN Bus' },
   ETH: { color: '#3b82f6', group: 'ETH', layer: 'Ethernet' },
   USB: { color: '#a855f7', group: 'USB', layer: 'USB' },
   DATA: { color: '#9ca3af', group: 'DATA', layer: 'Data' },
@@ -16,6 +16,11 @@ export const WIRE_TYPE_INFO = {
 
 export function typeColor(type) {
   return WIRE_TYPE_INFO[type]?.color ?? '#9ca3af';
+}
+
+// Secondary stripe color, or null for solid (single-color) wires.
+export function typeColor2(type) {
+  return WIRE_TYPE_INFO[type]?.color2 ?? null;
 }
 
 export function typeGroup(type) {
@@ -26,9 +31,9 @@ export function defaultLayerNameForType(type) {
   return WIRE_TYPE_INFO[type]?.layer ?? 'Data';
 }
 
-// Types that carry a gauge + fitting (PWR* and CAN*). ETH/USB/DATA do not.
+// Types that carry a gauge + fitting (PWR and CAN). ETH/USB/DATA do not.
 export function typeHasGaugeFitting(type) {
-  return type === 'PWR+' || type === 'PWR-' || type === 'CANH' || type === 'CANL';
+  return type === 'PWR' || type === 'CAN';
 }
 
 // §3.4 — option lists
@@ -58,14 +63,14 @@ export const FITTING_OPTIONS = [
 
 // §3.4 — type defaults when a port doesn't specify gauge/fitting.
 export function defaultGaugeForType(type) {
-  if (type === 'CANH' || type === 'CANL') return '22 AWG';
-  if (type === 'PWR+' || type === 'PWR-') return '12 AWG';
+  if (type === 'CAN') return '22 AWG';
+  if (type === 'PWR') return '12 AWG';
   return null;
 }
 
 export function defaultFittingForType(type) {
-  if (type === 'CANH' || type === 'CANL') return 'Wago Lever Nut';
-  if (type === 'PWR+' || type === 'PWR-') return 'Ferrule';
+  if (type === 'CAN') return 'Wago Lever Nut';
+  if (type === 'PWR') return 'Ferrule';
   return null;
 }
 

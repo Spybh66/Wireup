@@ -3,7 +3,7 @@
 // occupancy lattice with crossing hops (§6.3) and label collision layout.
 import { getDefinition } from '../data/componentLibrary';
 import { portPosition, nodeRect } from './geometry';
-import { typeColor } from '../data/wireTypes';
+import { typeColor, typeColor2 } from '../data/wireTypes';
 import {
   computeRoute,
   detectHops,
@@ -28,9 +28,28 @@ function cheapRoute(source, target) {
 const LABEL_H = 15;       // approx label box height (px)
 const LABEL_CHAR_W = 6;   // approx per-character width at fontSize 10 (px)
 
+// Does segment a→b pass through the box (centred cx,cy with half-extents hw,hh)?
+function segHitsBox(ax, ay, bx, by, cx, cy, hw, hh) {
+  const minX = cx - hw, maxX = cx + hw, minY = cy - hh, maxY = cy + hh;
+  let t0 = 0, t1 = 1;
+  const dx = bx - ax, dy = by - ay;
+  const clip = (p, q) => {
+    if (p === 0) return q >= 0;
+    const r = q / p;
+    if (p < 0) { if (r > t1) return false; if (r > t0) t0 = r; }
+    else { if (r < t0) return false; if (r < t1) t1 = r; }
+    return true;
+  };
+  if (clip(-dx, ax - minX) && clip(dx, maxX - ax) && clip(-dy, ay - minY) && clip(dy, maxY - ay)) {
+    return t0 <= t1;
+  }
+  return false;
+}
+
 // Greedy label placement: anchor at each wire's midpoint, then nudge along the
-// wire's perpendicular to avoid overlapping other labels or component bodies.
-function layoutLabels(labelItems, nodeRects) {
+// wire's perpendicular to find a spot clear of component bodies, other labels,
+// AND wire bundles (so labels don't sit on top of the wires).
+function layoutLabels(labelItems, nodeRects, wirePolys) {
   const placed = [];
   const result = new Map();
 
@@ -44,6 +63,15 @@ function layoutLabels(labelItems, nodeRects) {
         box.y + box.h / 2 > r.y &&
         box.y - box.h / 2 < r.y + r.h
     );
+  const overWire = (box) => {
+    const hw = box.w / 2 + 2, hh = box.h / 2 + 2;
+    for (const poly of wirePolys) {
+      for (let i = 0; i < poly.length - 1; i++) {
+        if (segHitsBox(poly[i].x, poly[i].y, poly[i + 1].x, poly[i + 1].y, box.x, box.y, hw, hh)) return true;
+      }
+    }
+    return false;
+  };
 
   for (const item of labelItems) {
     const { id, anchor, text } = item;
@@ -54,18 +82,22 @@ function layoutLabels(labelItems, nodeRects) {
     const nlen = Math.hypot(nx, ny) || 1;
     nx /= nlen; ny /= nlen;
 
+    const step = h - 2;
     let best = null;
-    for (let k = 0; k <= 6 && !best; k++) {
-      for (const sign of k === 0 ? [0] : [1, -1]) {
-        const off = sign * k * (h + 3);
+    let fallback = null; // best spot clear of nodes+labels even if over a wire
+    for (let k = 1; k <= 14 && !best; k++) {
+      for (const sign of [1, -1]) {
+        const off = sign * k * step;
         const box = { x: anchor.x + nx * off, y: anchor.y + ny * off, w, h };
         if (overNode(box)) continue;
         if (placed.some((p) => overlaps(box, p))) continue;
+        if (!fallback) fallback = box;
+        if (overWire(box)) continue;
         best = box;
         break;
       }
     }
-    if (!best) best = { x: anchor.x + nx * (h + 3) * 4, y: anchor.y + ny * (h + 3) * 4, w, h };
+    best = best || fallback || { x: anchor.x + nx * step, y: anchor.y + ny * step, w, h };
     placed.push(best);
     result.set(id, { x: best.x, y: best.y });
   }
@@ -136,6 +168,7 @@ export function computeAllRoutes({
       points,
       fallback,
       color: e.data.color ?? typeColor(e.data.type),
+      color2: e.data.color2 ?? typeColor2(e.data.type),
       type: e.data.type,
       label: e.data.label,
     });
@@ -148,7 +181,7 @@ export function computeAllRoutes({
   const labelItems = ordered
     .filter((o) => meta.get(o.id).label)
     .map((o) => ({ id: o.id, anchor: labelAnchor(o.points), text: meta.get(o.id).label }));
-  const labelPos = layoutLabels(labelItems, nodeRects);
+  const labelPos = layoutLabels(labelItems, nodeRects, ordered.map((o) => o.points));
 
   const result = new Map();
   for (const o of ordered) {
@@ -161,6 +194,7 @@ export function computeAllRoutes({
       labelPos: labelPos.get(o.id) ?? { x: anchor.x, y: anchor.y },
       fallback: m.fallback,
       color: m.color,
+      color2: m.color2,
       type: m.type,
     });
   }

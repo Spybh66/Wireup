@@ -6,6 +6,7 @@ import {
   FITTING_OPTIONS,
   typeHasGaugeFitting,
   typeColor,
+  typeColor2,
 } from '../../data/wireTypes';
 
 export default function WireConfigPanel({ edgeId, onClose }) {
@@ -18,14 +19,22 @@ export default function WireConfigPanel({ edgeId, onClose }) {
 
   const d = edge.data;
   const showGF = typeHasGaugeFitting(d.type);
+  const hasStripe = typeColor2(d.type) != null;
   const fromNode = nodes.find((n) => n.id === edge.source);
   const toNode = nodes.find((n) => n.id === edge.target);
 
   return (
-    <div className="pointer-events-auto absolute right-4 top-4 z-10 w-64 rounded-lg border border-edge bg-surface-1/95 shadow-xl backdrop-blur">
+    <div className="pointer-events-auto absolute right-4 top-4 z-10 w-64 rounded-lg border border-edge bg-surface-1 shadow-xl">
       <div className="flex items-center justify-between border-b border-edge px-3 py-2">
         <span className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-neutral-300">
-          <span className="inline-block h-3 w-3 rounded-full" style={{ background: d.color ?? typeColor(d.type) }} />
+          <span
+            className="inline-block h-3 w-3 rounded-full"
+            style={{
+              background: hasStripe
+                ? `repeating-linear-gradient(45deg, ${d.color ?? typeColor(d.type)} 0 2px, ${d.color2 ?? typeColor2(d.type)} 2px 4px)`
+                : (d.color ?? typeColor(d.type)),
+            }}
+          />
           Wire
         </span>
         <button onClick={onClose} aria-label="Close wire panel" className="text-neutral-400 hover:text-silver">
@@ -57,27 +66,54 @@ export default function WireConfigPanel({ edgeId, onClose }) {
           />
         </label>
 
-        <div className="flex items-center gap-2">
-          <span className="rounded bg-surface-2 px-2 py-1 text-xs text-neutral-300" title="Wire type (read-only)">
-            {d.type}
-          </span>
-          <label className="ml-auto flex items-center gap-1 text-neutral-400">
-            color
-            <input
-              type="color"
-              value={d.color ?? typeColor(d.type)}
-              onChange={(e) => updateEdgeData(edgeId, { color: e.target.value })}
-              aria-label="Wire color"
-              className="h-7 w-9 cursor-pointer rounded border border-edge bg-surface-0"
-            />
-          </label>
-          {d.color && (
-            <button
-              onClick={() => updateEdgeData(edgeId, { color: null })}
-              className="text-xs text-neutral-400 hover:text-silver"
-            >
-              reset
-            </button>
+        <div className="space-y-2">
+          <div className="flex items-center gap-2">
+            <span className="rounded bg-surface-2 px-2 py-1 text-xs text-neutral-300" title="Wire type (read-only)">
+              {d.type}
+            </span>
+            <label className="ml-auto flex items-center gap-1 text-neutral-400">
+              {hasStripe ? 'color 1' : 'color'}
+              <input
+                type="color"
+                value={d.color ?? typeColor(d.type)}
+                onChange={(e) => updateEdgeData(edgeId, { color: e.target.value })}
+                aria-label="Wire color"
+                className="h-7 w-9 cursor-pointer rounded border border-edge bg-surface-0"
+              />
+            </label>
+            {d.color && (
+              <button
+                onClick={() => updateEdgeData(edgeId, { color: null })}
+                className="text-xs text-neutral-400 hover:text-silver"
+              >
+                reset
+              </button>
+            )}
+          </div>
+          {hasStripe && (
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-neutral-500" title="Striped wire — second color">
+                stripe
+              </span>
+              <label className="ml-auto flex items-center gap-1 text-neutral-400">
+                color 2
+                <input
+                  type="color"
+                  value={d.color2 ?? typeColor2(d.type)}
+                  onChange={(e) => updateEdgeData(edgeId, { color2: e.target.value })}
+                  aria-label="Wire stripe color"
+                  className="h-7 w-9 cursor-pointer rounded border border-edge bg-surface-0"
+                />
+              </label>
+              {d.color2 && (
+                <button
+                  onClick={() => updateEdgeData(edgeId, { color2: null })}
+                  className="text-xs text-neutral-400 hover:text-silver"
+                >
+                  reset
+                </button>
+              )}
+            </div>
           )}
         </div>
 
