@@ -12,7 +12,7 @@ import useDiagramStore from '../../store/diagramStore';
 // jsdom lacks ResizeObserver / matchMedia / DOMMatrix / DOMRect that React Flow
 // touches during measurement. Provide just enough for it to run.
 beforeAll(() => {
-  global.ResizeObserver = class {
+  globalThis.ResizeObserver = class {
     observe() {}
     unobserve() {}
     disconnect() {}
@@ -25,7 +25,7 @@ beforeAll(() => {
       this.a = 1; this.b = 0; this.c = 0; this.d = 1; this.e = 0; this.f = 0;
     }
   }
-  global.DOMMatrixReadOnly = DOMMatrixReadOnly;
+  globalThis.DOMMatrixReadOnly = DOMMatrixReadOnly;
   window.DOMMatrixReadOnly = DOMMatrixReadOnly;
   if (!Element.prototype.getBoundingClientRect.__patched) {
     Element.prototype.getBoundingClientRect = function () {
