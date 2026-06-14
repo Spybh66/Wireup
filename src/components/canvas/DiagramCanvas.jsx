@@ -95,6 +95,13 @@ function Flow({ onOpenNodeConfig }) {
   }, [fitView]);
 
   // ---- sync store → RF nodes (preserve RF-measured dimensions) ----
+  // NOTE: selection is intentionally NOT applied here. Edge selection is applied
+  // synchronously in a render memo (rfEdges); if node selection were applied in
+  // this deferred effect there would be a frame where RF sees the edge selected
+  // but its nodes not yet — RF's derived selection then disagrees with the store
+  // and onSelectionChange ping-pongs into an infinite loop (React #185, seen
+  // when drag-selecting a component that has a wire). So node selection is also
+  // applied synchronously at render time, in `displayNodes` below.
   useEffect(() => {
     setRfNodes((prev) => {
       const byId = new Map(prev.map((n) => [n.id, n]));
@@ -104,7 +111,6 @@ function Flow({ onOpenNodeConfig }) {
         return {
           ...n,
           draggable: !n.data.locked,
-          selected: selection.nodes.includes(n.id),
           hidden: isAnnotation && !settings.annotationsVisible,
           measured: old?.measured,
           width: old?.width,
@@ -112,7 +118,14 @@ function Flow({ onOpenNodeConfig }) {
         };
       });
     });
-  }, [storeNodes, selection.nodes, settings.annotationsVisible, setRfNodes]);
+  }, [storeNodes, settings.annotationsVisible, setRfNodes]);
+
+  // Apply node selection at render time (in lockstep with rfEdges' edge
+  // selection) so React Flow never observes a half-applied selection.
+  const displayNodes = useMemo(
+    () => rfNodes.map((n) => ({ ...n, selected: selection.nodes.includes(n.id) })),
+    [rfNodes, selection.nodes]
+  );
 
   // ---- routing (from live RF node positions so wires follow drags) ----
   // Routing is expensive, so gate it on a structural signature of the nodes
@@ -297,7 +310,7 @@ function Flow({ onOpenNodeConfig }) {
       <ConnectContext.Provider value={connectType}>
       <div className="h-full w-full" onDrop={onDrop} onDragOver={onDragOver}>
         <ReactFlow
-          nodes={rfNodes}
+          nodes={displayNodes}
           edges={rfEdges}
           nodeTypes={nodeTypes}
           edgeTypes={edgeTypes}
