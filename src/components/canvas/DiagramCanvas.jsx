@@ -319,7 +319,7 @@ function Flow({ onOpenNodeConfig }) {
           maxZoom={2.5}
           proOptions={{ hideAttribution: true }}
         >
-          <Panel position="top-left" className="flex gap-1">
+          <Panel position="top-center" className="flex gap-1">
             <button
               onClick={() =>
                 useDiagramStore
