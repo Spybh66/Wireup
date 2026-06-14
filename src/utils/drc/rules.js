@@ -419,6 +419,38 @@ export const DRC_RULES = [
     },
   },
   {
+    id: 'roborio-channel',
+    label: 'roboRIO on an illegal PD channel',
+    description:
+      'On a PDH the roboRIO must be powered from a non-switchable channel — CH20, CH21, or CH22 (R615).',
+    severity: 'warning',
+    run(ctx) {
+      const out = [];
+      const LEGAL = new Set(['CH20', 'CH21', 'CH22']);
+      for (const n of ctx.nodes) {
+        if (ctx.defOf(n)?.id !== 'roborio2') continue;
+        for (const e of ctx.edges) {
+          if (e.data.type !== 'PWR') continue;
+          const otherId = e.source === n.id ? e.target : e.target === n.id ? e.source : null;
+          if (!otherId) continue;
+          if (ctx.defOf(ctx.nodeById.get(otherId))?.id !== 'pdh') continue; // PDP 2.0 allows any channel
+          const otherHandle = e.source === n.id ? e.targetHandle : e.sourceHandle;
+          const port = ctx.nodeById.get(otherId)?.data.ports.find((p) => p.id === otherHandle);
+          if (port && /^CH\d+$/.test(port.label) && !LEGAL.has(port.label)) {
+            out.push({
+              ruleId: this.id,
+              severity: this.severity,
+              message: `${n.data.label} is on PDH ${port.label} — use a non-switchable channel (CH20–CH22) per R615`,
+              nodes: [n.id, otherId],
+              edges: [e.id],
+            });
+          }
+        }
+      }
+      return out;
+    },
+  },
+  {
     id: 'floating-component',
     label: 'Unconnected component',
     description: 'A component has no wiring at all.',

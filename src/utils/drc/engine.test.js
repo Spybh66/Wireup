@@ -159,6 +159,16 @@ describe('DRC engine', () => {
     expect(t.some((v) => /no controller/.test(v.message))).toBe(true);
   });
 
+  it('flags a roboRIO on an illegal PDH channel (R615)', () => {
+    const pdh = node('pdh', 'PDH', { ports: [port('c', 'PWR', 'CH5', 'right')] });
+    const rio = node('roborio2', 'RIO', { ports: [port('r', 'PWR', 'PWR', 'top')] });
+    const e = edge('e1', pdh.id, 'c', rio.id, 'r', 'PWR');
+    e.data = { ...e.data, label: 'PWR1' };
+    expect(findIds(runDrc({ nodes: [pdh, rio], edges: [e] }), 'roborio-channel')).toHaveLength(1);
+    pdh.data.ports[0].label = 'CH20'; // non-switchable channel
+    expect(findIds(runDrc({ nodes: [pdh, rio], edges: [e] }), 'roborio-channel')).toHaveLength(0);
+  });
+
   it('applies per-rule severity overrides (and off = skip)', () => {
     const k = node('krakenx60', 'K', { canId: 1, ports: [port('k-can', 'CAN')] });
     // unconnected-can defaults to warning; override to error

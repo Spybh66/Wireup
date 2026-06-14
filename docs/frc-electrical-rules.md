@@ -48,6 +48,7 @@ quick reference for the wiring tool + the DRC rules it enforces.
 | `main-run-gauge` | R609 | battery↔breaker↔PD power wires are ≥ 6 AWG |
 | `breaker-too-large` | R619 | a PD output port's breaker is ≤ 40 A |
 | `roborio-power-breaker` | R615 | the channel feeding the roboRIO is rated 10 A |
+| `roborio-channel` | R615 | on a PDH, the roboRIO is on a non-switchable channel (CH20–CH22) |
 | `channel-oversubscribed` | R610/R618/R621 | a single power port drives only one wire |
 | `can-termination` | §8.8 / hardware | bus has a controller (roboRIO/CANivore) and each end is a PDH/CANivore/roboRIO or a 120Ω terminator |
 

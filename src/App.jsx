@@ -160,9 +160,11 @@ export default function App() {
         {activeTab === 'diagram' && <ComponentSidebar />}
 
         <main className="relative flex-1 overflow-hidden">
+          {/* Canvas stays mounted across tabs so React Flow never remounts
+              (a remount caused a GPU black-flash). Sheet/About overlay it. */}
+          <DiagramCanvas onOpenNodeConfig={onOpenNodeConfig} />
           {activeTab === 'diagram' && (
             <>
-              <DiagramCanvas onOpenNodeConfig={onOpenNodeConfig} />
               <LayerPanel />
               {drcOpen && <DrcPanel onClose={() => setDrcOpen(false)} />}
               {selectedEdgeId && (
@@ -174,11 +176,13 @@ export default function App() {
             </>
           )}
           {activeTab !== 'diagram' && (
-            <Suspense
-              fallback={<div className="flex h-full items-center justify-center text-neutral-500">Loading…</div>}
-            >
-              {activeTab === 'sheet' ? <SheetView /> : <AboutView />}
-            </Suspense>
+            <div className="absolute inset-0 z-20 bg-surface-0">
+              <Suspense
+                fallback={<div className="flex h-full items-center justify-center text-neutral-500">Loading…</div>}
+              >
+                {activeTab === 'sheet' ? <SheetView /> : <AboutView />}
+              </Suspense>
+            </div>
           )}
         </main>
       </div>

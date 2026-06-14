@@ -178,6 +178,39 @@ export default function ComponentConfigModal({ nodeId, onClose, onSelectEdge }) 
             </section>
           )}
 
+          {/* quick branch-breaker grid (power-distribution channels) */}
+          {(() => {
+            const channels = data.ports.filter((p) => p.type === 'PWR' && /^CH\d+$/.test(p.label));
+            if (channels.length < 4) return null;
+            return (
+              <section>
+                <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-neutral-400">
+                  Channel breakers
+                </h3>
+                <div className="grid grid-cols-4 gap-1.5">
+                  {channels.map((p) => (
+                    <label key={p.id} className="flex items-center gap-1 text-xs text-neutral-300">
+                      <span className="w-9 shrink-0 text-right text-neutral-400">{p.label}</span>
+                      <select
+                        value={p.breaker ?? ''}
+                        onChange={(e) =>
+                          updatePort(p.id, { breaker: e.target.value === '' ? null : Number(e.target.value) })
+                        }
+                        aria-label={`${p.label} breaker`}
+                        className="min-w-0 flex-1 rounded border border-edge bg-surface-0 px-1 py-0.5 text-silver"
+                      >
+                        <option value="">—</option>
+                        {BREAKER_OPTIONS.map((a) => (
+                          <option key={a} value={a}>{a}A</option>
+                        ))}
+                      </select>
+                    </label>
+                  ))}
+                </div>
+              </section>
+            );
+          })()}
+
           {/* ports */}
           <section>
             <div className="mb-2 flex items-center justify-between">

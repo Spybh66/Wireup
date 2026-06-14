@@ -39,6 +39,7 @@ function def(id, name, category, icon, width, height, trackedFields, portSpecs) 
       order,
       gauge: p.gauge ?? null,
       fitting: p.fitting ?? null,
+      breaker: p.breaker ?? null,
     };
   });
   return { id, name, category, width: snapDim(width), height: snapDim(height), icon, defaultPorts, trackedFields };
@@ -49,7 +50,10 @@ function powerDistPorts(numChannels) {
   const ports = [...pwr('PWR', 'bottom', '6 AWG', SB50), ...can('CAN IN', 'bottom'), ...can('CAN OUT', 'bottom')];
   for (let i = 0; i < numChannels; i++) {
     const side = i <= 9 ? 'right' : 'left';
-    ports.push({ type: 'PWR', label: `CH${i}`, side, gauge: '12 AWG', fitting: FERRULE });
+    // PDH channels 20–22 are the non-switchable 10 A roboRIO/radio channels
+    // (R615); default the rest to a 40 A breaker.
+    const breaker = i >= 20 && i <= 22 ? 10 : 40;
+    ports.push({ type: 'PWR', label: `CH${i}`, side, gauge: '12 AWG', fitting: FERRULE, breaker });
   }
   return ports;
 }
