@@ -55,6 +55,7 @@ export const GAUGE_OPTIONS = [
 export const FITTING_OPTIONS = [
   'Anderson Powerpole',
   'Anderson SB50',
+  'Molex SL',
   'Ring Terminal',
   'Ferrule',
   'Wago Lever Nut',

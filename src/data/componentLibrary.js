@@ -13,6 +13,9 @@ const snapDim = (v) => Math.max(STEP, Math.round(v / STEP) * STEP);
 const SB50 = 'Anderson SB50';
 const FERRULE = 'Ferrule';
 const WAGO = 'Wago Lever Nut';
+const RING = 'Ring Terminal';
+const APP = 'Anderson Powerpole';
+const MOLEX_SL = 'Molex SL';
 
 // single unified power wire
 const pwr = (label, side, gauge = null, fitting = null) => [
@@ -40,6 +43,7 @@ function def(id, name, category, icon, width, height, trackedFields, portSpecs) 
       gauge: p.gauge ?? null,
       fitting: p.fitting ?? null,
       breaker: p.breaker ?? null,
+      requiredFittings: p.requiredFittings ?? null,
     };
   });
   return { id, name, category, width: snapDim(width), height: snapDim(height), icon, defaultPorts, trackedFields };
@@ -53,7 +57,7 @@ function powerDistPorts(numChannels) {
     // PDH channels 20–22 are the non-switchable 10 A roboRIO/radio channels
     // (R615); default the rest to a 40 A breaker.
     const breaker = i >= 20 && i <= 22 ? 10 : 40;
-    ports.push({ type: 'PWR', label: `CH${i}`, side, gauge: '12 AWG', fitting: FERRULE, breaker });
+    ports.push({ type: 'PWR', label: `CH${i}`, side, gauge: '12 AWG', fitting: FERRULE, breaker, requiredFittings: [FERRULE, 'Bare Wire'] });
   }
   return ports;
 }
@@ -187,17 +191,35 @@ export const COMPONENT_LIBRARY = [
     ...pwr('MOTOR', 'right', '12 AWG', FERRULE),
     ...data('Data', 'top'),
   ]),
+  def('refire_x60', 'Refire X60 (RF-4003)', 'Motor Controllers', 'motorController', 152, 80, ['canId'], [
+    { type: 'PWR', label: 'PWR', side: 'left', gauge: '12 AWG', fitting: APP, requiredFittings: [APP] },
+    { type: 'CAN', label: 'CAN IN', side: 'bottom' },
+    { type: 'CAN', label: 'CAN OUT', side: 'bottom' },
+    { type: 'PWR', label: 'MOTOR', side: 'right', gauge: '12 AWG', fitting: MOLEX_SL, requiredFittings: [MOLEX_SL] },
+  ]),
+  def('refire_x44', 'Refire X44 (RF-4004)', 'Motor Controllers', 'motorController', 152, 80, ['canId'], [
+    { type: 'PWR', label: 'PWR', side: 'left', gauge: '12 AWG', fitting: APP, requiredFittings: [APP] },
+    { type: 'CAN', label: 'CAN IN', side: 'bottom' },
+    { type: 'CAN', label: 'CAN OUT', side: 'bottom' },
+    { type: 'PWR', label: 'MOTOR', side: 'right', gauge: '12 AWG', fitting: MOLEX_SL, requiredFittings: [MOLEX_SL] },
+  ]),
 
   // ---------------- Motors ----------------
   def('krakenx60', 'Kraken X60', 'Motors', 'krakenMotor', 120, 70, ['canId'], [
-    ...pwr('PWR', 'left', '12 AWG', FERRULE),
+    { type: 'PWR', label: 'PWR', side: 'left', gauge: '12 AWG', fitting: RING, requiredFittings: [RING] },
     { type: 'CAN', label: 'CAN IN', side: 'right' },
     { type: 'CAN', label: 'CAN OUT', side: 'right' },
   ]),
   def('krakenx44', 'Kraken X44', 'Motors', 'krakenMotor', 120, 70, ['canId'], [
-    ...pwr('PWR', 'left', '12 AWG', FERRULE),
+    { type: 'PWR', label: 'PWR', side: 'left', gauge: '12 AWG', fitting: RING, requiredFittings: [RING] },
     { type: 'CAN', label: 'CAN IN', side: 'right' },
     { type: 'CAN', label: 'CAN OUT', side: 'right' },
+  ]),
+  def('krakenx60_adapted', 'Kraken X60 + Adapter', 'Motors', 'krakenMotor', 120, 70, [], [
+    { type: 'PWR', label: 'Phases', side: 'left', gauge: '12 AWG', fitting: MOLEX_SL, requiredFittings: [MOLEX_SL] },
+  ]),
+  def('krakenx44_adapted', 'Kraken X44 + Adapter', 'Motors', 'krakenMotor', 120, 70, [], [
+    { type: 'PWR', label: 'Phases', side: 'left', gauge: '12 AWG', fitting: MOLEX_SL, requiredFittings: [MOLEX_SL] },
   ]),
   def('minion', 'Minion', 'Motors', 'motor', 120, 70, [], [
     ...pwr('PWR', 'left', '12 AWG', FERRULE),
@@ -309,6 +331,9 @@ export const COMPONENT_LIBRARY = [
   ]),
   def('canterminator', 'CAN Terminator (120Ω)', 'Other', 'canjunction', 96, 48, [], [
     ...can('CAN', 'left'),
+  ]),
+  def('kraken_adapter', 'Kraken Adapter (WCP-1380)', 'Other', 'motorController', 152, 56, [], [
+    { type: 'PWR', label: 'Phases', side: 'left', gauge: '12 AWG', fitting: MOLEX_SL, requiredFittings: [MOLEX_SL] },
   ]),
 ];
 

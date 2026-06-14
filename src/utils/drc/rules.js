@@ -518,6 +518,40 @@ export const DRC_RULES = [
     },
   },
   {
+    id: 'connector-mismatch',
+    label: 'Wrong connector type',
+    description:
+      'A wire fitting at one end does not match what the connected port requires (e.g. ring terminal on a PDH channel instead of ferrule).',
+    severity: 'warning',
+    run(ctx) {
+      const out = [];
+      for (const e of ctx.edges) {
+        const fittingFrom = e.data.wireFittingFrom ?? e.data.wireFitting ?? null;
+        const fittingTo   = e.data.wireFittingTo   ?? e.data.wireFitting ?? null;
+
+        const check = (nodeId, portId, fitting) => {
+          const node = ctx.nodeById.get(nodeId);
+          const port = node?.data.ports.find((p) => p.id === portId);
+          const req = port?.requiredFittings;
+          if (!req?.length || !fitting) return;
+          if (!req.includes(fitting)) {
+            out.push({
+              ruleId: this.id,
+              severity: this.severity,
+              message: `${node.data.label} · ${port.label} requires ${req.join(' or ')} — wire has ${fitting}`,
+              nodes: [nodeId],
+              edges: [e.id],
+            });
+          }
+        };
+
+        check(e.source, e.sourceHandle, fittingFrom);
+        check(e.target, e.targetHandle, fittingTo);
+      }
+      return out;
+    },
+  },
+  {
     id: 'floating-component',
     label: 'Unconnected component',
     description: 'A component has no wiring at all.',
