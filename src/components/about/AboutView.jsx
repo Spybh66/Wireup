@@ -147,6 +147,10 @@ export default function AboutView() {
             <ul className="ml-4 list-disc space-y-1.5">
               <Step>Inline-edit CAN IDs, IP addresses, notes, wire lengths, and fittings.</Step>
               <Step>Sort and filter to find any component or wire quickly.</Step>
+              <Step>
+                A <strong>Bill of Materials</strong> totals wire length by gauge &amp; color and counts
+                every connector (power wires use one of each polarity; CAN uses one per end).
+              </Step>
             </ul>
           </Section>
 

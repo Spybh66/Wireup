@@ -4,7 +4,7 @@ import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import * as XLSX from 'xlsx';
 import { sanitizeFilename, downloadBlob } from './saveLoadUtils';
-import { buildComponentRows, buildWireRows, buildValidationRows } from './sheetData';
+import { buildComponentRows, buildWireRows, buildValidationRows, buildBom } from './sheetData';
 
 function downloadDataUrl(dataUrl, filename) {
   const a = document.createElement('a');
@@ -139,6 +139,12 @@ const VALIDATION_HEADERS = ['Severity', 'Rule', 'Issue', 'Components'];
 const validationMatrix = (state) =>
   buildValidationRows(state).map((r) => [r.severity, r.rule, r.message, r.elements]);
 
+const BOM_WIRE_HEADERS = ['Gauge', 'Color', 'Length (in)', 'Length (ft)'];
+const BOM_CONN_HEADERS = ['Connector', 'Qty'];
+const bomWireMatrix = (state) =>
+  buildBom(state).wires.map((w) => [w.gauge, w.color, w.lengthIn, w.lengthFt]);
+const bomConnMatrix = (state) => buildBom(state).connectors.map((c) => [c.name, c.qty]);
+
 // §11 / decision 24 — two CSV files, downloaded sequentially.
 export function exportSheetCSV(state, name) {
   const base = sanitizeFilename(name);
@@ -155,6 +161,14 @@ export function exportSheetCSV(state, name) {
       downloadBlob(new Blob([v], { type: 'text/csv;charset=utf-8' }), `${base}-validation.csv`);
     }, 300);
   }
+  const wireBom = bomWireMatrix(state);
+  const connBom = bomConnMatrix(state);
+  if (wireBom.length || connBom.length) {
+    setTimeout(() => {
+      const bom = `Wire\r\n${toCSV(BOM_WIRE_HEADERS, wireBom)}\r\n\r\nConnectors\r\n${toCSV(BOM_CONN_HEADERS, connBom)}`;
+      downloadBlob(new Blob([bom], { type: 'text/csv;charset=utf-8' }), `${base}-bom.csv`);
+    }, 450);
+  }
 }
 
 export function exportSheetExcel(state, name) {
@@ -167,6 +181,12 @@ export function exportSheetExcel(state, name) {
   if (issues.length) {
     const vSheet = XLSX.utils.aoa_to_sheet([VALIDATION_HEADERS, ...issues]);
     XLSX.utils.book_append_sheet(wb, vSheet, 'Validation');
+  }
+  const wireBom = bomWireMatrix(state);
+  const connBom = bomConnMatrix(state);
+  if (wireBom.length || connBom.length) {
+    const bomRows = [['Wire'], BOM_WIRE_HEADERS, ...wireBom, [], ['Connectors'], BOM_CONN_HEADERS, ...connBom];
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(bomRows), 'BOM');
   }
   XLSX.writeFile(wb, `${sanitizeFilename(name)}.xlsx`);
 }
@@ -199,6 +219,28 @@ export function exportSheetPDF(state, name) {
       startY: afterWires + 12,
       head: [VALIDATION_HEADERS],
       body: issues,
+      styles: { fontSize: 8 },
+      headStyles: { fillColor: [35, 35, 38] },
+    });
+  }
+  const wireBom = bomWireMatrix(state);
+  const connBom = bomConnMatrix(state);
+  if (wireBom.length || connBom.length) {
+    let y = doc.lastAutoTable.finalY + 28;
+    doc.text('Bill of Materials — Wire', 40, y);
+    autoTable(doc, {
+      startY: y + 12,
+      head: [BOM_WIRE_HEADERS],
+      body: wireBom,
+      styles: { fontSize: 8 },
+      headStyles: { fillColor: [35, 35, 38] },
+    });
+    y = doc.lastAutoTable.finalY + 28;
+    doc.text('Bill of Materials — Connectors', 40, y);
+    autoTable(doc, {
+      startY: y + 12,
+      head: [BOM_CONN_HEADERS],
+      body: connBom,
       styles: { fontSize: 8 },
       headStyles: { fillColor: [35, 35, 38] },
     });
