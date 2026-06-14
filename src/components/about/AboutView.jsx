@@ -44,6 +44,9 @@ const KEYBINDS = [
   { keys: ['Backspace'], action: 'Delete selection' },
   { keys: ['Esc'], action: 'Close panel / clear selection' },
   { keys: ['Double-click'], action: 'Open a component’s config modal' },
+  { keys: ['Drag wire'], action: 'Bend a selected wire (adds a waypoint)' },
+  { keys: ['Double-click dot'], action: 'Remove a wire waypoint' },
+  { keys: ['Right-click wire'], action: 'Wire menu: add point / straighten / auto-route' },
   { keys: ['Left-drag'], action: 'Rubber-band select on empty canvas' },
   { keys: ['Right / Middle-drag'], action: 'Pan the canvas' },
   { keys: ['Scroll'], action: 'Zoom in / out' },
@@ -59,7 +62,9 @@ const STACK = [
   ['html-to-image', 'PNG / JPEG / SVG canvas export'],
   ['jsPDF + jspdf-autotable', 'PDF export'],
   ['SheetJS (xlsx)', 'Excel / CSV export'],
-  ['Custom octilinear router', 'KiCAD-style 45° auto-routing engine'],
+  ['Custom octilinear router', '45° auto-routing with lane bundling & jump-overs'],
+  ['Custom DRC engine', 'Live FRC electrical rule checks'],
+  ['CompressionStream + URL hash', 'Backend-free shareable project links'],
 ];
 
 export default function AboutView() {
@@ -69,31 +74,36 @@ export default function AboutView() {
         <div>
           <h1 className="font-heading text-2xl font-semibold text-silver">Wireup</h1>
           <p className="mt-1 text-sm text-neutral-400">
-            A wiring-diagram tool for FRC robots — lay out components, auto-route wires, and export a
-            build-ready wiring sheet.
+            A wiring-diagram tool for FRC robots — lay out components, auto- or hand-route wires,
+            validate the electrical system against the game rules, and export a build-ready wiring
+            sheet and bill of materials.
           </p>
         </div>
 
         <Section icon={MousePointer2} title="Getting started">
           <ol className="ml-4 list-decimal space-y-1.5">
             <Step>
-              Drag a component from the <strong>library</strong> on the left onto the canvas.
+              Drag a component from the <strong>library</strong> on the left onto the canvas (motors,
+              controllers, power distribution, sensors, radios, CANivore, terminators, and more).
             </Step>
             <Step>
               Drag from one component’s <strong>port dot</strong> to another to create a wire. The
-              wire inherits its type (power, CAN, Ethernet…) from the source port.
+              wire inherits its type (power, CAN, Ethernet…) from the source port; compatible target
+              ports highlight while you drag.
             </Step>
             <Step>
-              Wires auto-route around components in clean 45° runs. Move a component and its wires
-              re-route automatically.
+              Wires auto-route around components in clean 45° runs and re-route as you move things.
+              Flip the top-bar toggle to <strong>Manual</strong> to draw paths by hand.
             </Step>
             <Step>
-              <strong>Double-click</strong> a component to rename it, set CAN ID / IP, edit ports, or
-              lock it in place. Select a wire to edit its label, gauge, fittings, length, and color.
+              <strong>Double-click</strong> a component to rename it, set CAN ID / IP, edit ports and
+              channel breakers, or lock it. Select a wire to edit its label, gauge, fittings, length,
+              and colors.
             </Step>
             <Step>
-              Use the <strong>Sheet</strong> tab for a spreadsheet of every component and wire, then{' '}
-              <strong>Export</strong> to PNG/PDF or CSV/Excel.
+              Watch the <strong>Checks</strong> panel for wiring mistakes, review the <strong>Sheet</strong>{' '}
+              tab (components, wires, validation, bill of materials), then <strong>Export</strong> or
+              copy a <strong>share link</strong>.
             </Step>
           </ol>
         </Section>
@@ -102,11 +112,14 @@ export default function AboutView() {
           <Section icon={Cable} title="Wire routing">
             <ul className="ml-4 list-disc space-y-1.5">
               <Step>Wires run horizontally, vertically, and at 45°, avoiding components.</Step>
-              <Step>Parallel wires spread into neatly spaced bundles instead of overlapping.</Step>
-              <Step>Crossing wires hop over one another with a jump symbol.</Step>
+              <Step>Parallel wires spread into neatly spaced bundles; crossings hop over with a jump symbol.</Step>
               <Step>
-                Toggle <strong>Auto / Manual</strong> in the top bar. Select any wire to drag its
-                line into waypoints; double-click a point to remove it.
+                <strong>Auto / Manual</strong> toggle in the top bar. Drag any wire to add a waypoint;
+                alignment guides snap it straight, and a right-click menu adds/clears points.
+              </Step>
+              <Step>
+                Power wires are red/black striped, CAN yellow/green; ports snap to a wire grid so runs
+                stay clean. Each wire’s colors are editable.
               </Step>
             </ul>
           </Section>
@@ -159,6 +172,10 @@ export default function AboutView() {
               <Step>Work autosaves to your browser; reopen to restore it.</Step>
               <Step>Save / open <code className="text-neutral-200">.wireup.json</code> project files.</Step>
               <Step>Export the canvas (PNG/JPEG/SVG/PDF) or the sheet (CSV/Excel/PDF).</Step>
+              <Step>
+                <strong>Share</strong> copies a link with the whole project packed into the URL — no
+                account or server needed.
+              </Step>
             </ul>
           </Section>
         </div>
@@ -174,6 +191,11 @@ export default function AboutView() {
             <Step>
               Flagged components show a colored badge on the canvas; one-click
               <strong> Auto-number / Auto-assign</strong> fixes resolve duplicate CAN IDs and IPs.
+            </Step>
+            <Step>
+              Enforces FRC 2026 electrical rules: wire gauge vs. breaker (R622), the 6 AWG main
+              run (R609), 40 A branch limit (R619), roboRIO on a 10 A non-switchable channel
+              (R615), and CAN bus termination (controller → PDH/CANivore/120 Ω terminator).
             </Step>
             <Step>
               Set each rule to Error / Warning / Info / Off via the panel’s rules view. Issues also
