@@ -157,7 +157,7 @@ export default function Header({ onOpenSettings, drcOpen, onToggleDrc }) {
     'block w-full px-3 py-1.5 text-left text-sm text-silver hover:bg-surface-2';
 
   return (
-    <header className="flex h-12 shrink-0 items-center gap-2 border-b border-edge bg-surface-1 px-3">
+    <header className="flex h-12 shrink-0 items-center gap-2 overflow-x-auto border-b border-edge bg-surface-1 px-3">
       <span className="font-heading text-xl font-semibold tracking-wide text-silver">Wireup</span>
 
       <input

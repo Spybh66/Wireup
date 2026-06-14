@@ -169,6 +169,42 @@ describe('DRC engine', () => {
     expect(findIds(runDrc({ nodes: [pdh, rio], edges: [e] }), 'roborio-channel')).toHaveLength(0);
   });
 
+  it('radio power: flags wrong breaker and VRM/RPM supply (R616/R617)', () => {
+    const radio = node('vh109', 'Radio', { ports: [port('r', 'PWR', 'PWR', 'left')] });
+    const pdh = node('pdh', 'PDH', { ports: [{ ...port('c', 'PWR', 'CH22', 'right'), breaker: 40 }] });
+    const e = edge('e1', pdh.id, 'c', radio.id, 'r', 'PWR');
+    e.data = { ...e.data, label: 'PWR1' };
+    expect(findIds(runDrc({ nodes: [pdh, radio], edges: [e] }), 'radio-power')).toHaveLength(1); // 40≠10
+
+    const vrm = node('vrm', 'VRM', { ports: [port('v', 'PWR', '12V', 'right')] });
+    const e2 = edge('e2', vrm.id, 'v', radio.id, 'r', 'PWR');
+    e2.data = { ...e2.data, label: 'PWR2' };
+    const t = findIds(runDrc({ nodes: [vrm, radio], edges: [e2] }), 'radio-power');
+    expect(t.some((v) => /VRM|directly/.test(v.message))).toBe(true);
+  });
+
+  it('power system: flags duplicate battery / missing breaker+PD, clean when complete', () => {
+    const b1 = node('battery', 'B1', { ports: [port('a', 'PWR', 'BAT', 'right')] });
+    const b2 = node('battery', 'B2', { ports: [port('b', 'PWR', 'BAT', 'right')] });
+    const ps = findIds(runDrc({ nodes: [b1, b2], edges: [] }), 'power-system');
+    expect(ps.some((v) => /battery/.test(v.message))).toBe(true);
+    expect(ps.some((v) => /main breaker/.test(v.message))).toBe(true);
+    expect(ps.some((v) => /distribution/.test(v.message))).toBe(true);
+
+    const mb = node('mainbreaker', 'MB', { ports: [port('m', 'PWR', 'IN', 'left')] });
+    const pdh = node('pdh', 'PDH', { ports: [port('p', 'PWR', 'PWR', 'bottom')] });
+    expect(findIds(runDrc({ nodes: [b1, mb, pdh], edges: [] }), 'power-system')).toHaveLength(0);
+  });
+
+  it('dismissed violations are filtered out by key', () => {
+    const k = node('krakenx60', 'K', { canId: 1, ports: [port('k', 'CAN')] });
+    const res = runDrc({ nodes: [k], edges: [] });
+    const v = res.violations.find((x) => x.ruleId === 'unconnected-can');
+    expect(v?.key).toBeTruthy();
+    const res2 = runDrc({ nodes: [k], edges: [] }, { dismissed: [v.key] });
+    expect(res2.violations.some((x) => x.key === v.key)).toBe(false);
+  });
+
   it('applies per-rule severity overrides (and off = skip)', () => {
     const k = node('krakenx60', 'K', { canId: 1, ports: [port('k-can', 'CAN')] });
     // unconnected-can defaults to warning; override to error

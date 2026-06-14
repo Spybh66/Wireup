@@ -89,6 +89,7 @@ export function buildValidationRows(state) {
     {
       disabledRules: settings?.drc?.disabledRules ?? [],
       severityOverrides: settings?.drc?.severityOverrides ?? {},
+      dismissed: settings?.drc?.dismissed ?? [],
     }
   );
   const labelOf = (id) => nodes.find((n) => n.id === id)?.data.label ?? id;

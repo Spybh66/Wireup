@@ -46,6 +46,7 @@ export function runDrc(state, opts = {}) {
   const norm = Array.isArray(opts) || opts instanceof Set ? { disabledRules: opts } : opts;
   const disabled = new Set(norm.disabledRules ?? []);
   const overrides = norm.severityOverrides ?? {};
+  const dismissed = new Set(norm.dismissed ?? []);
   const ctx = buildContext(state);
   const violations = [];
   for (const rule of DRC_RULES) {
@@ -59,6 +60,9 @@ export function runDrc(state, opts = {}) {
     }
     for (const v of found) {
       v.severity = sev; // effective severity (may be overridden)
+      // stable identity (independent of message text) for dismiss memory
+      v.key = `${v.ruleId}|${[...(v.nodes ?? [])].sort().join(',')}|${[...(v.edges ?? [])].sort().join(',')}`;
+      if (dismissed.has(v.key)) continue;
       violations.push(v);
     }
   }

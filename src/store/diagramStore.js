@@ -37,9 +37,9 @@ const DEFAULT_SETTINGS = {
   showWireLabels: false,
   routingMode: 'auto', // 'auto' = A* route new wires; 'manual' = straight, user-shaped
   annotationsVisible: true, // notes + zones layer visibility
-  // Design Rule Check — disabled rule ids + per-rule severity overrides
-  // ('error' | 'warning' | 'info' | 'off').
-  drc: { disabledRules: [], severityOverrides: {} },
+  // Design Rule Check — disabled rule ids, per-rule severity overrides
+  // ('error' | 'warning' | 'info' | 'off'), and dismissed violation keys.
+  drc: { disabledRules: [], severityOverrides: {}, dismissed: [] },
 };
 
 const SETTINGS_KEY = 'wireup_settings';
@@ -295,6 +295,22 @@ const useDiagramStore = create(
           dirty: true,
         })),
 
+      // Bulk edits (one history entry) for multi-selection editing.
+      updateEdgesData: (ids, patch) => {
+        const set_ = new Set(ids);
+        set((s) => ({
+          edges: s.edges.map((e) => (set_.has(e.id) ? { ...e, data: { ...e.data, ...patch } } : e)),
+          dirty: true,
+        }));
+      },
+      updateNodesData: (ids, patch) => {
+        const set_ = new Set(ids);
+        set((s) => ({
+          nodes: s.nodes.map((n) => (set_.has(n.id) ? { ...n, data: { ...n.data, ...patch } } : n)),
+          dirty: true,
+        }));
+      },
+
       // Set a wire's manual waypoints (interior control points, world coords).
       // Marks the wire manual so it routes straight through them instead of A*.
       setEdgeWaypoints: (id, waypoints) =>
@@ -433,6 +449,35 @@ const useDiagramStore = create(
           target: idMap.get(e.target),
         }));
         get().pasteGraph(newNodes, newEdges);
+      },
+
+      // Build a small illustrative robot for onboarding (uses the real add logic).
+      loadSample: () => {
+        get().newProject();
+        const add = (defId, x, y) => get().addNode(defId, { x, y });
+        const bat = add('battery', 0, 320);
+        const mb = add('mainbreaker', 224, 328);
+        const pdh = add('pdh', 432, 64);
+        const rio = add('roborio2', 800, 96);
+        const kraken = add('krakenx60', 816, 384);
+        const term = add('canterminator', 1040, 408);
+        const portId = (nodeId, label) =>
+          get().nodes.find((n) => n.id === nodeId)?.data.ports.find((p) => p.label === label)?.id;
+        const wire = (s, sl, t, tl) => {
+          const sh = portId(s, sl);
+          const th = portId(t, tl);
+          if (sh && th) get().addEdge({ source: s, sourceHandle: sh, target: t, targetHandle: th });
+        };
+        wire(bat, 'BAT', mb, 'IN');
+        wire(mb, 'OUT', pdh, 'PWR');
+        wire(pdh, 'CH20', rio, 'PWR');
+        wire(pdh, 'CH0', kraken, 'PWR');
+        wire(rio, 'CAN', kraken, 'CAN IN');
+        wire(kraken, 'CAN OUT', term, 'CAN');
+        useDiagramStore.getState().updateNodeData(rio, { ipAddress: '10.0.0.2' });
+        useDiagramStore.getState().updateNodeData(kraken, { canId: 1 });
+        useDiagramStore.temporal.getState().clear();
+        set({ dirty: false });
       },
 
       // §3.2 reconnection — re-derive type/layer/gauge/fitting from new source.
@@ -618,6 +663,22 @@ const useDiagramStore = create(
             ? cur.filter((r) => r !== ruleId)
             : [...cur, ruleId];
           const settings = { ...s.settings, drc: { ...s.settings.drc, disabledRules } };
+          persistSettings(settings);
+          return { settings };
+        }),
+
+      // Dismiss / restore individual DRC violations (by stable key).
+      dismissDrc: (key) =>
+        set((s) => {
+          const cur = s.settings.drc?.dismissed ?? [];
+          if (cur.includes(key)) return {};
+          const settings = { ...s.settings, drc: { ...s.settings.drc, dismissed: [...cur, key] } };
+          persistSettings(settings);
+          return { settings };
+        }),
+      clearDismissedDrc: () =>
+        set((s) => {
+          const settings = { ...s.settings, drc: { ...s.settings.drc, dismissed: [] } };
           persistSettings(settings);
           return { settings };
         }),

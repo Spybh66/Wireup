@@ -73,6 +73,27 @@ describe('diagramStore', () => {
     expect(useDiagramStore.getState().nodes[0].position).toEqual({ x: 10, y: 20 });
   });
 
+  it('migrates legacy split wire types on load (v1 → v2)', () => {
+    const legacy = {
+      app: 'wireup',
+      version: 1,
+      nodes: [
+        {
+          id: 'n',
+          type: 'component',
+          position: { x: 0, y: 0 },
+          data: { definitionId: 'pdh', label: 'PDH', ports: [{ id: 'p', type: 'CANH', label: 'CAN H', side: 'bottom' }] },
+        },
+      ],
+      edges: [{ id: 'e', source: 'n', target: 'n', data: { type: 'PWR+' } }],
+      layers: [],
+    };
+    const r = validateProject(legacy);
+    expect(r.ok).toBe(true);
+    expect(r.data.nodes[0].data.ports[0].type).toBe('CAN');
+    expect(r.data.edges[0].data.type).toBe('PWR');
+  });
+
   it('rejects a newer-version file', () => {
     const result = validateProject({ app: 'wireup', version: 99, nodes: [], edges: [], layers: [] });
     expect(result.ok).toBe(false);

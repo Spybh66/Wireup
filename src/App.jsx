@@ -5,7 +5,9 @@ import ComponentSidebar from './components/sidebar/ComponentSidebar';
 import DiagramCanvas from './components/canvas/DiagramCanvas';
 import LayerPanel from './components/canvas/LayerPanel';
 import WireConfigPanel from './components/canvas/WireConfigPanel';
+import MultiSelectPanel from './components/canvas/MultiSelectPanel';
 import DrcPanel from './components/canvas/DrcPanel';
+import Onboarding from './components/onboarding/Onboarding';
 import ComponentConfigModal from './components/modal/ComponentConfigModal';
 import Toaster from './components/shared/Toast';
 import ConfirmDialog from './components/shared/ConfirmDialog';
@@ -54,6 +56,11 @@ export default function App() {
     }
     const data = readAutosave();
     if (data) useDiagramStore.getState().setRestoreData(data);
+  }, []);
+
+  // Collapse the component sidebar on small screens so the canvas is usable.
+  useEffect(() => {
+    if (window.innerWidth < 768) useDiagramStore.setState({ sidebarOpen: false });
   }, []);
 
   // ---- global keyboard ----
@@ -144,8 +151,11 @@ export default function App() {
     [setActiveTab, setSelection]
   );
 
+  const multiCount = selection.nodes.length + selection.edges.length;
   const selectedEdgeId =
-    activeTab === 'diagram' && selection.edges.length === 1 ? selection.edges[0] : null;
+    activeTab === 'diagram' && selection.edges.length === 1 && selection.nodes.length === 0
+      ? selection.edges[0]
+      : null;
 
   return (
     <div className="flex h-full flex-col bg-surface-0 text-silver">
@@ -165,6 +175,7 @@ export default function App() {
           <DiagramCanvas onOpenNodeConfig={onOpenNodeConfig} />
           {activeTab === 'diagram' && (
             <>
+              <Onboarding />
               <LayerPanel />
               {drcOpen && <DrcPanel onClose={() => setDrcOpen(false)} />}
               {selectedEdgeId && (
@@ -172,6 +183,9 @@ export default function App() {
                   edgeId={selectedEdgeId}
                   onClose={() => setSelection({ nodes: [], edges: [] })}
                 />
+              )}
+              {multiCount > 1 && (
+                <MultiSelectPanel onClose={() => setSelection({ nodes: [], edges: [] })} />
               )}
             </>
           )}

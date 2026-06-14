@@ -37,8 +37,11 @@ export default function DrcPanel({ onClose }) {
   const setDrcRuleSeverity = useDiagramStore((s) => s.setDrcRuleSeverity);
   const autoAssignCanIds = useDiagramStore((s) => s.autoAssignCanIds);
   const autoAssignIps = useDiagramStore((s) => s.autoAssignIps);
+  const dismissDrc = useDiagramStore((s) => s.dismissDrc);
+  const clearDismissedDrc = useDiagramStore((s) => s.clearDismissedDrc);
   const overrides = useDiagramStore((s) => s.settings.drc?.severityOverrides) ?? {};
   const disabledRules = useDiagramStore((s) => s.settings.drc?.disabledRules) ?? [];
+  const dismissedCount = useDiagramStore((s) => s.settings.drc?.dismissed?.length) ?? 0;
   const [showRules, setShowRules] = useState(false);
   const [cursor, setCursor] = useState(0);
 
@@ -188,14 +191,30 @@ export default function DrcPanel({ onClose }) {
                   <button
                     onClick={() => runFix(v.fix.kind)}
                     title="Apply automatic fix"
-                    className="my-1 mr-2 shrink-0 self-center rounded border border-edge bg-surface-0 px-2 py-0.5 text-[11px] text-neutral-300 hover:text-silver"
+                    className="my-1 shrink-0 self-center rounded border border-edge bg-surface-0 px-2 py-0.5 text-[11px] text-neutral-300 hover:text-silver"
                   >
                     {FIX_LABEL[v.fix.kind]}
                   </button>
                 )}
+                <button
+                  onClick={() => dismissDrc(v.key)}
+                  title="Dismiss this issue"
+                  aria-label="Dismiss issue"
+                  className="my-1 mr-2 ml-1 shrink-0 self-center rounded p-0.5 text-neutral-500 hover:text-silver"
+                >
+                  <X size={13} />
+                </button>
               </li>
             ))}
           </ul>
+        )}
+        {!showRules && dismissedCount > 0 && (
+          <button
+            onClick={clearDismissedDrc}
+            className="w-full border-t border-edge px-3 py-1.5 text-left text-[11px] text-neutral-500 hover:text-silver"
+          >
+            {dismissedCount} dismissed — restore all
+          </button>
         )}
       </div>
     </div>

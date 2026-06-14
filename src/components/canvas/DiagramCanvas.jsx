@@ -30,6 +30,9 @@ const SEV_RANK = { error: 0, warning: 1, info: 2 };
 const nodeTypes = { component: ComponentNode, note: NoteNode, zone: ZoneNode };
 const edgeTypes = { wire: WireEdge };
 
+// Touch devices: pan with one finger, no rubber-band select.
+const isTouch = typeof window !== 'undefined' && window.matchMedia?.('(pointer: coarse)').matches;
+
 function Flow({ onOpenNodeConfig }) {
   const storeNodes = useDiagramStore((s) => s.nodes);
   const edges = useDiagramStore((s) => s.edges);
@@ -308,8 +311,8 @@ function Flow({ onOpenNodeConfig }) {
           snapGrid={[settings.gridSize, settings.gridSize]}
           deleteKeyCode={null}
           multiSelectionKeyCode={['Shift', 'Meta', 'Control']}
-          selectionOnDrag
-          panOnDrag={[1, 2]}
+          selectionOnDrag={!isTouch}
+          panOnDrag={isTouch ? true : [1, 2]}
           zoomOnDoubleClick={false}
           fitView
           minZoom={0.1}

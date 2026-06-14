@@ -451,6 +451,73 @@ export const DRC_RULES = [
     },
   },
   {
+    id: 'radio-power',
+    label: 'Radio power',
+    description:
+      'The VH-109 radio must be powered directly from the PD on a 10 A circuit — VRM/RPM are not legal radio supplies in 2026 (R616/R617).',
+    severity: 'warning',
+    run(ctx) {
+      const out = [];
+      const PD = new Set(['pdh', 'pdp2', 'pdp_legacy']);
+      for (const n of ctx.nodes) {
+        if (ctx.defOf(n)?.id !== 'vh109') continue;
+        for (const e of ctx.edges) {
+          if (e.data.type !== 'PWR') continue;
+          const otherId = e.source === n.id ? e.target : e.target === n.id ? e.source : null;
+          if (!otherId) continue;
+          const otherNode = ctx.nodeById.get(otherId);
+          const otherDef = ctx.defOf(otherNode)?.id;
+          if (otherDef === 'vrm' || otherDef === 'rpm') {
+            out.push({
+              ruleId: this.id,
+              severity: this.severity,
+              message: `${n.data.label} is powered via ${otherNode.data.label} — radios must be powered directly from the PD (R616)`,
+              nodes: [n.id, otherId],
+              edges: [e.id],
+            });
+          } else if (PD.has(otherDef)) {
+            const handle = e.source === n.id ? e.targetHandle : e.sourceHandle;
+            const port = otherNode?.data.ports.find((p) => p.id === handle);
+            const v = Number(port?.breaker);
+            if (Number.isFinite(v) && v > 0 && v !== 10) {
+              out.push({
+                ruleId: this.id,
+                severity: this.severity,
+                message: `${n.data.label} radio circuit is ${v} A — R617 requires 10 A`,
+                nodes: [n.id, otherId],
+                edges: [e.id],
+              });
+            }
+          }
+        }
+      }
+      return out;
+    },
+  },
+  {
+    id: 'power-system',
+    label: 'Power system completeness',
+    description:
+      'A robot needs exactly one battery and one 120 A main breaker, and a power distribution device (R601/R612/R613).',
+    severity: 'warning',
+    run(ctx) {
+      const PD = new Set(['pdh', 'pdp2', 'pdp_legacy']);
+      const batteries = ctx.nodes.filter((n) => ctx.defOf(n)?.id === 'battery');
+      const breakers = ctx.nodes.filter((n) => ctx.defOf(n)?.id === 'mainbreaker');
+      const pds = ctx.nodes.filter((n) => PD.has(ctx.defOf(n)?.id));
+      if (!batteries.length && !pds.length) return []; // no power system started yet
+      const out = [];
+      const flag = (message, nodes) => out.push({ ruleId: this.id, severity: this.severity, message, nodes, edges: [] });
+      if (batteries.length > 1) flag(`More than one battery (${batteries.length}) — only one is legal (R601)`, batteries.map((n) => n.id));
+      if (batteries.length) {
+        if (breakers.length === 0) flag('No 120 A main breaker between the battery and PD (R612)', batteries.map((n) => n.id));
+        else if (breakers.length > 1) flag(`More than one main breaker (${breakers.length}) — only one is allowed (R612)`, breakers.map((n) => n.id));
+        if (pds.length === 0) flag('No power distribution device (PDH/PDP) found (R613)', batteries.map((n) => n.id));
+      }
+      return out;
+    },
+  },
+  {
     id: 'floating-component',
     label: 'Unconnected component',
     description: 'A component has no wiring at all.',

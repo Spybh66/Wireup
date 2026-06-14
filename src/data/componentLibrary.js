@@ -87,6 +87,18 @@ export const COMPONENT_LIBRARY = [
     ...usb('USB2', 'top'),
     ...usb('USB3', 'top'),
   ]),
+  def('photonvision', 'PhotonVision Coprocessor', 'Controllers', 'pi', 160, 88, ['ipAddress'], [
+    ...pwr('PWR', 'left', '18 AWG', FERRULE),
+    ...eth('ETH', 'top'),
+    ...usb('USB1', 'right'),
+    ...usb('USB2', 'right'),
+  ]),
+  def('beelink', 'Beelink Mini PC', 'Controllers', 'pi', 160, 88, ['ipAddress'], [
+    ...pwr('PWR', 'left'),
+    ...eth('ETH', 'top'),
+    ...usb('USB1', 'right'),
+    ...usb('USB2', 'right'),
+  ]),
 
   // ---------------- Power ----------------
   def('battery', 'Battery (12V)', 'Power', 'battery', 140, 80, [], [
@@ -125,6 +137,21 @@ export const COMPONENT_LIBRARY = [
     ...pwr('BOOST', 'right', '20 AWG', FERRULE),
     ...pwr('5VA', 'right', '20 AWG', FERRULE),
     ...pwr('5VB', 'right', '20 AWG', FERRULE),
+  ]),
+  def('pcm', 'PCM (CTRE)', 'Power', 'pneumaticHub', 160, 96, ['canId'], [
+    ...pwr('PWR', 'left', '18 AWG', FERRULE),
+    ...can('CAN', 'bottom'),
+    ...pwr('SOL A', 'right', '18 AWG', FERRULE),
+    ...pwr('SOL B', 'right', '18 AWG', FERRULE),
+  ]),
+  def('revph', 'Pneumatic Hub (REV PH)', 'Power', 'pneumaticHub', 160, 96, ['canId'], [
+    ...pwr('PWR', 'left', '18 AWG', FERRULE),
+    ...can('CAN', 'bottom'),
+    ...pwr('SOL A', 'right', '18 AWG', FERRULE),
+    ...pwr('SOL B', 'right', '18 AWG', FERRULE),
+  ]),
+  def('compressor', 'Compressor', 'Power', 'compressor', 160, 96, [], [
+    ...pwr('PWR', 'left', '18 AWG', FERRULE),
   ]),
   def('canjunction', 'CANJunction (ThriftyBot)', 'Power', 'canjunction', 150, 110, [], [
     ...pwr('PWR', 'left', '18 AWG', WAGO),
@@ -220,6 +247,10 @@ export const COMPONENT_LIBRARY = [
     ...pwr('PWR', 'left', '18 AWG', FERRULE),
     ...eth('ETH', 'top'),
   ]),
+  def('limelight3g', 'Limelight 3G', 'Sensors', 'camera', 120, 70, ['ipAddress'], [
+    ...pwr('PWR', 'left', '18 AWG', FERRULE),
+    ...eth('ETH', 'top'),
+  ]),
   def('lasercan', 'LaserCAN (Grapple)', 'Sensors', 'canSensor', 120, 80, ['canId'], [
     ...pwr('PWR', 'bottom', '22 AWG', FERRULE),
     ...pwr('PWR', 'top', '22 AWG', FERRULE),
@@ -231,6 +262,10 @@ export const COMPONENT_LIBRARY = [
   ]),
   def('usbcamera', 'Generic USB Camera', 'Sensors', 'camera', 120, 70, [], [
     ...usb('USB', 'left'),
+  ]),
+  def('throughboreencoder', 'REV Through Bore Encoder', 'Sensors', 'canSensor', 100, 64, [], [
+    ...pwr('PWR', 'left', '18 AWG', FERRULE),
+    ...data('Data', 'left'),
   ]),
   def('generic_sensor', 'Generic Sensor', 'Sensors', 'sensor', 100, 60, [], [
     ...pwr('PWR', 'left', '18 AWG', FERRULE),

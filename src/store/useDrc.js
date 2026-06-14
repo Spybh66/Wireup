@@ -10,13 +10,18 @@ export function useDrc() {
   const customDefinitions = useDiagramStore((s) => s.customDefinitions);
   const disabledRules = useDiagramStore((s) => s.settings.drc?.disabledRules);
   const severityOverrides = useDiagramStore((s) => s.settings.drc?.severityOverrides);
+  const dismissed = useDiagramStore((s) => s.settings.drc?.dismissed);
 
   return useMemo(
     () =>
       runDrc(
         { nodes, edges, customDefinitions },
-        { disabledRules: disabledRules ?? [], severityOverrides: severityOverrides ?? {} }
+        {
+          disabledRules: disabledRules ?? [],
+          severityOverrides: severityOverrides ?? {},
+          dismissed: dismissed ?? [],
+        }
       ),
-    [nodes, edges, customDefinitions, disabledRules, severityOverrides]
+    [nodes, edges, customDefinitions, disabledRules, severityOverrides, dismissed]
   );
 }

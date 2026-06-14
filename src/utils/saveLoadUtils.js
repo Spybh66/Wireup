@@ -25,7 +25,20 @@ function migrateTypes(data) {
   };
 }
 
-export const SCHEMA_VERSION = 1;
+// Current project schema version. Bump when the on-disk shape changes and add a
+// migration step below so older files keep loading.
+export const SCHEMA_VERSION = 2;
+
+// Upgrade a validated project object from `fromVersion` to SCHEMA_VERSION by
+// applying each step in order. Steps must be idempotent and pure.
+function migrateProject(data, fromVersion) {
+  let d = data;
+  // v1 → v2: split power/CAN port & wire types were unified (PWR+/PWR-→PWR,
+  // CANH/CANL→CAN). Pre-v1 (versionless) files get the same treatment.
+  if (fromVersion < 2) d = migrateTypes(d);
+  // (future migrations chain here: `if (fromVersion < 3) d = migrateV3(d);`)
+  return d;
+}
 
 export function serializeProject(state) {
   return {
@@ -64,7 +77,8 @@ export function validateProject(obj) {
       typeof obj.wireLabelTemplate === 'string' ? obj.wireLabelTemplate : '{type}{index}',
     customDefinitions: Array.isArray(obj.customDefinitions) ? obj.customDefinitions : [],
   };
-  return { ok: true, data: migrateTypes(raw) };
+  const fromVersion = typeof obj.version === 'number' ? obj.version : 0;
+  return { ok: true, data: migrateProject(raw, fromVersion) };
 }
 
 // §11 — strip illegal filename chars; fall back to a default.
