@@ -1,5 +1,7 @@
 # Wireup
 
+WARNING!!! THIS IS AN AI SLOP APP, VERIFY ALL INFORMATION YOURSELF BEFORE IMPLEMENTING
+
 FRC electrical wiring diagram tool built with React + Vite.
 
 ## Development
