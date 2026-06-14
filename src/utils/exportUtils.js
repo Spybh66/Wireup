@@ -1,8 +1,6 @@
 // §11 Exports — canvas (PNG/JPEG/SVG/PDF) and sheet (CSV/Excel/PDF).
-import { toPng, toJpeg, toSvg } from 'html-to-image';
-import { jsPDF } from 'jspdf';
-import autoTable from 'jspdf-autotable';
-import * as XLSX from 'xlsx';
+// Heavy export-only libraries (html-to-image, jspdf, jspdf-autotable, xlsx)
+// are loaded lazily via dynamic import() so they don't inflate the main bundle.
 import { sanitizeFilename, downloadBlob } from './saveLoadUtils';
 import { buildComponentRows, buildWireRows, buildValidationRows, buildBom } from './sheetData';
 
@@ -43,6 +41,7 @@ const RASTER_OPTS = { backgroundColor: '#1a1a1c', pixelRatio: 2 };
 export async function exportCanvasPNG(name) {
   const el = canvasElement();
   if (!el) return;
+  const { toPng } = await import('html-to-image');
   const url = await withHiddenOverlays(() => toPng(el, RASTER_OPTS));
   downloadDataUrl(url, `${sanitizeFilename(name)}.png`);
 }
@@ -50,6 +49,7 @@ export async function exportCanvasPNG(name) {
 export async function exportCanvasJPEG(name) {
   const el = canvasElement();
   if (!el) return;
+  const { toJpeg } = await import('html-to-image');
   const url = await withHiddenOverlays(() => toJpeg(el, { ...RASTER_OPTS, quality: 0.95 }));
   downloadDataUrl(url, `${sanitizeFilename(name)}.jpg`);
 }
@@ -57,6 +57,7 @@ export async function exportCanvasJPEG(name) {
 export async function exportCanvasSVG(name) {
   const el = canvasElement();
   if (!el) return;
+  const { toSvg } = await import('html-to-image');
   const url = await withHiddenOverlays(() => toSvg(el, RASTER_OPTS));
   downloadDataUrl(url, `${sanitizeFilename(name)}.svg`);
 }
@@ -64,6 +65,10 @@ export async function exportCanvasSVG(name) {
 export async function exportCanvasPDF(name) {
   const el = canvasElement();
   if (!el) return;
+  const [{ toPng }, { jsPDF }] = await Promise.all([
+    import('html-to-image'),
+    import('jspdf'),
+  ]);
   const url = await withHiddenOverlays(() => toPng(el, RASTER_OPTS));
   const img = new Image();
   await new Promise((res, rej) => {
@@ -171,7 +176,8 @@ export function exportSheetCSV(state, name) {
   }
 }
 
-export function exportSheetExcel(state, name) {
+export async function exportSheetExcel(state, name) {
+  const XLSX = await import('xlsx');
   const wb = XLSX.utils.book_new();
   const compSheet = XLSX.utils.aoa_to_sheet([COMPONENT_HEADERS, ...componentMatrix(state)]);
   const wireSheet = XLSX.utils.aoa_to_sheet([WIRE_HEADERS, ...wireMatrix(state)]);
@@ -191,7 +197,11 @@ export function exportSheetExcel(state, name) {
   XLSX.writeFile(wb, `${sanitizeFilename(name)}.xlsx`);
 }
 
-export function exportSheetPDF(state, name) {
+export async function exportSheetPDF(state, name) {
+  const [{ jsPDF }, { default: autoTable }] = await Promise.all([
+    import('jspdf'),
+    import('jspdf-autotable'),
+  ]);
   const doc = new jsPDF({ orientation: 'portrait', unit: 'pt', format: 'letter' });
   doc.setFontSize(14);
   doc.text('Components', 40, 40);
