@@ -107,12 +107,6 @@ export const COMPONENT_LIBRARY = [
     ...usb('USB2', 'top'),
     ...usb('USB3', 'top'),
   ]),
-  def('photonvision', 'PhotonVision Coprocessor', 'Controllers', 'pi', 160, 88, ['ipAddress'], [
-    ...pwr('PWR', 'left', '18 AWG', FERRULE, WEID),
-    ...eth('ETH', 'top'),
-    ...usb('USB1', 'right'),
-    ...usb('USB2', 'right'),
-  ]),
   def('beelink', 'Beelink Mini PC', 'Controllers', 'pi', 160, 88, ['ipAddress'], [
     ...pwr('PWR', 'left'),
     ...eth('ETH', 'top'),
@@ -158,21 +152,6 @@ export const COMPONENT_LIBRARY = [
     ...pwr('5VA', 'right', '20 AWG', FERRULE, WEID),
     ...pwr('5VB', 'right', '20 AWG', FERRULE, WEID),
   ]),
-  def('pcm', 'PCM (CTRE)', 'Power', 'pneumaticHub', 160, 96, ['canId'], [
-    ...pwr('PWR', 'left', '18 AWG', FERRULE, WEID),
-    ...can('CAN', 'bottom', CAN_CTRE),
-    ...pwr('SOL A', 'right', '18 AWG', FERRULE, WEID),
-    ...pwr('SOL B', 'right', '18 AWG', FERRULE, WEID),
-  ]),
-  def('revph', 'Pneumatic Hub (REV PH)', 'Power', 'pneumaticHub', 160, 96, ['canId'], [
-    ...pwr('PWR', 'left', '18 AWG', FERRULE, WEID),
-    ...can('CAN', 'bottom', CAN_WEID),
-    ...pwr('SOL A', 'right', '18 AWG', FERRULE, WEID),
-    ...pwr('SOL B', 'right', '18 AWG', FERRULE, WEID),
-  ]),
-  def('compressor', 'Compressor', 'Power', 'compressor', 160, 96, [], [
-    ...pwr('PWR', 'left', '18 AWG', FERRULE, WEID),
-  ]),
   def('canjunction', 'CANJunction (ThriftyBot)', 'Power', 'canjunction', 150, 110, [], [
     ...pwr('PWR', 'left', '18 AWG', WAGO, [WAGO, FERRULE, BARE]),
     { type: 'CAN', label: 'BUS', side: 'left', requiredFittings: CAN_WEID },
@@ -207,18 +186,6 @@ export const COMPONENT_LIBRARY = [
     ...pwr('MOTOR', 'right', '12 AWG', FERRULE),
     ...data('Data', 'top'),
   ]),
-  def('refire_x60', 'Refire X60 (RF-4003)', 'Motor Controllers', 'motorController', 152, 80, ['canId'], [
-    { type: 'PWR', label: 'PWR', side: 'left', gauge: '12 AWG', fitting: APP, requiredFittings: APP_IN },
-    { type: 'CAN', label: 'CAN IN', side: 'bottom', requiredFittings: CAN_CTRE },
-    { type: 'CAN', label: 'CAN OUT', side: 'bottom', requiredFittings: CAN_CTRE },
-    { type: 'PWR', label: 'MOTOR', side: 'right', gauge: '12 AWG', fitting: MOLEX_SL, requiredFittings: [MOLEX_SL] },
-  ]),
-  def('refire_x44', 'Refire X44 (RF-4004)', 'Motor Controllers', 'motorController', 152, 80, ['canId'], [
-    { type: 'PWR', label: 'PWR', side: 'left', gauge: '12 AWG', fitting: APP, requiredFittings: APP_IN },
-    { type: 'CAN', label: 'CAN IN', side: 'bottom', requiredFittings: CAN_CTRE },
-    { type: 'CAN', label: 'CAN OUT', side: 'bottom', requiredFittings: CAN_CTRE },
-    { type: 'PWR', label: 'MOTOR', side: 'right', gauge: '12 AWG', fitting: MOLEX_SL, requiredFittings: [MOLEX_SL] },
-  ]),
 
   // ---------------- Motors ----------------
   def('krakenx60', 'Kraken X60', 'Motors', 'krakenMotor', 120, 70, ['canId'], [
@@ -231,11 +198,15 @@ export const COMPONENT_LIBRARY = [
     { type: 'CAN', label: 'CAN IN', side: 'right', requiredFittings: CAN_CTRE },
     { type: 'CAN', label: 'CAN OUT', side: 'right', requiredFittings: CAN_CTRE },
   ]),
-  def('krakenx60_adapted', 'Kraken X60 + Adapter', 'Motors', 'krakenMotor', 120, 70, [], [
-    { type: 'PWR', label: 'Phases', side: 'left', gauge: '12 AWG', fitting: MOLEX_SL, requiredFittings: [MOLEX_SL] },
+  def('krakenx60_adapted', 'Kraken X60 + Adapter', 'Motors', 'krakenMotor', 120, 70, ['canId'], [
+    { type: 'PWR', label: 'PWR', side: 'left', gauge: '12 AWG', fitting: APP, requiredFittings: [APP, MOLEX_SL] },
+    { type: 'CAN', label: 'CAN IN', side: 'right', requiredFittings: CAN_CTRE },
+    { type: 'CAN', label: 'CAN OUT', side: 'right', requiredFittings: CAN_CTRE },
   ]),
-  def('krakenx44_adapted', 'Kraken X44 + Adapter', 'Motors', 'krakenMotor', 120, 70, [], [
-    { type: 'PWR', label: 'Phases', side: 'left', gauge: '12 AWG', fitting: MOLEX_SL, requiredFittings: [MOLEX_SL] },
+  def('krakenx44_adapted', 'Kraken X44 + Adapter', 'Motors', 'krakenMotor', 120, 70, ['canId'], [
+    { type: 'PWR', label: 'PWR', side: 'left', gauge: '12 AWG', fitting: APP, requiredFittings: [APP, MOLEX_SL] },
+    { type: 'CAN', label: 'CAN IN', side: 'right', requiredFittings: CAN_CTRE },
+    { type: 'CAN', label: 'CAN OUT', side: 'right', requiredFittings: CAN_CTRE },
   ]),
   def('minion', 'Minion', 'Motors', 'motor', 120, 70, [], [
     ...pwr('PWR', 'left', '12 AWG', RING, STUD),

@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import useDiagramStore from './diagramStore';
+import useDiagramStore, { cloneCluster } from './diagramStore';
 import { serializeProject, validateProject } from '../utils/saveLoadUtils';
 
 function reset() {
@@ -9,6 +9,40 @@ function reset() {
 
 describe('diagramStore', () => {
   beforeEach(() => reset());
+
+  it('cloneCluster isolates a copy: fresh node + port ids, internal edges only', () => {
+    const s = useDiagramStore.getState();
+    const a = s.addNode('roborio2', { x: 0, y: 0 });
+    const b = s.addNode('krakenx60', { x: 200, y: 0 });
+    const outside = s.addNode('battery', { x: 400, y: 0 });
+    let st = useDiagramStore.getState();
+    const aCan = st.nodes.find((n) => n.id === a).data.ports.find((p) => p.type === 'CAN');
+    const bCanIn = st.nodes.find((n) => n.id === b).data.ports.find((p) => p.label === 'CAN IN');
+    const bPwr = st.nodes.find((n) => n.id === b).data.ports.find((p) => p.type === 'PWR');
+    const outPwr = st.nodes.find((n) => n.id === outside).data.ports.find((p) => p.type === 'PWR');
+    st.addEdge({ source: a, target: b, sourceHandle: aCan.id, targetHandle: bCanIn.id }); // internal
+    st.addEdge({ source: outside, target: b, sourceHandle: outPwr.id, targetHandle: bPwr.id }); // boundary
+
+    st = useDiagramStore.getState();
+    const srcNodes = st.nodes.filter((n) => n.id === a || n.id === b);
+    const { newNodes, newEdges } = cloneCluster(srcNodes, st.edges, (p) => ({ x: p.x + 50, y: p.y + 50 }));
+
+    // Boundary edge (to the un-cloned battery) is dropped; only the internal one survives.
+    expect(newEdges).toHaveLength(1);
+    // Every clone has a brand-new node id and brand-new port ids.
+    const oldNodeIds = new Set(srcNodes.map((n) => n.id));
+    const oldPortIds = new Set(srcNodes.flatMap((n) => n.data.ports.map((p) => p.id)));
+    for (const n of newNodes) {
+      expect(oldNodeIds.has(n.id)).toBe(false);
+      for (const p of n.data.ports) expect(oldPortIds.has(p.id)).toBe(false);
+    }
+    // The surviving edge points at the clones' new ids/handles, never the originals.
+    const e = newEdges[0];
+    const newIds = new Set(newNodes.map((n) => n.id));
+    const newHandles = new Set(newNodes.flatMap((n) => n.data.ports.map((p) => p.id)));
+    expect(newIds.has(e.source) && newIds.has(e.target)).toBe(true);
+    expect(newHandles.has(e.sourceHandle) && newHandles.has(e.targetHandle)).toBe(true);
+  });
 
   it('adds nodes and connects an edge with inherited type + label', () => {
     const s = useDiagramStore.getState();

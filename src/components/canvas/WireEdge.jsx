@@ -11,7 +11,7 @@ import { buildSvgPath, STEP } from '../../utils/routingUtils';
 
 const MIN_SEG = 26; // only show an insert dot on segments at least this long (px)
 const DRC_HALO = { error: '#f87171', warning: '#fbbf24', info: '#38bdf8' };
-const ALIGN_TOL = 6; // flow-px tolerance for snapping a waypoint to another point's axis
+const ALIGN_TOL = 10; // flow-px capture radius for locking a waypoint onto a port/waypoint axis
 const GUIDE_LEN = 5000; // half-length of an alignment guide line (px)
 
 // Distance from point p to segment a–b.
@@ -60,8 +60,8 @@ function WireEdge({ id, selected }) {
   // Path: from the live draft while dragging, otherwise the computed route.
   const dPath = draft ? buildSvgPath(controlPts, []) : route.d;
 
-  // Snap waypoints to the wire grid (STEP) — a sub-grid of the component grid —
-  // so they align with ports (also on the wire grid) for clean straight runs.
+  // Snap a point to the wire grid (STEP) — a sub-grid of the component grid, so
+  // it aligns with ports (also on the wire grid). Used for seeding new points.
   const snap = (p) =>
     snapToGrid
       ? { x: Math.round(p.x / STEP) * STEP, y: Math.round(p.y / STEP) * STEP }
@@ -75,19 +75,25 @@ function WireEdge({ id, selected }) {
     setDraft(base);
     const others = base.filter((_, k) => k !== idx);
     const onMove = (e) => {
-      const fp = snap(screenToFlowPosition({ x: e.clientX, y: e.clientY }));
-      // Snap to another control point's axis (clean straight runs) + show guides.
+      // Work from the RAW cursor position so axis-locking onto a port/waypoint
+      // wins over the grid: with a capture radius wider than the grid step, a
+      // drag near a port's axis snaps exactly onto it (clean straight run into
+      // the port), and only the axes that *didn't* lock fall back to the grid.
+      const raw = screenToFlowPosition({ x: e.clientX, y: e.clientY });
       const g = [];
       let bestX = null;
       let bestY = null;
       for (const o of others) {
-        if (Math.abs(fp.x - o.x) <= ALIGN_TOL && (bestX == null || Math.abs(fp.x - o.x) < Math.abs(fp.x - bestX)))
+        if (Math.abs(raw.x - o.x) <= ALIGN_TOL && (bestX == null || Math.abs(raw.x - o.x) < Math.abs(raw.x - bestX)))
           bestX = o.x;
-        if (Math.abs(fp.y - o.y) <= ALIGN_TOL && (bestY == null || Math.abs(fp.y - o.y) < Math.abs(fp.y - bestY)))
+        if (Math.abs(raw.y - o.y) <= ALIGN_TOL && (bestY == null || Math.abs(raw.y - o.y) < Math.abs(raw.y - bestY)))
           bestY = o.y;
       }
+      const fp = { x: raw.x, y: raw.y };
       if (bestX != null) { fp.x = bestX; g.push({ axis: 'x', at: bestX }); }
+      else if (snapToGrid) fp.x = Math.round(raw.x / STEP) * STEP;
       if (bestY != null) { fp.y = bestY; g.push({ axis: 'y', at: bestY }); }
+      else if (snapToGrid) fp.y = Math.round(raw.y / STEP) * STEP;
       const pts = dragRef.current.pts.slice();
       pts[dragRef.current.idx] = fp;
       dragRef.current.pts = pts;

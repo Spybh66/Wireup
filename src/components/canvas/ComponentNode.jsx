@@ -1,5 +1,5 @@
 // §4.1 Node renderer — header (icon + label + lock), body, port handles.
-import { memo, Fragment } from 'react';
+import { memo } from 'react';
 import { Handle, Position } from '@xyflow/react';
 import { Lock, CircleAlert, TriangleAlert, Info } from 'lucide-react';
 import { getDefinition } from '../../data/componentLibrary';
@@ -58,48 +58,34 @@ function sideLabelScale(ports, def) {
   return { top: scaleFor('top'), right: scaleFor('right'), bottom: scaleFor('bottom'), left: scaleFor('left') };
 }
 
-// Port label offset so it sits just inside the body, away from the dot.
+// Port label container — a flex row anchored just inside the body. The port
+// label is the outermost child (toward the node edge); an optional breaker
+// readout follows it toward the node centre. For right-side ports the row is
+// reversed so the label still hugs the outer (right) edge with the amps inboard.
 function labelStyle(port, f, scale = 1) {
   const pct = `${f * 100}%`;
   const fs = 10 * scale;
   const common = {
     position: 'absolute',
+    display: 'flex',
+    alignItems: 'center',
+    gap: 3 * scale,
     fontSize: fs,
     lineHeight: `${fs}px`,
     color: '#c5c5cd',
     pointerEvents: 'none',
     whiteSpace: 'nowrap',
-    maxWidth: 56 * scale,
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
+    maxWidth: 120 * scale,
     textShadow: '0 0 3px #1b1b1f, 0 0 3px #1b1b1f',
     zIndex: 3,
   };
-  if (port.side === 'left') return { ...common, left: 6, top: pct, transform: 'translateY(-50%)' };
+  if (port.side === 'left')
+    return { ...common, left: 6, top: pct, transform: 'translateY(-50%)', flexDirection: 'row' };
   if (port.side === 'right')
-    return { ...common, right: 6, top: pct, transform: 'translateY(-50%)', textAlign: 'right' };
-  if (port.side === 'top') return { ...common, top: 4, left: pct, transform: 'translateX(-50%)' };
-  return { ...common, bottom: 4, left: pct, transform: 'translateX(-50%)' };
-}
-
-// Amp readout positioned on the INTERIOR side so CH label stays at the outer edge.
-function breakerLabelStyle(port, f, scale = 1) {
-  const pct = `${f * 100}%`;
-  const fs = 10 * scale;
-  const common = {
-    position: 'absolute',
-    fontSize: fs,
-    lineHeight: `${fs}px`,
-    fontWeight: 600,
-    pointerEvents: 'none',
-    whiteSpace: 'nowrap',
-    textShadow: '0 0 3px #1b1b1f, 0 0 3px #1b1b1f',
-    zIndex: 3,
-  };
-  if (port.side === 'left') return { ...common, right: 6, top: pct, transform: 'translateY(-50%)', textAlign: 'right' };
-  if (port.side === 'right') return { ...common, left: 6, top: pct, transform: 'translateY(-50%)' };
-  if (port.side === 'top') return { ...common, bottom: 4, left: pct, transform: 'translateX(-50%)' };
-  return { ...common, top: 4, left: pct, transform: 'translateX(-50%)' };
+    return { ...common, right: 6, top: pct, transform: 'translateY(-50%)', flexDirection: 'row-reverse' };
+  if (port.side === 'top')
+    return { ...common, top: 4, left: pct, transform: 'translateX(-50%)', flexDirection: 'row' };
+  return { ...common, bottom: 4, left: pct, transform: 'translateX(-50%)', flexDirection: 'row' };
 }
 
 function ComponentNode({ id, data, selected }) {
@@ -176,22 +162,20 @@ function ComponentNode({ id, data, selected }) {
         );
       })()}
 
-      {/* port labels (+ fuse/breaker readout for power ports) */}
+      {/* port labels (+ fuse/breaker readout for power ports). Label hugs the
+          outer edge; the colour-coded amp readout sits just inboard of it. */}
       {showPortLabels &&
         data.ports.map((p) => (
-          <Fragment key={p.id}>
-            <span style={labelStyle(p, snapFrac(p), labelScale[p.side])}>
+          <div key={`l-${p.id}`} style={labelStyle(p, snapFrac(p), labelScale[p.side])}>
+            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 56 * labelScale[p.side] }}>
               {p.label}
             </span>
             {p.type === 'PWR' && p.breaker != null && (
-              <span style={{
-                ...breakerLabelStyle(p, snapFrac(p), labelScale[p.side]),
-                color: BREAKER_COLOR[p.breaker] ?? '#fbbf24',
-              }}>
+              <span style={{ color: BREAKER_COLOR[p.breaker] ?? '#fbbf24', fontWeight: 600 }}>
                 {p.breaker}A
               </span>
             )}
-          </Fragment>
+          </div>
         ))}
 
       {/* handles — every port is both source & target. React Flow needs a

@@ -13,13 +13,12 @@ import Toaster from './components/shared/Toast';
 import ConfirmDialog from './components/shared/ConfirmDialog';
 import RestoreBanner from './components/shared/RestoreBanner';
 import MobileBanner from './components/shared/MobileBanner';
-import useDiagramStore from './store/diagramStore';
+import useDiagramStore, { cloneCluster } from './store/diagramStore';
 import { readAutosave, decodeProjectFromHash } from './utils/saveLoadUtils';
 
 const SheetView = lazy(() => import('./components/sheet/SheetView'));
 const AboutView = lazy(() => import('./components/about/AboutView'));
 
-const uuid = () => crypto.randomUUID();
 const deepCopy = (o) => JSON.parse(JSON.stringify(o));
 
 function isTypingTarget(t) {
@@ -79,21 +78,10 @@ export default function App() {
     if (!clip || !clip.nodes.length) return;
     pasteCount.current += 1;
     const off = 24 * pasteCount.current;
-    const idMap = new Map();
-    const newNodes = clip.nodes.map((n) => {
-      const id = uuid();
-      idMap.set(n.id, id);
-      return {
-        ...deepCopy(n),
-        id,
-        position: { x: n.position.x + off, y: n.position.y + off },
-      };
-    });
-    const newEdges = clip.edges.map((e) => ({
-      ...deepCopy(e),
-      id: uuid(),
-      source: idMap.get(e.source),
-      target: idMap.get(e.target),
+    // Fresh node + port ids so the paste is isolated from the original.
+    const { newNodes, newEdges } = cloneCluster(clip.nodes, clip.edges, (p) => ({
+      x: p.x + off,
+      y: p.y + off,
     }));
     useDiagramStore.getState().pasteGraph(newNodes, newEdges);
   }, []);

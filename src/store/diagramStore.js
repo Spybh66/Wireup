@@ -84,6 +84,41 @@ function persistTemplates(templates) {
 
 const deepCopy = (o) => JSON.parse(JSON.stringify(o));
 
+// Clone a cluster of nodes plus the edges *between* them, giving every clone a
+// fresh node id AND fresh per-instance port ids. Edge endpoints and handles are
+// remapped through those ids, and only edges with both ends inside the cluster
+// survive. This keeps a pasted/placed copy fully isolated: because handle ids
+// are unique per instance, a copy can never share handles with — or get wired
+// back to — the original (the cause of "wires leaving the placed subsystem").
+export function cloneCluster(srcNodes, srcEdges, mapPosition = (p) => p) {
+  const nodeIdMap = new Map();
+  const handleMap = new Map(); // `${oldNodeId}:${oldHandle}` -> newHandle
+  const newNodes = srcNodes.map((n) => {
+    const nid = uuid();
+    nodeIdMap.set(n.id, nid);
+    const data = deepCopy(n.data);
+    if (Array.isArray(data.ports)) {
+      data.ports = data.ports.map((p) => {
+        const pid = uuid();
+        handleMap.set(`${n.id}:${p.id}`, pid);
+        return { ...p, id: pid };
+      });
+    }
+    return { ...deepCopy(n), id: nid, position: mapPosition(n.position), data };
+  });
+  const newEdges = srcEdges
+    .filter((e) => nodeIdMap.has(e.source) && nodeIdMap.has(e.target))
+    .map((e) => ({
+      ...deepCopy(e),
+      id: uuid(),
+      source: nodeIdMap.get(e.source),
+      target: nodeIdMap.get(e.target),
+      sourceHandle: handleMap.get(`${e.source}:${e.sourceHandle}`) ?? e.sourceHandle,
+      targetHandle: handleMap.get(`${e.target}:${e.targetHandle}`) ?? e.targetHandle,
+    }));
+  return { newNodes, newEdges, nodeIdMap };
+}
+
 // Resolve a layer id from a wire type using the current layer list (by name).
 function layerIdForType(layers, type) {
   const name = defaultLayerNameForType(type);
@@ -427,28 +462,29 @@ const useDiagramStore = create(
         set({ templates });
       },
 
-      // Stamp a template onto the canvas at `position` (top-left), with fresh ids.
+      // Stamp a template onto the canvas at `position` (top-left), with fresh
+      // node + port ids so the placed copy is fully isolated (no wires leaving
+      // it, no handles shared with the original).
       instantiateTemplate: (id, position = { x: 80, y: 80 }) => {
         const tpl = get().templates.find((t) => t.id === id);
         if (!tpl) return;
-        const idMap = new Map();
-        const newNodes = tpl.nodes.map((n) => {
-          const nid = uuid();
-          idMap.set(n.id, nid);
-          return {
-            ...deepCopy(n),
-            id: nid,
-            position: { x: n.position.x + position.x, y: n.position.y + position.y },
-            data: { ...n.data, label: dedupeLabel(get().nodes, getDefinition(n.data.definitionId, get().customDefinitions)?.name ?? n.data.label) },
-          };
-        });
-        const newEdges = tpl.edges.map((e) => ({
-          ...deepCopy(e),
-          id: uuid(),
-          source: idMap.get(e.source),
-          target: idMap.get(e.target),
+        const { newNodes, newEdges } = cloneCluster(tpl.nodes, tpl.edges, (p) => ({
+          x: p.x + position.x,
+          y: p.y + position.y,
         }));
-        get().pasteGraph(newNodes, newEdges);
+        // Keep labels unique against what's already on the canvas.
+        const existing = get().nodes;
+        const labeled = newNodes.map((n) => ({
+          ...n,
+          data: {
+            ...n.data,
+            label: dedupeLabel(
+              existing,
+              getDefinition(n.data.definitionId, get().customDefinitions)?.name ?? n.data.label
+            ),
+          },
+        }));
+        get().pasteGraph(labeled, newEdges);
       },
 
       // Build a small illustrative robot for onboarding (uses the real add logic).
