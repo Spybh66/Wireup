@@ -14,6 +14,7 @@ import ConfirmDialog from './components/shared/ConfirmDialog';
 import RestoreBanner from './components/shared/RestoreBanner';
 import MobileBanner from './components/shared/MobileBanner';
 import useDiagramStore, { cloneCluster } from './store/diagramStore';
+import { canvasBridge } from './components/canvas/canvasBridge';
 import { readAutosave, decodeProjectFromHash } from './utils/saveLoadUtils';
 
 const SheetView = lazy(() => import('./components/sheet/SheetView'));
@@ -39,6 +40,12 @@ export default function App() {
 
   const clipboard = useRef(null);
   const pasteCount = useRef(0);
+
+  // React Flow owns selection; clear it there (the store mirror follows).
+  const clearSelection = useCallback(() => {
+    setSelection({ nodes: [], edges: [] });
+    canvasBridge.clearSelection?.();
+  }, [setSelection]);
 
   // ---- load a shared project from the URL hash, else restore-from-autosave ----
   useEffect(() => {
@@ -95,7 +102,7 @@ export default function App() {
         if (configNodeId) return setConfigNodeId(null);
         if (useDiagramStore.getState().confirmState) return; // handled by dialog
         const sel = useDiagramStore.getState().selection;
-        if (sel.nodes.length || sel.edges.length) setSelection({ nodes: [], edges: [] });
+        if (sel.nodes.length || sel.edges.length) clearSelection();
         return;
       }
       if (isTypingTarget(e.target)) return;
@@ -128,13 +135,14 @@ export default function App() {
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [settingsOpen, configNodeId, activeTab, setSelection, doCopy, doPaste]);
+  }, [settingsOpen, configNodeId, activeTab, clearSelection, doCopy, doPaste]);
 
   const onOpenNodeConfig = useCallback((nodeId) => setConfigNodeId(nodeId), []);
   const onSelectEdgeFromModal = useCallback(
     (edgeId) => {
       setActiveTab('diagram');
       setSelection({ nodes: [], edges: [edgeId] });
+      canvasBridge.selectElements?.([], [edgeId]);
     },
     [setActiveTab, setSelection]
   );
@@ -167,14 +175,9 @@ export default function App() {
               <LayerPanel />
               {drcOpen && <DrcPanel onClose={() => setDrcOpen(false)} />}
               {selectedEdgeId && (
-                <WireConfigPanel
-                  edgeId={selectedEdgeId}
-                  onClose={() => setSelection({ nodes: [], edges: [] })}
-                />
+                <WireConfigPanel edgeId={selectedEdgeId} onClose={clearSelection} />
               )}
-              {multiCount > 1 && (
-                <MultiSelectPanel onClose={() => setSelection({ nodes: [], edges: [] })} />
-              )}
+              {multiCount > 1 && <MultiSelectPanel onClose={clearSelection} />}
             </>
           )}
           {activeTab !== 'diagram' && (

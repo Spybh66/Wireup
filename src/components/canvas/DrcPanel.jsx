@@ -46,7 +46,9 @@ export default function DrcPanel({ onClose }) {
   const [cursor, setCursor] = useState(0);
 
   const focus = (v) => {
+    // React Flow owns selection; highlight imperatively (store mirror follows).
     setSelection({ nodes: v.nodes ?? [], edges: v.edges ?? [] });
+    canvasBridge.selectElements?.(v.nodes ?? [], v.edges ?? []);
     canvasBridge.focusElements?.(v.nodes ?? []);
   };
 

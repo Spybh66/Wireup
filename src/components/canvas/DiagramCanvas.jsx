@@ -10,6 +10,7 @@ import {
   Panel,
   useReactFlow,
   useNodesState,
+  useEdgesState,
   useStoreApi,
 } from '@xyflow/react';
 import { StickyNote, Square } from 'lucide-react';
@@ -38,7 +39,6 @@ export function Flow({ onOpenNodeConfig }) {
   const edges = useDiagramStore((s) => s.edges);
   const layers = useDiagramStore((s) => s.layers);
   const settings = useDiagramStore((s) => s.settings);
-  const selection = useDiagramStore((s) => s.selection);
   const customDefinitions = useDiagramStore((s) => s.customDefinitions);
   const draggingNodeIds = useDiagramStore((s) => s.draggingNodeIds);
   const setSelection = useDiagramStore((s) => s.setSelection);
@@ -46,7 +46,12 @@ export function Flow({ onOpenNodeConfig }) {
 
   const { screenToFlowPosition, fitView } = useReactFlow();
   const rfStore = useStoreApi();
+  // React Flow OWNS selection (uncontrolled). We never feed `selected` back in
+  // from the store, so there is no controlled-selection feedback loop. Selection
+  // is mirrored one-way to the store (onSelectionChange) for the side panels, and
+  // driven the other way only imperatively (canvasBridge.selectElements/clear).
   const [rfNodes, setRfNodes, onNodesChange] = useNodesState([]);
+  const [rfEdges, setRfEdges, onEdgesChange] = useEdgesState([]);
   const baselineRef = useRef(null);
   const toastedFallbacks = useRef(new Set());
   const measuredSig = useRef(new Map()); // id → ports signature already measured
@@ -88,20 +93,26 @@ export function Flow({ onOpenNodeConfig }) {
       const ns = (nodeIds ?? []).map((id) => ({ id }));
       if (ns.length) fitView({ nodes: ns, padding: 0.4, duration: 400, maxZoom: 1.4 });
     };
+    // Selection lives in React Flow, so chrome outside the canvas (DRC panel,
+    // panel close buttons, Escape) drives it imperatively through the bridge.
+    canvasBridge.clearSelection = () => rfStore.getState().unselectNodesAndEdges();
+    canvasBridge.selectElements = (nodeIds = [], edgeIds = []) => {
+      const s = rfStore.getState();
+      s.unselectNodesAndEdges();
+      s.addSelectedNodes(nodeIds);
+      if (edgeIds.length) s.addSelectedEdges(edgeIds);
+    };
     return () => {
       canvasBridge.fitView = null;
       canvasBridge.focusElements = null;
+      canvasBridge.clearSelection = null;
+      canvasBridge.selectElements = null;
     };
-  }, [fitView]);
+  }, [fitView, rfStore]);
 
-  // ---- sync store → RF nodes (preserve RF-measured dimensions) ----
-  // NOTE: selection is intentionally NOT applied here. Edge selection is applied
-  // synchronously in a render memo (rfEdges); if node selection were applied in
-  // this deferred effect there would be a frame where RF sees the edge selected
-  // but its nodes not yet — RF's derived selection then disagrees with the store
-  // and onSelectionChange ping-pongs into an infinite loop (React #185, seen
-  // when drag-selecting a component that has a wire). So node selection is also
-  // applied synchronously at render time, in `displayNodes` below.
+  // ---- sync store → RF nodes (structure only; preserve RF's selection +
+  // measured dimensions). Selection lives in React Flow, never in our store, so
+  // we carry the previous `selected` forward across structural syncs. ----
   useEffect(() => {
     setRfNodes((prev) => {
       const byId = new Map(prev.map((n) => [n.id, n]));
@@ -111,6 +122,7 @@ export function Flow({ onOpenNodeConfig }) {
         return {
           ...n,
           draggable: !n.data.locked,
+          selected: old?.selected ?? false,
           hidden: isAnnotation && !settings.annotationsVisible,
           measured: old?.measured,
           width: old?.width,
@@ -120,12 +132,18 @@ export function Flow({ onOpenNodeConfig }) {
     });
   }, [storeNodes, settings.annotationsVisible, setRfNodes]);
 
-  // Apply node selection at render time (in lockstep with rfEdges' edge
-  // selection) so React Flow never observes a half-applied selection.
-  const displayNodes = useMemo(
-    () => rfNodes.map((n) => ({ ...n, selected: selection.nodes.includes(n.id) })),
-    [rfNodes, selection.nodes]
-  );
+  // ---- sync store → RF edges (structure only; preserve RF's selection) ----
+  useEffect(() => {
+    setRfEdges((prev) => {
+      const selById = new Map(prev.map((e) => [e.id, e.selected]));
+      return edges.map((e) => ({
+        ...e,
+        type: 'wire',
+        reconnectable: true,
+        selected: selById.get(e.id) ?? false,
+      }));
+    });
+  }, [edges, setRfEdges]);
 
   // ---- routing (from live RF node positions so wires follow drags) ----
   // Routing is expensive, so gate it on a structural signature of the nodes
@@ -168,17 +186,6 @@ export function Flow({ onOpenNodeConfig }) {
     }
   }, [fallbacks]);
 
-  const rfEdges = useMemo(
-    () =>
-      edges.map((e) => ({
-        ...e,
-        type: 'wire',
-        selected: selection.edges.includes(e.id),
-        reconnectable: true,
-      })),
-    [edges, selection.edges]
-  );
-
   // DRC marks → worst severity per node/edge, for canvas badges.
   const { violations: drcViolations } = useDrc();
   const drcMarks = useMemo(() => {
@@ -194,35 +201,6 @@ export function Flow({ onOpenNodeConfig }) {
     }
     return { nodes: nodeMarks, edges: edgeMarks };
   }, [drcViolations]);
-
-  // Selection is owned by our store. React Flow emits 'select' node changes; we
-  // route those straight into the store (exactly like onEdgesChange) instead of
-  // letting useNodesState apply them to rfNodes. If both useNodesState AND the
-  // store-driven `displayNodes` prop set node.selected, they compete every frame
-  // and ping-pong into an infinite update loop (React #185) when a node and its
-  // wire are selected together. Non-select changes (position/dimensions/removal)
-  // still go through useNodesState.
-  const onNodesChange2 = useCallback(
-    (changes) => {
-      const keep = changes.filter((c) => c.type !== 'select');
-      if (keep.length) onNodesChange(keep);
-      const selChanges = changes.filter((c) => c.type === 'select');
-      if (!selChanges.length) return;
-      const cur = useDiagramStore.getState().selection;
-      let nodeIds = [...cur.nodes];
-      for (const c of selChanges) {
-        if (c.selected) {
-          if (!nodeIds.includes(c.id)) nodeIds.push(c.id);
-        } else {
-          nodeIds = nodeIds.filter((id) => id !== c.id);
-        }
-      }
-      const changed =
-        nodeIds.length !== cur.nodes.length || nodeIds.some((id) => !cur.nodes.includes(id));
-      if (changed) setSelection({ nodes: nodeIds, edges: cur.edges });
-    },
-    [onNodesChange, setSelection]
-  );
 
   // ---- drag → single history entry (baseline → moved) ----
   const onNodeDragStart = useCallback(
@@ -262,29 +240,9 @@ export function Flow({ onOpenNodeConfig }) {
     useDiagramStore.getState().reconnectEdge(oldEdge.id, conn);
   }, []);
 
-  // Handle edge selection changes from RF so the store selection stays in sync.
-  const onEdgesChange = useCallback(
-    (changes) => {
-      const selChanges = changes.filter((c) => c.type === 'select');
-      if (!selChanges.length) return;
-      const cur = useDiagramStore.getState().selection;
-      let edgeIds = [...cur.edges];
-      for (const c of selChanges) {
-        if (c.selected) {
-          if (!edgeIds.includes(c.id)) edgeIds.push(c.id);
-        } else {
-          edgeIds = edgeIds.filter((id) => id !== c.id);
-        }
-      }
-      // Only push when the edge selection actually changed, so RF's controlled-
-      // selection echo can't loop with the store (React error #185).
-      const changed =
-        edgeIds.length !== cur.edges.length || edgeIds.some((id) => !cur.edges.includes(id));
-      if (changed) setSelection({ nodes: cur.nodes, edges: edgeIds });
-    },
-    [setSelection]
-  );
-
+  // One-way mirror: React Flow owns selection; copy it into the store (for the
+  // side panels) only when it actually changed. Because nothing feeds `selected`
+  // back into the nodes/edges props, this can never loop.
   const onSelectionChange = useCallback(
     ({ nodes: ns, edges: es }) => {
       const nodeIds = ns.map((n) => n.id);
@@ -339,11 +297,11 @@ export function Flow({ onOpenNodeConfig }) {
       <ConnectContext.Provider value={connectType}>
       <div className="h-full w-full" onDrop={onDrop} onDragOver={onDragOver}>
         <ReactFlow
-          nodes={displayNodes}
+          nodes={rfNodes}
           edges={rfEdges}
           nodeTypes={nodeTypes}
           edgeTypes={edgeTypes}
-          onNodesChange={onNodesChange2}
+          onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
           onNodeDragStart={onNodeDragStart}
           onNodeDragStop={onNodeDragStop}
