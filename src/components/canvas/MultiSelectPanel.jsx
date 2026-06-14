@@ -64,7 +64,7 @@ export default function MultiSelectPanel({ onClose }) {
               </select>
             </Field>
             <div className="flex items-center gap-2">
-              <span className="text-neutral-400">Wire color</span>
+              <span className="text-neutral-400">Base color</span>
               <input
                 type="color"
                 onChange={(e) => updateEdgesData(eIds, { color: e.target.value })}
@@ -73,6 +73,21 @@ export default function MultiSelectPanel({ onClose }) {
               />
               <button
                 onClick={() => updateEdgesData(eIds, { color: null, color2: null })}
+                className="text-xs text-neutral-400 hover:text-silver"
+              >
+                reset
+              </button>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-neutral-400">Stripe color</span>
+              <input
+                type="color"
+                onChange={(e) => updateEdgesData(eIds, { color2: e.target.value })}
+                aria-label="Set wire stripe color"
+                className="ml-auto h-7 w-9 cursor-pointer rounded border border-edge bg-surface-0"
+              />
+              <button
+                onClick={() => updateEdgesData(eIds, { color2: null })}
                 className="text-xs text-neutral-400 hover:text-silver"
               >
                 reset

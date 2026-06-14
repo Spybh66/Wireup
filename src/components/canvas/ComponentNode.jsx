@@ -1,5 +1,5 @@
 // §4.1 Node renderer — header (icon + label + lock), body, port handles.
-import { memo } from 'react';
+import { memo, Fragment } from 'react';
 import { Handle, Position } from '@xyflow/react';
 import { Lock, CircleAlert, TriangleAlert, Info } from 'lucide-react';
 import { getDefinition } from '../../data/componentLibrary';
@@ -9,6 +9,8 @@ import { portSnappedFraction } from '../../utils/geometry';
 import useDiagramStore from '../../store/diagramStore';
 import { useDrcMarks } from './DrcContext';
 import { useConnectType } from './ConnectContext';
+
+const BREAKER_COLOR = { 10: '#ef4444', 20: '#eab308', 30: '#22c55e', 40: '#f97316' };
 
 const DRC_BADGE = {
   error: { Icon: CircleAlert, color: '#f87171' },
@@ -78,6 +80,26 @@ function labelStyle(port, f, scale = 1) {
     return { ...common, right: 6, top: pct, transform: 'translateY(-50%)', textAlign: 'right' };
   if (port.side === 'top') return { ...common, top: 4, left: pct, transform: 'translateX(-50%)' };
   return { ...common, bottom: 4, left: pct, transform: 'translateX(-50%)' };
+}
+
+// Amp readout positioned on the INTERIOR side so CH label stays at the outer edge.
+function breakerLabelStyle(port, f, scale = 1) {
+  const pct = `${f * 100}%`;
+  const fs = 10 * scale;
+  const common = {
+    position: 'absolute',
+    fontSize: fs,
+    lineHeight: `${fs}px`,
+    fontWeight: 600,
+    pointerEvents: 'none',
+    whiteSpace: 'nowrap',
+    textShadow: '0 0 3px #1b1b1f, 0 0 3px #1b1b1f',
+    zIndex: 3,
+  };
+  if (port.side === 'left') return { ...common, right: 6, top: pct, transform: 'translateY(-50%)', textAlign: 'right' };
+  if (port.side === 'right') return { ...common, left: 6, top: pct, transform: 'translateY(-50%)' };
+  if (port.side === 'top') return { ...common, bottom: 4, left: pct, transform: 'translateX(-50%)' };
+  return { ...common, top: 4, left: pct, transform: 'translateX(-50%)' };
 }
 
 function ComponentNode({ id, data, selected }) {
@@ -157,12 +179,19 @@ function ComponentNode({ id, data, selected }) {
       {/* port labels (+ fuse/breaker readout for power ports) */}
       {showPortLabels &&
         data.ports.map((p) => (
-          <span key={`l-${p.id}`} style={labelStyle(p, snapFrac(p), labelScale[p.side])}>
-            {p.label}
+          <Fragment key={p.id}>
+            <span style={labelStyle(p, snapFrac(p), labelScale[p.side])}>
+              {p.label}
+            </span>
             {p.type === 'PWR' && p.breaker != null && (
-              <span style={{ marginLeft: 3, color: '#fbbf24', fontWeight: 600 }}>{p.breaker}A</span>
+              <span style={{
+                ...breakerLabelStyle(p, snapFrac(p), labelScale[p.side]),
+                color: BREAKER_COLOR[p.breaker] ?? '#fbbf24',
+              }}>
+                {p.breaker}A
+              </span>
             )}
-          </span>
+          </Fragment>
         ))}
 
       {/* handles — every port is both source & target. React Flow needs a
