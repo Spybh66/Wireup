@@ -218,6 +218,31 @@ describe('DRC engine', () => {
     expect(findIds(res2, 'unconnected-can')).toHaveLength(0);
   });
 
+  it('flags a wire whose fitting is not allowed by the connected port', () => {
+    // PDH channel requires Ferrule/Bare Wire; a Ring Terminal there is illegal.
+    const pdh = node('pdh', 'PDH', {
+      ports: [{ ...port('c', 'PWR', 'CH0', 'right'), requiredFittings: ['Ferrule', 'Bare Wire'] }],
+    });
+    const k = node('krakenx60', 'M', {
+      ports: [{ ...port('m', 'PWR'), requiredFittings: ['Ring Terminal'] }],
+    });
+    const bad = edge('bad', pdh.id, 'c', k.id, 'm', 'PWR');
+    // Ring Terminal at the PDH end (illegal) and Ferrule at the Kraken end (illegal).
+    bad.data = { ...bad.data, label: 'PWR1', wireFittingFrom: 'Ring Terminal', wireFittingTo: 'Ferrule' };
+    const v = findIds(runDrc({ nodes: [pdh, k], edges: [bad] }), 'connector-mismatch');
+    expect(v).toHaveLength(2);
+
+    // Correct fittings → no violation.
+    const ok = edge('ok', pdh.id, 'c', k.id, 'm', 'PWR');
+    ok.data = { ...ok.data, label: 'PWR2', wireFittingFrom: 'Ferrule', wireFittingTo: 'Ring Terminal' };
+    expect(findIds(runDrc({ nodes: [pdh, k], edges: [ok] }), 'connector-mismatch')).toHaveLength(0);
+
+    // Unset fitting → no nag (only checks explicitly-chosen fittings).
+    const blank = edge('blank', pdh.id, 'c', k.id, 'm', 'PWR');
+    blank.data = { ...blank.data, label: 'PWR3' };
+    expect(findIds(runDrc({ nodes: [pdh, k], edges: [blank] }), 'connector-mismatch')).toHaveLength(0);
+  });
+
   it('flags missing CAN ID and respects disabled rules', () => {
     const k = node('krakenx60', 'K', { canId: null, ports: [port('k-can', 'CAN')] });
     const res = runDrc({ nodes: [k], edges: [] });

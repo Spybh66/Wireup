@@ -16,14 +16,26 @@ const WAGO = 'Wago Lever Nut';
 const RING = 'Ring Terminal';
 const APP = 'Anderson Powerpole';
 const MOLEX_SL = 'Molex SL';
+const BARE = 'Bare Wire';
+
+// Allowed-fitting sets per physical termination style. `requiredFittings` on a
+// port is the list a wire end may legally use; the DRC connector-mismatch rule
+// flags anything outside it. Order = preferred first (also the default fitting).
+const WEID = [FERRULE, BARE];          // Weidmuller / Wago screwless cage clamp
+const STUD = [RING];                   // bolt/stud lug (motors, breaker, main lugs)
+const MAIN = [SB50, RING];             // battery main run (SB50 quick-disconnect / ring)
+const APP_LEADS = [APP, BARE];         // flying power/motor leads (Powerpole or screw-down)
+const APP_IN = [APP, FERRULE, BARE];   // controller power input (Powerpole or into a PD terminal)
+const CAN_WEID = [FERRULE, BARE];      // REV-style CAN terminal
+const CAN_CTRE = [FERRULE, BARE, 'JST']; // CTRE CAN cable: keyed connector or terminal
 
 // single unified power wire
-const pwr = (label, side, gauge = null, fitting = null) => [
-  { type: 'PWR', label, side, gauge, fitting },
+const pwr = (label, side, gauge = null, fitting = null, requiredFittings = null) => [
+  { type: 'PWR', label, side, gauge, fitting, requiredFittings },
 ];
 // single unified CAN wire
-const can = (label = 'CAN', side = 'bottom') => [
-  { type: 'CAN', label, side },
+const can = (label = 'CAN', side = 'bottom', requiredFittings = null) => [
+  { type: 'CAN', label, side, requiredFittings },
 ];
 const eth = (label = 'ETH', side = 'top') => [{ type: 'ETH', label, side }];
 const usb = (label = 'USB', side = 'top') => [{ type: 'USB', label, side }];
@@ -51,13 +63,17 @@ function def(id, name, category, icon, width, height, trackedFields, portSpecs) 
 
 // PDH/PDP shape: PWR IN (6 AWG/SB50), 2x CAN, N output channels (12 AWG/Ferrule).
 function powerDistPorts(numChannels) {
-  const ports = [...pwr('PWR', 'bottom', '6 AWG', SB50), ...can('CAN IN', 'bottom'), ...can('CAN OUT', 'bottom')];
+  const ports = [
+    ...pwr('PWR', 'bottom', '6 AWG', SB50, MAIN),
+    ...can('CAN IN', 'bottom', CAN_WEID),
+    ...can('CAN OUT', 'bottom', CAN_WEID),
+  ];
   for (let i = 0; i < numChannels; i++) {
     const side = i <= 9 ? 'right' : 'left';
     // PDH channels 20–22 are the non-switchable 10 A roboRIO/radio channels
     // (R615); default the rest to a 40 A breaker.
     const breaker = i >= 20 && i <= 22 ? 10 : 40;
-    ports.push({ type: 'PWR', label: `CH${i}`, side, gauge: '12 AWG', fitting: FERRULE, breaker, requiredFittings: [FERRULE, 'Bare Wire'] });
+    ports.push({ type: 'PWR', label: `CH${i}`, side, gauge: '12 AWG', fitting: FERRULE, breaker, requiredFittings: WEID });
   }
   return ports;
 }
@@ -65,12 +81,12 @@ function powerDistPorts(numChannels) {
 export const COMPONENT_LIBRARY = [
   // ---------------- Controllers ----------------
   def('roborio2', 'roboRIO 2', 'Controllers', 'controller', 200, 120, ['ipAddress'], [
-    ...pwr('PWR', 'top', '12 AWG', FERRULE),
-    ...can('CAN', 'left'),
+    ...pwr('PWR', 'top', '12 AWG', FERRULE, WEID),
+    ...can('CAN', 'left', CAN_WEID),
     ...eth('ETH', 'top'),
     ...usb('USB1', 'right'),
     ...usb('USB2', 'right'),
-    ...pwr('RSL', 'bottom', '12 AWG', FERRULE),
+    ...pwr('RSL', 'bottom', '18 AWG', FERRULE, WEID),
   ]),
   def('orangepi5', 'Orange Pi 5', 'Controllers', 'pi', 140, 80, ['ipAddress'], [
     ...pwr('PWR', 'left'),
@@ -85,14 +101,14 @@ export const COMPONENT_LIBRARY = [
     ...usb('USB2', 'right'),
   ]),
   def('jetsonorinnano', 'Jetson Orin Nano', 'Controllers', 'pi', 170, 90, ['ipAddress'], [
-    ...pwr('PWR', 'left', '18 AWG', FERRULE),
+    ...pwr('PWR', 'left', '18 AWG', FERRULE, WEID),
     ...eth('ETH', 'top'),
     ...usb('USB1', 'top'),
     ...usb('USB2', 'top'),
     ...usb('USB3', 'top'),
   ]),
   def('photonvision', 'PhotonVision Coprocessor', 'Controllers', 'pi', 160, 88, ['ipAddress'], [
-    ...pwr('PWR', 'left', '18 AWG', FERRULE),
+    ...pwr('PWR', 'left', '18 AWG', FERRULE, WEID),
     ...eth('ETH', 'top'),
     ...usb('USB1', 'right'),
     ...usb('USB2', 'right'),
@@ -106,83 +122,83 @@ export const COMPONENT_LIBRARY = [
 
   // ---------------- Power ----------------
   def('battery', 'Battery (12V)', 'Power', 'battery', 140, 80, [], [
-    ...pwr('BAT', 'right', '6 AWG', SB50),
+    ...pwr('BAT', 'right', '6 AWG', SB50, MAIN),
   ]),
   def('mainbreaker', 'Main Breaker (120A)', 'Power', 'breaker', 120, 70, [], [
-    { type: 'PWR', label: 'IN', side: 'left', gauge: '6 AWG', fitting: SB50 },
-    { type: 'PWR', label: 'OUT', side: 'right', gauge: '6 AWG', fitting: SB50 },
+    { type: 'PWR', label: 'IN', side: 'left', gauge: '6 AWG', fitting: RING, requiredFittings: STUD },
+    { type: 'PWR', label: 'OUT', side: 'right', gauge: '6 AWG', fitting: RING, requiredFittings: STUD },
   ]),
   def('pdh', 'PDH (REV)', 'Power', 'powerdist', 280, 400, ['canId'], powerDistPorts(24)),
   def('pdp2', 'PDP 2.0 (CTRE)', 'Power', 'powerdist', 180, 110, ['canId'], powerDistPorts(24)),
   def('pdp_legacy', 'PDP (CTRE, legacy)', 'Power', 'powerdist', 180, 110, ['canId'], powerDistPorts(24)),
   def('vrm', 'VRM', 'Power', 'vrm', 140, 80, [], [
-    ...pwr('PWR', 'left'),
-    ...pwr('12V', 'right', '18 AWG', FERRULE),
-    ...pwr('5V', 'right', '18 AWG', FERRULE),
+    ...pwr('PWR', 'left', '18 AWG', FERRULE, WEID),
+    ...pwr('12V', 'right', '18 AWG', FERRULE, WEID),
+    ...pwr('5V', 'right', '18 AWG', FERRULE, WEID),
   ]),
   def('rpm', 'Radio Power Module (REV RPM)', 'Power', 'radioPower', 140, 80, [], [
-    ...pwr('PWR', 'left', '18 AWG', FERRULE),
+    ...pwr('PWR', 'left', '18 AWG', FERRULE, WEID),
     ...eth('ETH IN', 'top'),
     ...eth('ETH OUT', 'top'),
-    ...pwr('AUX', 'right', '18 AWG', FERRULE),
+    ...pwr('AUX', 'right', '18 AWG', FERRULE, WEID),
   ]),
   def('mpm', 'Mini Power Module (CTRE MPM)', 'Power', 'vrm', 140, 80, [], [
-    ...pwr('PWR', 'left'),
-    ...pwr('A', 'right', '18 AWG', FERRULE),
-    ...pwr('B', 'right', '18 AWG', FERRULE),
-    ...pwr('C', 'right', '18 AWG', FERRULE),
-    ...pwr('D', 'right', '18 AWG', FERRULE),
+    ...pwr('PWR', 'left', '18 AWG', FERRULE, WEID),
+    ...pwr('A', 'right', '18 AWG', FERRULE, WEID),
+    ...pwr('B', 'right', '18 AWG', FERRULE, WEID),
+    ...pwr('C', 'right', '18 AWG', FERRULE, WEID),
+    ...pwr('D', 'right', '18 AWG', FERRULE, WEID),
   ]),
   def('mitocandria', 'MitoCANDria (ThriftyBot)', 'Power', 'vrm', 180, 80, ['canId'], [
-    ...pwr('PWR', 'left', '18 AWG', FERRULE),
-    ...can('CAN', 'bottom'),
+    ...pwr('PWR', 'left', '18 AWG', FERRULE, WEID),
+    ...can('CAN', 'bottom', CAN_WEID),
     ...usb('5V USBC', 'top'),
     ...usb('5V USBC', 'top'),
-    ...pwr('BOOST', 'right', '20 AWG', FERRULE),
-    ...pwr('5VA', 'right', '20 AWG', FERRULE),
-    ...pwr('5VB', 'right', '20 AWG', FERRULE),
+    ...pwr('BOOST', 'right', '20 AWG', FERRULE, WEID),
+    ...pwr('5VA', 'right', '20 AWG', FERRULE, WEID),
+    ...pwr('5VB', 'right', '20 AWG', FERRULE, WEID),
   ]),
   def('pcm', 'PCM (CTRE)', 'Power', 'pneumaticHub', 160, 96, ['canId'], [
-    ...pwr('PWR', 'left', '18 AWG', FERRULE),
-    ...can('CAN', 'bottom'),
-    ...pwr('SOL A', 'right', '18 AWG', FERRULE),
-    ...pwr('SOL B', 'right', '18 AWG', FERRULE),
+    ...pwr('PWR', 'left', '18 AWG', FERRULE, WEID),
+    ...can('CAN', 'bottom', CAN_CTRE),
+    ...pwr('SOL A', 'right', '18 AWG', FERRULE, WEID),
+    ...pwr('SOL B', 'right', '18 AWG', FERRULE, WEID),
   ]),
   def('revph', 'Pneumatic Hub (REV PH)', 'Power', 'pneumaticHub', 160, 96, ['canId'], [
-    ...pwr('PWR', 'left', '18 AWG', FERRULE),
-    ...can('CAN', 'bottom'),
-    ...pwr('SOL A', 'right', '18 AWG', FERRULE),
-    ...pwr('SOL B', 'right', '18 AWG', FERRULE),
+    ...pwr('PWR', 'left', '18 AWG', FERRULE, WEID),
+    ...can('CAN', 'bottom', CAN_WEID),
+    ...pwr('SOL A', 'right', '18 AWG', FERRULE, WEID),
+    ...pwr('SOL B', 'right', '18 AWG', FERRULE, WEID),
   ]),
   def('compressor', 'Compressor', 'Power', 'compressor', 160, 96, [], [
-    ...pwr('PWR', 'left', '18 AWG', FERRULE),
+    ...pwr('PWR', 'left', '18 AWG', FERRULE, WEID),
   ]),
   def('canjunction', 'CANJunction (ThriftyBot)', 'Power', 'canjunction', 150, 110, [], [
-    ...pwr('PWR', 'left', '18 AWG', WAGO),
-    { type: 'CAN', label: 'BUS', side: 'left' },
-    { type: 'CAN', label: 'T1', side: 'right' },
-    { type: 'CAN', label: 'T2', side: 'right' },
-    { type: 'CAN', label: 'T3', side: 'right' },
-    { type: 'CAN', label: 'T4', side: 'right' },
+    ...pwr('PWR', 'left', '18 AWG', WAGO, [WAGO, FERRULE, BARE]),
+    { type: 'CAN', label: 'BUS', side: 'left', requiredFittings: CAN_WEID },
+    { type: 'CAN', label: 'T1', side: 'right', requiredFittings: CAN_WEID },
+    { type: 'CAN', label: 'T2', side: 'right', requiredFittings: CAN_WEID },
+    { type: 'CAN', label: 'T3', side: 'right', requiredFittings: CAN_WEID },
+    { type: 'CAN', label: 'T4', side: 'right', requiredFittings: CAN_WEID },
   ]),
 
   // ---------------- Motor Controllers ----------------
   def('sparkmax', 'SPARK MAX', 'Motor Controllers', 'motorController', 120, 70, ['canId'], [
-    ...pwr('PWR', 'left', '12 AWG', FERRULE),
-    ...can('CAN', 'bottom'),
-    ...pwr('MOTOR', 'right', '12 AWG', FERRULE),
+    ...pwr('PWR', 'left', '12 AWG', APP, APP_IN),
+    ...can('CAN', 'bottom', CAN_WEID),
+    ...pwr('MOTOR', 'right', '12 AWG', APP, APP_LEADS),
     ...data('Encoder', 'top'),
   ]),
   def('sparkflex', 'SPARK Flex', 'Motor Controllers', 'motorController', 120, 70, ['canId'], [
-    ...pwr('PWR', 'left', '12 AWG', FERRULE),
-    ...can('CAN', 'bottom'),
-    ...pwr('MOTOR', 'right', '12 AWG', FERRULE),
+    ...pwr('PWR', 'left', '12 AWG', APP, APP_IN),
+    ...can('CAN', 'bottom', CAN_WEID),
+    ...pwr('MOTOR', 'right', '12 AWG', APP, APP_LEADS),
     ...data('Encoder', 'top'),
   ]),
   def('talonfxs', 'Talon FXS', 'Motor Controllers', 'motorController', 120, 70, ['canId'], [
-    ...pwr('PWR', 'left', '12 AWG', FERRULE),
-    ...can('CAN', 'bottom'),
-    ...pwr('MOTOR', 'right', '12 AWG', FERRULE),
+    ...pwr('PWR', 'left', '12 AWG', APP, APP_IN),
+    ...can('CAN', 'bottom', CAN_CTRE),
+    ...pwr('MOTOR', 'right', '12 AWG', APP, APP_LEADS),
     ...data('Data port', 'top'),
   ]),
   def('generic_mc', 'Generic Motor Controller', 'Motor Controllers', 'motorController', 120, 70, ['canId'], [
@@ -192,28 +208,28 @@ export const COMPONENT_LIBRARY = [
     ...data('Data', 'top'),
   ]),
   def('refire_x60', 'Refire X60 (RF-4003)', 'Motor Controllers', 'motorController', 152, 80, ['canId'], [
-    { type: 'PWR', label: 'PWR', side: 'left', gauge: '12 AWG', fitting: APP, requiredFittings: [APP] },
-    { type: 'CAN', label: 'CAN IN', side: 'bottom' },
-    { type: 'CAN', label: 'CAN OUT', side: 'bottom' },
+    { type: 'PWR', label: 'PWR', side: 'left', gauge: '12 AWG', fitting: APP, requiredFittings: APP_IN },
+    { type: 'CAN', label: 'CAN IN', side: 'bottom', requiredFittings: CAN_CTRE },
+    { type: 'CAN', label: 'CAN OUT', side: 'bottom', requiredFittings: CAN_CTRE },
     { type: 'PWR', label: 'MOTOR', side: 'right', gauge: '12 AWG', fitting: MOLEX_SL, requiredFittings: [MOLEX_SL] },
   ]),
   def('refire_x44', 'Refire X44 (RF-4004)', 'Motor Controllers', 'motorController', 152, 80, ['canId'], [
-    { type: 'PWR', label: 'PWR', side: 'left', gauge: '12 AWG', fitting: APP, requiredFittings: [APP] },
-    { type: 'CAN', label: 'CAN IN', side: 'bottom' },
-    { type: 'CAN', label: 'CAN OUT', side: 'bottom' },
+    { type: 'PWR', label: 'PWR', side: 'left', gauge: '12 AWG', fitting: APP, requiredFittings: APP_IN },
+    { type: 'CAN', label: 'CAN IN', side: 'bottom', requiredFittings: CAN_CTRE },
+    { type: 'CAN', label: 'CAN OUT', side: 'bottom', requiredFittings: CAN_CTRE },
     { type: 'PWR', label: 'MOTOR', side: 'right', gauge: '12 AWG', fitting: MOLEX_SL, requiredFittings: [MOLEX_SL] },
   ]),
 
   // ---------------- Motors ----------------
   def('krakenx60', 'Kraken X60', 'Motors', 'krakenMotor', 120, 70, ['canId'], [
-    { type: 'PWR', label: 'PWR', side: 'left', gauge: '12 AWG', fitting: RING, requiredFittings: [RING] },
-    { type: 'CAN', label: 'CAN IN', side: 'right' },
-    { type: 'CAN', label: 'CAN OUT', side: 'right' },
+    { type: 'PWR', label: 'PWR', side: 'left', gauge: '12 AWG', fitting: RING, requiredFittings: STUD },
+    { type: 'CAN', label: 'CAN IN', side: 'right', requiredFittings: CAN_CTRE },
+    { type: 'CAN', label: 'CAN OUT', side: 'right', requiredFittings: CAN_CTRE },
   ]),
   def('krakenx44', 'Kraken X44', 'Motors', 'krakenMotor', 120, 70, ['canId'], [
-    { type: 'PWR', label: 'PWR', side: 'left', gauge: '12 AWG', fitting: RING, requiredFittings: [RING] },
-    { type: 'CAN', label: 'CAN IN', side: 'right' },
-    { type: 'CAN', label: 'CAN OUT', side: 'right' },
+    { type: 'PWR', label: 'PWR', side: 'left', gauge: '12 AWG', fitting: RING, requiredFittings: STUD },
+    { type: 'CAN', label: 'CAN IN', side: 'right', requiredFittings: CAN_CTRE },
+    { type: 'CAN', label: 'CAN OUT', side: 'right', requiredFittings: CAN_CTRE },
   ]),
   def('krakenx60_adapted', 'Kraken X60 + Adapter', 'Motors', 'krakenMotor', 120, 70, [], [
     { type: 'PWR', label: 'Phases', side: 'left', gauge: '12 AWG', fitting: MOLEX_SL, requiredFittings: [MOLEX_SL] },
@@ -222,19 +238,19 @@ export const COMPONENT_LIBRARY = [
     { type: 'PWR', label: 'Phases', side: 'left', gauge: '12 AWG', fitting: MOLEX_SL, requiredFittings: [MOLEX_SL] },
   ]),
   def('minion', 'Minion', 'Motors', 'motor', 120, 70, [], [
-    ...pwr('PWR', 'left', '12 AWG', FERRULE),
+    ...pwr('PWR', 'left', '12 AWG', RING, STUD),
     ...data('Hall', 'top'),
   ]),
   def('neo', 'NEO', 'Motors', 'motor', 120, 70, [], [
-    ...pwr('PWR', 'left', '12 AWG', FERRULE),
+    ...pwr('PWR', 'left', '12 AWG', APP, APP_LEADS),
     ...data('Encoder', 'top'),
   ]),
   def('neo550', 'NEO 550', 'Motors', 'motor', 120, 70, [], [
-    ...pwr('PWR', 'left', '12 AWG', FERRULE),
+    ...pwr('PWR', 'left', '12 AWG', APP, APP_LEADS),
     ...data('Encoder', 'top'),
   ]),
   def('neovortex', 'NEO Vortex', 'Motors', 'motor', 120, 70, [], [
-    ...pwr('PWR', 'left', '12 AWG', FERRULE),
+    ...pwr('PWR', 'left', '12 AWG', APP, APP_LEADS),
     ...data('Encoder', 'top'),
   ]),
   def('generic_motor', 'Generic Motor', 'Motors', 'motor', 120, 70, [], [
@@ -243,41 +259,41 @@ export const COMPONENT_LIBRARY = [
 
   // ---------------- Sensors ----------------
   def('cancoder', 'CANcoder', 'Sensors', 'canSensor', 100, 60, ['canId'], [
-    ...pwr('PWR', 'left', '18 AWG', FERRULE),
-    ...can('CAN', 'bottom'),
+    ...pwr('PWR', 'left', '18 AWG', FERRULE, CAN_CTRE),
+    ...can('CAN', 'bottom', CAN_CTRE),
   ]),
   def('pigeon2', 'Pigeon 2', 'Sensors', 'canSensor', 100, 60, ['canId'], [
-    ...pwr('PWR', 'left', '18 AWG', FERRULE),
-    ...can('CAN', 'bottom'),
+    ...pwr('PWR', 'left', '18 AWG', FERRULE, CAN_CTRE),
+    ...can('CAN', 'bottom', CAN_CTRE),
   ]),
   def('candle', 'CANdle', 'Sensors', 'canSensor', 100, 60, ['canId'], [
-    ...pwr('PWR', 'left', '18 AWG', FERRULE),
-    ...can('CAN', 'bottom'),
+    ...pwr('PWR', 'left', '18 AWG', FERRULE, WEID),
+    ...can('CAN', 'bottom', CAN_CTRE),
     ...data('LED out', 'top'),
   ]),
   def('canrange', 'CANrange', 'Sensors', 'canSensor', 100, 60, ['canId'], [
-    ...pwr('PWR', 'left', '18 AWG', FERRULE),
-    ...can('CAN', 'bottom'),
+    ...pwr('PWR', 'left', '18 AWG', FERRULE, CAN_CTRE),
+    ...can('CAN', 'bottom', CAN_CTRE),
   ]),
   def('candi', 'CANdi', 'Sensors', 'canSensor', 100, 60, ['canId'], [
-    ...pwr('PWR', 'left', '18 AWG', FERRULE),
-    ...can('CAN', 'bottom'),
+    ...pwr('PWR', 'left', '18 AWG', FERRULE, CAN_CTRE),
+    ...can('CAN', 'bottom', CAN_CTRE),
     ...data('S1', 'top'),
     ...data('S2', 'top'),
   ]),
   def('limelight4', 'Limelight 4', 'Sensors', 'camera', 120, 70, ['ipAddress'], [
-    ...pwr('PWR', 'left', '18 AWG', FERRULE),
+    ...pwr('PWR', 'left', '18 AWG', FERRULE, WEID),
     ...eth('ETH', 'top'),
   ]),
   def('limelight3g', 'Limelight 3G', 'Sensors', 'camera', 120, 70, ['ipAddress'], [
-    ...pwr('PWR', 'left', '18 AWG', FERRULE),
+    ...pwr('PWR', 'left', '18 AWG', FERRULE, WEID),
     ...eth('ETH', 'top'),
   ]),
   def('lasercan', 'LaserCAN (Grapple)', 'Sensors', 'canSensor', 120, 80, ['canId'], [
-    ...pwr('PWR', 'bottom', '22 AWG', FERRULE),
-    ...pwr('PWR', 'top', '22 AWG', FERRULE),
-    { type: 'CAN', label: 'CAN IN', side: 'left' },
-    { type: 'CAN', label: 'CAN OUT', side: 'right' },
+    ...pwr('PWR', 'bottom', '22 AWG', FERRULE, WEID),
+    ...pwr('PWR', 'top', '22 AWG', FERRULE, WEID),
+    { type: 'CAN', label: 'CAN IN', side: 'left', requiredFittings: CAN_WEID },
+    { type: 'CAN', label: 'CAN OUT', side: 'right', requiredFittings: CAN_WEID },
   ]),
   def('thriftycam', 'ThriftyCAM (ThriftyBot)', 'Sensors', 'camera', 120, 70, [], [
     ...usb('USB', 'left'),
@@ -286,7 +302,7 @@ export const COMPONENT_LIBRARY = [
     ...usb('USB', 'left'),
   ]),
   def('throughboreencoder', 'REV Through Bore Encoder', 'Sensors', 'canSensor', 100, 64, [], [
-    ...pwr('PWR', 'left', '18 AWG', FERRULE),
+    ...pwr('PWR', 'left', '18 AWG', FERRULE, WEID),
     ...data('Data', 'left'),
   ]),
   def('generic_sensor', 'Generic Sensor', 'Sensors', 'sensor', 100, 60, [], [
@@ -298,7 +314,7 @@ export const COMPONENT_LIBRARY = [
   def('vh109', 'VH-109 Radio', 'Networking', 'radio', 140, 80, ['ipAddress'], [
     ...eth('AUX2', 'left'),
     ...eth('RIO', 'left'),
-    ...pwr('PWR', 'left', '18 AWG', FERRULE),
+    ...pwr('PWR', 'left', '18 AWG', FERRULE, WEID),
     ...eth('AUX1', 'right'),
     ...eth('DS', 'right'),
 
@@ -313,17 +329,17 @@ export const COMPONENT_LIBRARY = [
   ]),
   def('canivore', 'CANivore (CTRE)', 'Networking', 'canjunction', 120, 80, [], [
     ...usb('USB', 'left'),
-    ...can('CAN', 'right'),
-    ...pwr('V+/V-', 'bottom'),
+    ...can('CAN', 'right', CAN_CTRE),
+    ...pwr('V+/V-', 'bottom', '22 AWG', FERRULE, WEID),
   ]),
 
   // ---------------- Other ----------------
   def('rsl', 'Robot Signal Light (RSL)', 'Other', 'rsl', 100, 60, [], [
-    ...pwr('PWR', 'left', '18 AWG', FERRULE),
+    ...pwr('PWR', 'left', '18 AWG', FERRULE, WEID),
   ]),
   def('servohub', 'Servo Hub (REV)', 'Other', 'servo', 120, 70, ['canId'], [
-    ...pwr('PWR', 'left'),
-    ...can('CAN', 'bottom'),
+    ...pwr('PWR', 'left', '18 AWG', FERRULE, WEID),
+    ...can('CAN', 'bottom', CAN_WEID),
   ]),
   def('ledstrip', 'LED Strip', 'Other', 'ledstrip', 120, 60, [], [
     ...pwr('PWR', 'left', '18 AWG', FERRULE),
@@ -331,9 +347,6 @@ export const COMPONENT_LIBRARY = [
   ]),
   def('canterminator', 'CAN Terminator (120Ω)', 'Other', 'canjunction', 96, 48, [], [
     ...can('CAN', 'left'),
-  ]),
-  def('kraken_adapter', 'Kraken Adapter (WCP-1380)', 'Other', 'motorController', 152, 56, [], [
-    { type: 'PWR', label: 'Phases', side: 'left', gauge: '12 AWG', fitting: MOLEX_SL, requiredFittings: [MOLEX_SL] },
   ]),
 ];
 
