@@ -33,7 +33,7 @@ const edgeTypes = { wire: WireEdge };
 // Touch devices: pan with one finger, no rubber-band select.
 const isTouch = typeof window !== 'undefined' && window.matchMedia?.('(pointer: coarse)').matches;
 
-function Flow({ onOpenNodeConfig }) {
+export function Flow({ onOpenNodeConfig }) {
   const storeNodes = useDiagramStore((s) => s.nodes);
   const edges = useDiagramStore((s) => s.edges);
   const layers = useDiagramStore((s) => s.layers);
@@ -195,6 +195,35 @@ function Flow({ onOpenNodeConfig }) {
     return { nodes: nodeMarks, edges: edgeMarks };
   }, [drcViolations]);
 
+  // Selection is owned by our store. React Flow emits 'select' node changes; we
+  // route those straight into the store (exactly like onEdgesChange) instead of
+  // letting useNodesState apply them to rfNodes. If both useNodesState AND the
+  // store-driven `displayNodes` prop set node.selected, they compete every frame
+  // and ping-pong into an infinite update loop (React #185) when a node and its
+  // wire are selected together. Non-select changes (position/dimensions/removal)
+  // still go through useNodesState.
+  const onNodesChange2 = useCallback(
+    (changes) => {
+      const keep = changes.filter((c) => c.type !== 'select');
+      if (keep.length) onNodesChange(keep);
+      const selChanges = changes.filter((c) => c.type === 'select');
+      if (!selChanges.length) return;
+      const cur = useDiagramStore.getState().selection;
+      let nodeIds = [...cur.nodes];
+      for (const c of selChanges) {
+        if (c.selected) {
+          if (!nodeIds.includes(c.id)) nodeIds.push(c.id);
+        } else {
+          nodeIds = nodeIds.filter((id) => id !== c.id);
+        }
+      }
+      const changed =
+        nodeIds.length !== cur.nodes.length || nodeIds.some((id) => !cur.nodes.includes(id));
+      if (changed) setSelection({ nodes: nodeIds, edges: cur.edges });
+    },
+    [onNodesChange, setSelection]
+  );
+
   // ---- drag → single history entry (baseline → moved) ----
   const onNodeDragStart = useCallback(
     (_e, _node, dragged) => {
@@ -314,7 +343,7 @@ function Flow({ onOpenNodeConfig }) {
           edges={rfEdges}
           nodeTypes={nodeTypes}
           edgeTypes={edgeTypes}
-          onNodesChange={onNodesChange}
+          onNodesChange={onNodesChange2}
           onEdgesChange={onEdgesChange}
           onNodeDragStart={onNodeDragStart}
           onNodeDragStop={onNodeDragStop}
