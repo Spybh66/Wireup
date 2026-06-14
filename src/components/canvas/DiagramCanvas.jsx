@@ -234,7 +234,11 @@ function Flow({ onOpenNodeConfig }) {
           edgeIds = edgeIds.filter((id) => id !== c.id);
         }
       }
-      setSelection({ nodes: cur.nodes, edges: edgeIds });
+      // Only push when the edge selection actually changed, so RF's controlled-
+      // selection echo can't loop with the store (React error #185).
+      const changed =
+        edgeIds.length !== cur.edges.length || edgeIds.some((id) => !cur.edges.includes(id));
+      if (changed) setSelection({ nodes: cur.nodes, edges: edgeIds });
     },
     [setSelection]
   );

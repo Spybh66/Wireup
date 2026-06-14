@@ -108,14 +108,22 @@ export function cloneCluster(srcNodes, srcEdges, mapPosition = (p) => p) {
   });
   const newEdges = srcEdges
     .filter((e) => nodeIdMap.has(e.source) && nodeIdMap.has(e.target))
-    .map((e) => ({
-      ...deepCopy(e),
-      id: uuid(),
-      source: nodeIdMap.get(e.source),
-      target: nodeIdMap.get(e.target),
-      sourceHandle: handleMap.get(`${e.source}:${e.sourceHandle}`) ?? e.sourceHandle,
-      targetHandle: handleMap.get(`${e.target}:${e.targetHandle}`) ?? e.targetHandle,
-    }));
+    .map((e) => {
+      const clone = deepCopy(e);
+      // Manual wires keep their shape: translate waypoints by the same vector as
+      // the nodes so the routing moves with the copy instead of pointing back at
+      // the original's coordinates. Auto wires have none and simply re-route.
+      const wps = clone.data?.waypoints;
+      if (Array.isArray(wps) && wps.length) clone.data.waypoints = wps.map((p) => mapPosition(p));
+      return {
+        ...clone,
+        id: uuid(),
+        source: nodeIdMap.get(e.source),
+        target: nodeIdMap.get(e.target),
+        sourceHandle: handleMap.get(`${e.source}:${e.sourceHandle}`) ?? e.sourceHandle,
+        targetHandle: handleMap.get(`${e.target}:${e.targetHandle}`) ?? e.targetHandle,
+      };
+    });
   return { newNodes, newEdges, nodeIdMap };
 }
 
@@ -439,7 +447,15 @@ const useDiagramStore = create(
             ...deepCopy(n),
             position: { x: n.position.x - minX, y: n.position.y - minY },
           })),
-          edges: edges.map((e) => deepCopy(e)),
+          // Normalize manual-wire waypoints to the same top-left origin as the
+          // nodes, so on placement both translate together and keep their shape.
+          edges: edges.map((e) => {
+            const c = deepCopy(e);
+            const wps = c.data?.waypoints;
+            if (Array.isArray(wps) && wps.length)
+              c.data.waypoints = wps.map((p) => ({ x: p.x - minX, y: p.y - minY }));
+            return c;
+          }),
         };
         const templates = [...s.templates, tpl];
         persistTemplates(templates);
@@ -681,7 +697,19 @@ const useDiagramStore = create(
       // ---------- selection / UI ----------
       setActiveTab: (tab) => set({ activeTab: tab }),
       toggleSidebar: () => set((s) => ({ sidebarOpen: !s.sidebarOpen })),
-      setSelection: (selection) => set({ selection }),
+      // Idempotent: if the new selection has the same contents as the current
+      // one, return the existing state unchanged so Zustand skips the update.
+      // Without this, every call minted a fresh `selection` object, and React
+      // Flow's controlled-selection echo (onSelectionChange / onEdgesChange)
+      // would ping-pong forever on multi-select — React error #185.
+      setSelection: (selection) =>
+        set((s) => {
+          const cur = s.selection;
+          const sameSet = (a, b) => a.length === b.length && a.every((id) => b.includes(id));
+          return sameSet(cur.nodes, selection.nodes) && sameSet(cur.edges, selection.edges)
+            ? s
+            : { selection };
+        }),
 
       // ---------- settings ----------
       updateSettings: (patch) =>

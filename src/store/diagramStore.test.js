@@ -22,6 +22,9 @@ describe('diagramStore', () => {
     const outPwr = st.nodes.find((n) => n.id === outside).data.ports.find((p) => p.type === 'PWR');
     st.addEdge({ source: a, target: b, sourceHandle: aCan.id, targetHandle: bCanIn.id }); // internal
     st.addEdge({ source: outside, target: b, sourceHandle: outPwr.id, targetHandle: bPwr.id }); // boundary
+    // Make the internal edge manual with a waypoint so we can check translation.
+    const internalId = useDiagramStore.getState().edges.find((e) => e.source === a).id;
+    useDiagramStore.getState().setEdgeWaypoints(internalId, [{ x: 100, y: 20 }]);
 
     st = useDiagramStore.getState();
     const srcNodes = st.nodes.filter((n) => n.id === a || n.id === b);
@@ -29,6 +32,8 @@ describe('diagramStore', () => {
 
     // Boundary edge (to the un-cloned battery) is dropped; only the internal one survives.
     expect(newEdges).toHaveLength(1);
+    // Manual waypoints translate with the clone (shape preserved, not stale).
+    expect(newEdges[0].data.waypoints).toEqual([{ x: 150, y: 70 }]);
     // Every clone has a brand-new node id and brand-new port ids.
     const oldNodeIds = new Set(srcNodes.map((n) => n.id));
     const oldPortIds = new Set(srcNodes.flatMap((n) => n.data.ports.map((p) => p.id)));
@@ -42,6 +47,19 @@ describe('diagramStore', () => {
     const newHandles = new Set(newNodes.flatMap((n) => n.data.ports.map((p) => p.id)));
     expect(newIds.has(e.source) && newIds.has(e.target)).toBe(true);
     expect(newHandles.has(e.sourceHandle) && newHandles.has(e.targetHandle)).toBe(true);
+  });
+
+  it('setSelection is idempotent for identical content (no reference churn)', () => {
+    const s = useDiagramStore.getState();
+    const a = s.addNode('roborio2', { x: 0, y: 0 });
+    const b = s.addNode('pdh', { x: 400, y: 0 });
+    s.setSelection({ nodes: [a, b], edges: [] });
+    const sel1 = useDiagramStore.getState().selection;
+    s.setSelection({ nodes: [b, a], edges: [] }); // same set, different order
+    const sel2 = useDiagramStore.getState().selection;
+    expect(sel2).toBe(sel1); // same reference → Zustand skips the update (breaks the loop)
+    s.setSelection({ nodes: [a], edges: [] }); // genuinely different
+    expect(useDiagramStore.getState().selection).not.toBe(sel1);
   });
 
   it('adds nodes and connects an edge with inherited type + label', () => {
