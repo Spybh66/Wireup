@@ -289,8 +289,11 @@ const useDiagramStore = create(
         if (!srcPort) return;
 
         const type = srcPort.type; // type inherits from SOURCE port
+        // Reject incompatible connections outright (e.g. PWR → CAN) so the user
+        // gets clear feedback instead of a silently invalid wire.
         if (tgtPort && tgtPort.type !== type) {
-          get().addToast(`Type mismatch: ${type} → ${tgtPort.type}`);
+          get().addToast(`Can't connect ${type} to ${tgtPort.type}`);
+          return;
         }
         const group = typeGroup(type);
         const nextIndex = (labelCounters[group] ?? 0) + 1;
@@ -529,7 +532,8 @@ const useDiagramStore = create(
         if (!srcPort) return;
         const type = srcPort.type;
         if (tgtPort && tgtPort.type !== type) {
-          get().addToast(`Type mismatch: ${type} → ${tgtPort.type}`);
+          get().addToast(`Can't connect ${type} to ${tgtPort.type}`);
+          return;
         }
         set({
           edges: edges.map((e) =>
@@ -875,6 +879,7 @@ const useDiagramStore = create(
 
 // ---- autosave: debounced 500ms after any tracked change (§2.8) ----
 let autosaveTimer = null;
+let autosaveFailed = false; // warn once per failure streak, not every change
 useDiagramStore.subscribe((state, prev) => {
   const changed =
     state.nodes !== prev.nodes ||
@@ -886,7 +891,15 @@ useDiagramStore.subscribe((state, prev) => {
   if (!changed) return;
   clearTimeout(autosaveTimer);
   autosaveTimer = setTimeout(() => {
-    writeAutosave(serializeProject(useDiagramStore.getState()));
+    const ok = writeAutosave(serializeProject(useDiagramStore.getState()));
+    if (!ok && !autosaveFailed) {
+      autosaveFailed = true;
+      useDiagramStore
+        .getState()
+        .addToast('Autosave failed — storage is full or blocked. Save your project manually.');
+    } else if (ok) {
+      autosaveFailed = false;
+    }
   }, 500);
 });
 

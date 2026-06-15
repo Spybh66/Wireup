@@ -68,6 +68,28 @@ export function validateProject(obj) {
       return { ok: false, error: 'Invalid or corrupted project file.' };
     }
   }
+  // Shape check: malformed nodes/edges would crash on first render otherwise.
+  // Component nodes must carry a ports array; annotations (note/zone) need not.
+  const nodesOk = obj.nodes.every(
+    (n) =>
+      n &&
+      typeof n.id === 'string' &&
+      n.data &&
+      typeof n.data === 'object' &&
+      (n.type === 'note' || n.type === 'zone' || Array.isArray(n.data.ports))
+  );
+  const edgesOk = obj.edges.every(
+    (e) =>
+      e &&
+      typeof e.id === 'string' &&
+      typeof e.source === 'string' &&
+      typeof e.target === 'string' &&
+      e.data &&
+      typeof e.data === 'object'
+  );
+  if (!nodesOk || !edgesOk) {
+    return { ok: false, error: 'Invalid or corrupted project file.' };
+  }
   const raw = {
     projectName: typeof obj.projectName === 'string' ? obj.projectName : 'Untitled Project',
     nodes: obj.nodes,
@@ -151,11 +173,14 @@ export async function decodeProjectFromHash(payload) {
 // ---- autosave (single slot) ----
 const AUTOSAVE_KEY = 'wireup_autosave';
 
+// Returns true on success, false on failure (quota exhausted / private mode /
+// storage blocked) so callers can warn the user instead of losing work silently.
 export function writeAutosave(project) {
   try {
     localStorage.setItem(AUTOSAVE_KEY, JSON.stringify(project));
+    return true;
   } catch {
-    /* quota / private mode — ignore */
+    return false;
   }
 }
 

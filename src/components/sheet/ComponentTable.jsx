@@ -73,6 +73,7 @@ export default function ComponentTable() {
   const nodes = useDiagramStore((s) => s.nodes);
   const customDefinitions = useDiagramStore((s) => s.customDefinitions);
   const [sort, setSort] = useState({ key: 'name', dir: 'asc' });
+  const [filter, setFilter] = useState('');
 
   const rows = useMemo(
     () => buildComponentRows({ nodes, customDefinitions }),
@@ -80,7 +81,13 @@ export default function ComponentTable() {
   );
 
   const sorted = useMemo(() => {
-    const r = [...rows];
+    const q = filter.trim().toLowerCase();
+    const r = rows.filter((row) =>
+      !q
+        ? true
+        : [row.name, row.type, row.category, row.canId, row.ipAddress]
+            .some((v) => String(v ?? '').toLowerCase().includes(q))
+    );
     r.sort((a, b) => {
       const av = a[sort.key] ?? '';
       const bv = b[sort.key] ?? '';
@@ -91,13 +98,23 @@ export default function ComponentTable() {
       return sort.dir === 'asc' ? cmp : -cmp;
     });
     return r;
-  }, [rows, sort]);
+  }, [rows, filter, sort]);
 
   const toggleSort = (key) =>
     setSort((s) => (s.key === key ? { key, dir: s.dir === 'asc' ? 'desc' : 'asc' } : { key, dir: 'asc' }));
 
   return (
-    <div className="overflow-x-auto rounded-lg border border-edge">
+    <div>
+      <div className="mb-2 flex items-center gap-2">
+        <input
+          value={filter}
+          onChange={(e) => setFilter(e.target.value)}
+          placeholder="Filter by name / type / CAN ID / IP"
+          aria-label="Filter components"
+          className="w-72 rounded border border-edge bg-surface-0 px-2 py-1 text-sm text-silver outline-none focus:border-silver"
+        />
+      </div>
+      <div className="overflow-x-auto rounded-lg border border-edge">
       <table className="w-full table-fixed text-sm">
         <colgroup>
           {COLUMNS.map((c) => (
@@ -143,6 +160,7 @@ export default function ComponentTable() {
           )}
         </tbody>
       </table>
+      </div>
     </div>
   );
 }

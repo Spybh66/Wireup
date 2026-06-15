@@ -152,6 +152,39 @@ describe('diagramStore', () => {
     expect(result.error).toMatch(/newer version/);
   });
 
+  it('rejects structurally malformed projects but accepts annotation nodes', () => {
+    // component node missing its ports array → reject
+    const badNode = validateProject({
+      app: 'wireup', version: 2, layers: [], edges: [],
+      nodes: [{ id: 'n', type: 'component', position: { x: 0, y: 0 }, data: { definitionId: 'pdh', label: 'x' } }],
+    });
+    expect(badNode.ok).toBe(false);
+    // edge missing source/target → reject
+    const badEdge = validateProject({
+      app: 'wireup', version: 2, layers: [], nodes: [],
+      edges: [{ id: 'e', data: { type: 'PWR' } }],
+    });
+    expect(badEdge.ok).toBe(false);
+    // a zone annotation (no ports) is valid
+    const okAnno = validateProject({
+      app: 'wireup', version: 2, layers: [], edges: [],
+      nodes: [{ id: 'z', type: 'zone', position: { x: 0, y: 0 }, data: { text: 'Z', color: '#fff', width: 10, height: 10 } }],
+    });
+    expect(okAnno.ok).toBe(true);
+  });
+
+  it('rejects a type-mismatched connection (no wire created)', () => {
+    const s = useDiagramStore.getState();
+    const rio = s.addNode('roborio2', { x: 0, y: 0 });
+    const pdh = s.addNode('pdh', { x: 400, y: 0 });
+    const st = useDiagramStore.getState();
+    const pwr = st.nodes.find((n) => n.id === rio).data.ports.find((p) => p.type === 'PWR');
+    const can = st.nodes.find((n) => n.id === pdh).data.ports.find((p) => p.type === 'CAN');
+    const before = useDiagramStore.getState().edges.length;
+    st.addEdge({ source: rio, sourceHandle: pwr.id, target: pdh, targetHandle: can.id });
+    expect(useDiagramStore.getState().edges.length).toBe(before);
+  });
+
   it('routing mode + manual waypoints', () => {
     const s = useDiagramStore.getState();
     const a = s.addNode('roborio2', { x: 0, y: 0 });

@@ -64,6 +64,19 @@ export default function App() {
     if (data) useDiagramStore.getState().setRestoreData(data);
   }, []);
 
+  // Warn before leaving with unsaved changes (autosave is a safety net, not a
+  // guarantee — storage can be full/blocked).
+  useEffect(() => {
+    const onBeforeUnload = (e) => {
+      if (useDiagramStore.getState().dirty) {
+        e.preventDefault();
+        e.returnValue = '';
+      }
+    };
+    window.addEventListener('beforeunload', onBeforeUnload);
+    return () => window.removeEventListener('beforeunload', onBeforeUnload);
+  }, []);
+
   // Collapse the component sidebar on small screens so the canvas is usable.
   useEffect(() => {
     if (window.innerWidth < 768) useDiagramStore.setState({ sidebarOpen: false });

@@ -73,6 +73,23 @@ export default function ComponentConfigModal({ nodeId, onClose, onSelectEdge }) 
       { id: uuid(), type: 'DATA', label: 'Data', side: 'top', order: 0, gauge: null, fitting: null },
     ]);
 
+  // Removing a port cascades its wires — confirm first if any are attached so
+  // the user doesn't silently orphan connections.
+  const onRemovePort = async (p) => {
+    const attached = edges.filter(
+      (e) =>
+        (e.source === nodeId && e.sourceHandle === p.id) ||
+        (e.target === nodeId && e.targetHandle === p.id)
+    );
+    if (attached.length) {
+      const ok = await requestConfirm(
+        `Remove port "${p.label}" and ${attached.length} attached wire${attached.length === 1 ? '' : 's'}?`
+      );
+      if (!ok) return;
+    }
+    removePort(nodeId, p.id);
+  };
+
   const onDelete = async () => {
     if (data.locked) {
       addToast('Component is locked');
@@ -284,7 +301,7 @@ export default function ComponentConfigModal({ nodeId, onClose, onSelectEdge }) 
                       </>
                     )}
                     <button
-                      onClick={() => removePort(nodeId, p.id)}
+                      onClick={() => onRemovePort(p)}
                       aria-label="Remove port"
                       className="shrink-0 rounded p-1 text-neutral-400 hover:text-red-400"
                     >

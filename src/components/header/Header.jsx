@@ -147,10 +147,14 @@ export default function Header({ onOpenSettings, drcOpen, onToggleDrc }) {
     }
   };
 
-  const runSheetExport = (fn) => {
+  const runSheetExport = async (fn) => {
     setExportOpen(false);
     if (useDiagramStore.getState().activeTab !== 'sheet') setActiveTab('sheet');
-    fn(useDiagramStore.getState(), useDiagramStore.getState().projectName);
+    try {
+      await fn(useDiagramStore.getState(), useDiagramStore.getState().projectName);
+    } catch {
+      useDiagramStore.getState().addToast('Sheet export failed.');
+    }
   };
 
   const menuItem =
