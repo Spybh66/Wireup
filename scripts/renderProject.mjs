@@ -9,7 +9,12 @@ import { typeColor } from '../src/data/wireTypes.js';
 const file = process.argv[2] || 'examples/test.json';
 const out = process.argv[3] || '/tmp/render.png';
 const proj = JSON.parse(fs.readFileSync(file, 'utf8'));
-const { nodes, edges, layers, customDefinitions = [] } = proj;
+const { nodes: allNodes, edges, layers, customDefinitions = [] } = proj;
+
+// Split component nodes (routable, have a definition) from annotations (zones/notes).
+const nodes = allNodes.filter((n) => getDefinition(n.data?.definitionId, customDefinitions));
+const zones = allNodes.filter((n) => n.type === 'zone');
+const notes = allNodes.filter((n) => n.type === 'note');
 
 const { routes } = computeAllRoutes({ nodes, edges, layers, gridSize: 16, customDefinitions });
 
@@ -20,6 +25,10 @@ for (const n of nodes) {
   const def = getDefinition(n.data.definitionId, customDefinitions);
   const r = nodeRect(n, def);
   ext(r.x, r.y); ext(r.x + r.w, r.y + r.h);
+}
+for (const z of zones) {
+  ext(z.position.x, z.position.y);
+  ext(z.position.x + (z.data.width ?? 240), z.position.y + (z.data.height ?? 160));
 }
 for (const [, rt] of routes) {
   // rough: extend by label positions
@@ -32,6 +41,15 @@ const W = maxX - minX, H = maxY - minY;
 const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;');
 let body = `<rect x="${minX}" y="${minY}" width="${W}" height="${H}" fill="#1a1a1c"/>`;
 let svg = ''; // assembled at the end
+
+// zones (translucent boxes behind everything, with a corner label)
+for (const z of zones) {
+  const { x, y } = z.position;
+  const w = z.data.width ?? 240, h = z.data.height ?? 160;
+  const c = z.data.color ?? '#3b82f6';
+  body += `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="10" fill="${c}14" stroke="${c}" stroke-width="1.5" stroke-dasharray="6 5"/>`;
+  body += `<text x="${x + 12}" y="${y + 22}" fill="${c}" font-size="15" font-family="sans-serif" font-weight="700">${esc(z.data.text ?? 'Zone')}</text>`;
+}
 
 // nodes
 for (const n of nodes) {
