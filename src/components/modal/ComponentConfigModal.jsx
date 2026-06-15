@@ -13,6 +13,8 @@ import {
 
 const SIDES = ['top', 'right', 'bottom', 'left'];
 const BREAKER_OPTIONS = [10, 20, 30, 40]; // legal FRC branch breaker/fuse ratings (R619)
+// Only power-distribution devices expose per-output breaker selection.
+const BREAKER_DEFS = new Set(['pdh', 'pdp2', 'pdp_legacy', 'mpm']);
 const uuid = () => crypto.randomUUID();
 
 // Reassign per-side order based on array order (keeps handles evenly spaced).
@@ -178,14 +180,16 @@ export default function ComponentConfigModal({ nodeId, onClose, onSelectEdge }) 
             </section>
           )}
 
-          {/* quick branch-breaker grid (power-distribution channels) */}
+          {/* branch-breaker grid — power-distribution outputs only (PDH/PDP/MPM).
+              Excludes the main PWR input; covers CH* (PDH/PDP) and A–D (MPM). */}
           {(() => {
-            const channels = data.ports.filter((p) => p.type === 'PWR' && /^CH\d+$/.test(p.label));
-            if (channels.length < 4) return null;
+            if (!BREAKER_DEFS.has(def.id)) return null;
+            const channels = data.ports.filter((p) => p.type === 'PWR' && p.label !== 'PWR');
+            if (!channels.length) return null;
             return (
               <section>
                 <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-neutral-400">
-                  Channel breakers
+                  Output breakers
                 </h3>
                 <div className="grid grid-cols-4 gap-1.5">
                   {channels.map((p) => (
@@ -277,22 +281,6 @@ export default function ComponentConfigModal({ nodeId, onClose, onSelectEdge }) 
                             <option key={f} value={f}>{f}</option>
                           ))}
                         </select>
-                        {p.type === 'PWR' && (
-                          <select
-                            value={p.breaker ?? ''}
-                            onChange={(e) =>
-                              updatePort(p.id, { breaker: e.target.value === '' ? null : Number(e.target.value) })
-                            }
-                            title="Breaker rating (A) protecting this output — checked against connected wire gauge"
-                            aria-label="Port breaker amps"
-                            className="w-24 shrink-0 rounded border border-edge bg-surface-0 px-1 py-1 text-sm text-silver"
-                          >
-                            <option value="">breaker…</option>
-                            {BREAKER_OPTIONS.map((a) => (
-                              <option key={a} value={a}>{a} A</option>
-                            ))}
-                          </select>
-                        )}
                       </>
                     )}
                     <button
