@@ -15,6 +15,8 @@ import {
   validateProject,
   writeAutosave,
 } from '../utils/saveLoadUtils';
+import { canvasBridge } from '../components/canvas/canvasBridge';
+import sampleProject from '../../examples/example.json';
 
 const uuid = () => crypto.randomUUID();
 
@@ -505,31 +507,11 @@ const useDiagramStore = create(
 
       // Build a small illustrative robot for onboarding (uses the real add logic).
       loadSample: () => {
-        get().newProject();
-        const add = (defId, x, y) => get().addNode(defId, { x, y });
-        const bat = add('battery', 0, 320);
-        const mb = add('mainbreaker', 224, 328);
-        const pdh = add('pdh', 432, 64);
-        const rio = add('roborio2', 800, 96);
-        const kraken = add('krakenx60', 816, 384);
-        const term = add('canterminator', 1040, 408);
-        const portId = (nodeId, label) =>
-          get().nodes.find((n) => n.id === nodeId)?.data.ports.find((p) => p.label === label)?.id;
-        const wire = (s, sl, t, tl) => {
-          const sh = portId(s, sl);
-          const th = portId(t, tl);
-          if (sh && th) get().addEdge({ source: s, sourceHandle: sh, target: t, targetHandle: th });
-        };
-        wire(bat, 'BAT', mb, 'IN');
-        wire(mb, 'OUT', pdh, 'PWR');
-        wire(pdh, 'CH20', rio, 'PWR');
-        wire(pdh, 'CH0', kraken, 'PWR');
-        wire(rio, 'CAN', kraken, 'CAN IN');
-        wire(kraken, 'CAN OUT', term, 'CAN');
-        useDiagramStore.getState().updateNodeData(rio, { ipAddress: '10.0.0.2' });
-        useDiagramStore.getState().updateNodeData(kraken, { canId: 1 });
-        useDiagramStore.temporal.getState().clear();
-        set({ dirty: false });
+        // Load the bundled swerve-robot example (deep-copied so repeated loads
+        // always start from a clean state). loadProject clears history + dirty.
+        get().loadProject(JSON.parse(JSON.stringify(sampleProject)));
+        // Frame the robot once the canvas has measured it.
+        setTimeout(() => canvasBridge.fitView?.({ padding: 0.15, duration: 400 }), 80);
       },
 
       // §3.2 reconnection — re-derive type/layer/gauge/fitting from new source.
