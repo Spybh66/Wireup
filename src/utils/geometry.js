@@ -1,6 +1,5 @@
 // Shared geometry for port placement — used by ComponentNode (handle CSS %)
 // and routingUtils (absolute flow coordinates). Both MUST agree.
-import { STEP } from './routingUtils';
 
 export function portsOnSide(ports, side) {
   return ports.filter((p) => p.side === side).sort((a, b) => a.order - b.order);
@@ -14,13 +13,13 @@ export function portFraction(ports, port) {
   return (idx + 1) / (n + 1);
 }
 
-// Offset in px from the edge's start for a port, snapped to the routing lattice
-// so wires leave the port aligned to the grid (no off-axis jog). `edgeLen` is
-// the side length (height for left/right, width for top/bottom).
+// Offset in px from the edge's start for a port. Uses the exact fractional
+// position (rounded to nearest pixel) so ports are always evenly spaced
+// regardless of the routing grid step. The routing engine handles sub-grid
+// alignment via the exit stub, so no grid-snap is needed here.
 export function portOffsetPx(ports, port, edgeLen) {
   const raw = edgeLen * portFraction(ports, port);
-  const snapped = Math.round(raw / STEP) * STEP;
-  return Math.min(edgeLen - 1, Math.max(1, snapped));
+  return Math.min(edgeLen - 1, Math.max(1, Math.round(raw)));
 }
 
 // Snapped fraction (0..1) used for the visual handle/label so the dot sits
