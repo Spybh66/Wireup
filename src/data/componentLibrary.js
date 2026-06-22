@@ -80,55 +80,63 @@ function powerDistPorts(numChannels) {
 
 export const COMPONENT_LIBRARY = [
   // ---------------- Controllers ----------------
-  def('roborio2', 'roboRIO 2', 'Controllers', 'controller', 200, 120, ['ipAddress'], [
+  def('roborio2', 'roboRIO 2', 'Controllers', 'controller', 160, 80, ['ipAddress'], [
     ...pwr('PWR', 'top', '12 AWG', FERRULE, WEID),
     ...can('CAN', 'left', CAN_WEID),
     ...eth('ETH', 'top'),
-    ...usb('USB1', 'right'),
-    ...usb('USB2', 'right'),
+    ...usb('USB', 'right'),
+    ...usb('USB', 'right'),
     ...pwr('RSL', 'bottom', '18 AWG', FERRULE, WEID),
   ]),
-  def('orangepi5', 'Orange Pi 5', 'Controllers', 'pi', 140, 80, ['ipAddress'], [
+  def('orangepi5', 'Orange Pi 5', 'Controllers', 'pi', 160, 80, ['ipAddress'], [
+    ...usb('USBC - PWR', 'left'),
+    ...eth('ETH', 'top'),
+    ...usb('USB', 'right'),
+    ...usb('USB', 'right'),
+  ]),
+  def('raspberrypi5', 'Raspberry Pi 5', 'Controllers', 'pi', 160, 80, ['ipAddress'], [
+    ...usb('USBC - PWR', 'left'),
+    ...eth('ETH', 'top'),
+    ...usb('USB', 'right'),
+    ...usb('USB', 'right'),
+  ]),
+  def('jetsonorinnano', 'Jetson Orin Nano', 'Controllers', 'pi', 160, 80, ['ipAddress'], [
+    ...pwr('PWR', 'left'), // Barrel Jack
+    ...usb('USBC - PWR', 'top'),
+    ...eth('ETH', 'top'),
+    ...usb('USB', 'bottom'),
+    ...usb('USB', 'bottom'),
+    ...usb('USB', 'bottom'),
+    ...usb('USB', 'bottom'),
+  ]),
+  def('beelink', 'Beelink Mini PC', 'Controllers', 'pi', 160, 80, ['ipAddress'], [
     ...pwr('PWR', 'left'),
     ...eth('ETH', 'top'),
-    ...usb('USB1', 'right'),
-    ...usb('USB2', 'right'),
-  ]),
-  def('raspberrypi5', 'Raspberry Pi 5', 'Controllers', 'pi', 140, 80, ['ipAddress'], [
-    ...pwr('PWR', 'left'),
-    ...eth('ETH', 'top'),
-    ...usb('USB1', 'right'),
-    ...usb('USB2', 'right'),
-  ]),
-  def('jetsonorinnano', 'Jetson Orin Nano', 'Controllers', 'pi', 170, 90, ['ipAddress'], [
-    ...pwr('PWR', 'left', '18 AWG', FERRULE, WEID),
-    ...eth('ETH', 'top'),
-    ...usb('USB1', 'top'),
-    ...usb('USB2', 'top'),
-    ...usb('USB3', 'top'),
-  ]),
-  def('beelink', 'Beelink Mini PC', 'Controllers', 'pi', 160, 88, ['ipAddress'], [
-    ...pwr('PWR', 'left'),
-    ...eth('ETH', 'top'),
-    ...usb('USB1', 'right'),
-    ...usb('USB2', 'right'),
+    ...usb('USB', 'right'),
+    ...usb('USB', 'right'),
   ]),
 
   // ---------------- Power ----------------
-  def('battery', 'Battery (12V)', 'Power', 'battery', 140, 80, [], [
+  def('battery', 'Battery (12V)', 'Power', 'battery', 120, 80, [], [
     ...pwr('BAT', 'right', '6 AWG', SB50, MAIN),
   ]),
-  def('mainbreaker', 'Main Breaker (120A)', 'Power', 'breaker', 120, 70, [], [
+  def('mainbreaker', 'Main Breaker (120A)', 'Power', 'breaker', 120, 80, [], [
     { type: 'PWR', label: 'IN', side: 'left', gauge: '6 AWG', fitting: RING, requiredFittings: STUD },
     { type: 'PWR', label: 'OUT', side: 'right', gauge: '6 AWG', fitting: RING, requiredFittings: STUD },
   ]),
-  def('pdh', 'PDH (REV)', 'Power', 'powerdist', 280, 400, ['canId'], powerDistPorts(24)),
-  def('pdp2', 'PDP 2.0 (CTRE)', 'Power', 'powerdist', 180, 110, ['canId'], powerDistPorts(24)),
-  def('pdp_legacy', 'PDP (CTRE, legacy)', 'Power', 'powerdist', 180, 110, ['canId'], powerDistPorts(24)),
-  def('vrm', 'VRM', 'Power', 'vrm', 140, 80, [], [
-    ...pwr('PWR', 'left', '18 AWG', FERRULE, WEID),
-    ...pwr('12V', 'right', '18 AWG', FERRULE, WEID),
-    ...pwr('5V', 'right', '18 AWG', FERRULE, WEID),
+  def('pdh', 'PDH (REV)', 'Power', 'powerdist', 240, 320, ['canId'], powerDistPorts(24)),
+  def('pdp2', 'PDP 2.0 (CTRE)', 'Power', 'powerdist', 240, 320, ['canId'], powerDistPorts(24)),
+  def('pdp_legacy', 'PDP (CTRE, legacy)', 'Power', 'powerdist', 240, 320, ['canId'], powerDistPorts(24)),
+  def('vrm', 'VRM', 'Power', 'vrm', 160, 80, [], [
+    ...pwr('PWR', 'top', '18 AWG', FERRULE, WEID),
+    ...pwr('12V/2A', 'left', '18 AWG', FERRULE, WEID),
+    ...pwr('12V/2A', 'left', '18 AWG', FERRULE, WEID),
+    ...pwr('12V/500mA', 'left', '18 AWG', FERRULE, WEID),
+    ...pwr('12V/500mA', 'left', '18 AWG', FERRULE, WEID),
+    ...pwr('5V/2A', 'right', '18 AWG', FERRULE, WEID),
+    ...pwr('5V/2A', 'right', '18 AWG', FERRULE, WEID),
+    ...pwr('5V/500mA', 'right', '18 AWG', FERRULE, WEID),
+    ...pwr('5V/500mA', 'right', '18 AWG', FERRULE, WEID),
   ]),
   def('rpm', 'Radio Power Module (REV RPM)', 'Power', 'radioPower', 140, 80, [], [
     ...pwr('PWR', 'left', '18 AWG', FERRULE, WEID),
@@ -136,15 +144,18 @@ export const COMPONENT_LIBRARY = [
     ...eth('ETH OUT', 'top'),
     ...pwr('AUX', 'right', '18 AWG', FERRULE, WEID),
   ]),
-  def('mpm', 'Mini Power Module (CTRE MPM)', 'Power', 'vrm', 140, 80, [], [
-    ...pwr('PWR', 'left', '18 AWG', FERRULE, WEID),
-    ...pwr('A', 'right', '18 AWG', FERRULE, WEID),
-    ...pwr('B', 'right', '18 AWG', FERRULE, WEID),
-    ...pwr('C', 'right', '18 AWG', FERRULE, WEID),
-    ...pwr('D', 'right', '18 AWG', FERRULE, WEID),
+  def('mpm', 'Mini Power Module (CTRE MPM)', 'Power', 'vrm', 120, 160, [], [
+    ...pwr('PWR', 'bottom', '18 AWG', FERRULE, WEID),
+    ...pwr('CH0', 'right', '18 AWG', FERRULE, WEID),
+    ...pwr('CH1', 'right', '18 AWG', FERRULE, WEID),
+    ...pwr('CH2', 'right', '18 AWG', FERRULE, WEID),
+    ...pwr('CH3', 'right', '18 AWG', FERRULE, WEID),
+    ...pwr('CH4', 'right', '18 AWG', FERRULE, WEID),
+    ...pwr('CH5', 'right', '18 AWG', FERRULE, WEID),
   ]),
-  def('mitocandria', 'MitoCANDria (ThriftyBot)', 'Power', 'vrm', 180, 80, ['canId'], [
+  def('mitocandria', 'MitoCANDria (ThriftyBot)', 'Power', 'vrm', 160, 80, ['canId'], [
     ...pwr('PWR', 'left', '18 AWG', FERRULE, WEID),
+    ...can('CAN', 'bottom', CAN_WEID),
     ...can('CAN', 'bottom', CAN_WEID),
     ...usb('5V USBC', 'top'),
     ...usb('5V USBC', 'top'),
@@ -152,24 +163,22 @@ export const COMPONENT_LIBRARY = [
     ...pwr('5VA', 'right', '20 AWG', FERRULE, WEID),
     ...pwr('5VB', 'right', '20 AWG', FERRULE, WEID),
   ]),
-  def('canjunction', 'CANJunction (ThriftyBot)', 'Power', 'canjunction', 150, 110, [], [
-    ...pwr('PWR', 'left', '18 AWG', WAGO, [WAGO, FERRULE, BARE]),
-    { type: 'CAN', label: 'BUS', side: 'left', requiredFittings: CAN_WEID },
-    { type: 'CAN', label: 'T1', side: 'right', requiredFittings: CAN_WEID },
-    { type: 'CAN', label: 'T2', side: 'right', requiredFittings: CAN_WEID },
-    { type: 'CAN', label: 'T3', side: 'right', requiredFittings: CAN_WEID },
-    { type: 'CAN', label: 'T4', side: 'right', requiredFittings: CAN_WEID },
+  def('canjunction', 'CANJunction (ThriftyBot)', 'Power', 'canjunction', 120, 60, [], [
+    ...can('CAN', 'left', MOLEX_SL),
+    ...can('CAN', 'right', MOLEX_SL),
   ]),
 
   // ---------------- Motor Controllers ----------------
-  def('sparkmax', 'SPARK MAX', 'Motor Controllers', 'motorController', 120, 70, ['canId'], [
+  def('sparkmax', 'SPARK MAX', 'Motor Controllers', 'motorController', 160, 80, ['canId'], [
     ...pwr('PWR', 'left', '12 AWG', APP, APP_IN),
+    ...can('CAN', 'bottom', CAN_WEID),
     ...can('CAN', 'bottom', CAN_WEID),
     ...pwr('MOTOR', 'right', '12 AWG', APP, APP_LEADS),
     ...data('Encoder', 'top'),
   ]),
-  def('sparkflex', 'SPARK Flex', 'Motor Controllers', 'motorController', 120, 70, ['canId'], [
+  def('sparkflex', 'SPARK Flex', 'Motor Controllers', 'motorController', 160, 80, ['canId'], [
     ...pwr('PWR', 'left', '12 AWG', APP, APP_IN),
+    ...can('CAN', 'bottom', CAN_WEID),
     ...can('CAN', 'bottom', CAN_WEID),
     ...pwr('MOTOR', 'right', '12 AWG', APP, APP_LEADS),
     ...data('Encoder', 'top'),
