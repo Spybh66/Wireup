@@ -7,7 +7,7 @@ import { BaseEdge, EdgeLabelRenderer, useReactFlow } from '@xyflow/react';
 import { useRouting } from './RoutingContext';
 import { useDrcMarks } from './DrcContext';
 import useDiagramStore from '../../store/diagramStore';
-import { buildSvgPath, STEP } from '../../utils/routingUtils';
+import { buildSvgPath } from '../../utils/routingUtils';
 import { portPosition } from '../../utils/geometry';
 import { getDefinition } from '../../data/componentLibrary';
 
@@ -31,7 +31,6 @@ function WireEdge({ id, selected }) {
   const routing = useRouting();
   const drcSeverity = useDrcMarks().edges.get(id);
   const showWireLabels = useDiagramStore((s) => s.settings.showWireLabels);
-  const snapToGrid = useDiagramStore((s) => s.settings.snapToGrid);
   const edge = useDiagramStore((s) => s.edges.find((e) => e.id === id));
   const setEdgeWaypoints = useDiagramStore((s) => s.setEdgeWaypoints);
   const clearEdgeWaypoints = useDiagramStore((s) => s.clearEdgeWaypoints);
@@ -62,12 +61,10 @@ function WireEdge({ id, selected }) {
   // Path: from the live draft while dragging, otherwise the computed route.
   const dPath = draft ? buildSvgPath(controlPts, []) : route.d;
 
-  // Snap a point to the wire grid (STEP) — a sub-grid of the component grid, so
-  // it aligns with ports (also on the wire grid). Used for seeding new points.
-  const snap = (p) =>
-    snapToGrid
-      ? { x: Math.round(p.x / STEP) * STEP, y: Math.round(p.y / STEP) * STEP }
-      : { x: p.x, y: p.y };
+  // Seed new points at the raw position — manual waypoints intentionally ignore
+  // the grid-snap setting (that toggle governs component placement only). Clean
+  // straight runs come from axis-locking onto ports/waypoints, not the grid.
+  const snap = (p) => ({ x: p.x, y: p.y });
 
   // Begin dragging control-point `idx` of polyline `base`.
   const beginDrag = (base, idx, ev) => {
@@ -86,10 +83,10 @@ function WireEdge({ id, selected }) {
     });
     const others = [...base.filter((_, k) => k !== idx), ...allPortPts];
     const onMove = (e) => {
-      // Work from the RAW cursor position so axis-locking onto a port/waypoint
-      // wins over the grid: with a capture radius wider than the grid step, a
-      // drag near a port's axis snaps exactly onto it (clean straight run into
-      // the port), and only the axes that *didn't* lock fall back to the grid.
+      // Work from the RAW cursor position and axis-lock onto a nearby
+      // port/waypoint. Manual waypoints ignore the grid-snap setting entirely —
+      // axis-locking (capture radius ALIGN_TOL) is what produces clean straight
+      // runs into ports, so an axis that doesn't lock just follows the cursor.
       const raw = screenToFlowPosition({ x: e.clientX, y: e.clientY });
       const g = [];
       let bestX = null;
@@ -102,9 +99,7 @@ function WireEdge({ id, selected }) {
       }
       const fp = { x: raw.x, y: raw.y };
       if (bestX != null) { fp.x = bestX; g.push({ axis: 'x', at: bestX }); }
-      else if (snapToGrid) fp.x = Math.round(raw.x / STEP) * STEP;
       if (bestY != null) { fp.y = bestY; g.push({ axis: 'y', at: bestY }); }
-      else if (snapToGrid) fp.y = Math.round(raw.y / STEP) * STEP;
       const pts = dragRef.current.pts.slice();
       pts[dragRef.current.idx] = fp;
       dragRef.current.pts = pts;
