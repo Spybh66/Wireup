@@ -8,6 +8,8 @@ import { useRouting } from './RoutingContext';
 import { useDrcMarks } from './DrcContext';
 import useDiagramStore from '../../store/diagramStore';
 import { buildSvgPath, STEP } from '../../utils/routingUtils';
+import { portPosition } from '../../utils/geometry';
+import { getDefinition } from '../../data/componentLibrary';
 
 const MIN_SEG = 26; // only show an insert dot on segments at least this long (px)
 const DRC_HALO = { error: '#f87171', warning: '#fbbf24', info: '#38bdf8' };
@@ -73,7 +75,16 @@ function WireEdge({ id, selected }) {
     ev.preventDefault();
     dragRef.current = { idx, pts: base };
     setDraft(base);
-    const others = base.filter((_, k) => k !== idx);
+    // Axis-lock candidates: this wire's other control points + every port in the
+    // diagram. Collected once at drag-start (getState, non-reactive) so the per-
+    // frame move handler can run without subscribing to the full node list.
+    const { nodes: allNodes, customDefinitions: allDefs } = useDiagramStore.getState();
+    const allPortPts = allNodes.flatMap((n) => {
+      const d = getDefinition(n.data.definitionId, allDefs);
+      if (!d) return [];
+      return (n.data.ports ?? []).map((p) => portPosition(n, p, d));
+    });
+    const others = [...base.filter((_, k) => k !== idx), ...allPortPts];
     const onMove = (e) => {
       // Work from the RAW cursor position so axis-locking onto a port/waypoint
       // wins over the grid: with a capture radius wider than the grid step, a
