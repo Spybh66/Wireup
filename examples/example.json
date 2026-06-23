@@ -1,7 +1,7 @@
 {
   "app": "wireup",
   "version": 2,
-  "savedAt": "2026-06-23T14:04:13.184Z",
+  "savedAt": "2026-06-23T15:11:06.815Z",
   "projectName": "Swerve Robot (Example)",
   "nodes": [
     {
@@ -860,9 +860,9 @@
             "breaker": null,
             "slot": null,
             "requiredFittings": [
+              "Molex SL",
               "Ferrule",
-              "Bare Wire",
-              "JST"
+              "Bare Wire"
             ]
           }
         ]
@@ -1028,9 +1028,9 @@
             "breaker": null,
             "slot": null,
             "requiredFittings": [
+              "Molex SL",
               "Ferrule",
-              "Bare Wire",
-              "JST"
+              "Bare Wire"
             ]
           }
         ]
@@ -1196,9 +1196,9 @@
             "breaker": null,
             "slot": null,
             "requiredFittings": [
+              "Molex SL",
               "Ferrule",
-              "Bare Wire",
-              "JST"
+              "Bare Wire"
             ]
           }
         ]
@@ -1364,9 +1364,9 @@
             "breaker": null,
             "slot": null,
             "requiredFittings": [
+              "Molex SL",
               "Ferrule",
-              "Bare Wire",
-              "JST"
+              "Bare Wire"
             ]
           }
         ]

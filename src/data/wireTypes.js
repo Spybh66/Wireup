@@ -60,6 +60,7 @@ export const FITTING_OPTIONS = [
   'Ferrule',
   'Wago Lever Nut',
   'JST',
+  'Bullet',
   'Barrel Jack',
   'USB-A',
   'USB-C',

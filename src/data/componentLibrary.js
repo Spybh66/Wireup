@@ -20,6 +20,7 @@ const BARREL = 'Barrel Jack';
 const USB_A = 'USB-A';
 const USB_C = 'USB-C';
 const BARE = 'Bare Wire';
+const BULLET = 'Bullet';
 
 // Allowed-fitting sets per physical termination style. `requiredFittings` on a
 // port is the list a wire end may legally use; the DRC connector-mismatch rule
@@ -33,6 +34,7 @@ const CAN_WEID = [FERRULE, BARE];      // REV-style CAN terminal
 const CAN_CTRE = [FERRULE, BARE, 'JST']; // CTRE CAN cable: keyed connector or terminal
 const CAN_MOLEX = [MOLEX_SL, FERRULE, BARE]; // locking Molex SL CAN (MitoCANdria/ThriftyBot)
 const PHASE = [RING, BARE];            // brushless 3-phase motor lead
+const PHASE_BULLET = [BULLET, BARE];   // NEO Vortex bullet-connector phases (→ SPARK Flex dock)
 
 // single unified power wire
 const pwr = (label, side, gauge = null, fitting = null, requiredFittings = null) => [
@@ -246,63 +248,87 @@ export const COMPONENT_LIBRARY = [
     { type: 'CAN', label: 'CAN IN', side: 'right', requiredFittings: CAN_CTRE },
     { type: 'CAN', label: 'CAN OUT', side: 'right', requiredFittings: CAN_CTRE },
   ]),
-  def('minion', 'Minion', 'Motors', 'motor', 120, 70, [], [
-    ...pwr('PWR', 'left', '12 AWG', RING, STUD),
-    ...data('Hall', 'top'),
+  // Minion — bare 3-phase brushless motor driven by a Talon FXS. 3 ring-terminal
+  // phase leads (U/V/W) + a 6-pin JST hall/temp sensor cable.
+  def('minion', 'Minion', 'Motors', 'motor', 130, 104, [], [
+    { type: 'PWR', label: 'U', side: 'left', gauge: '12 AWG', fitting: RING, requiredFittings: PHASE },
+    { type: 'PWR', label: 'V', side: 'left', gauge: '12 AWG', fitting: RING, requiredFittings: PHASE },
+    { type: 'PWR', label: 'W', side: 'left', gauge: '12 AWG', fitting: RING, requiredFittings: PHASE },
+    ...data('Sensor (6-pin JST)', 'top'),
   ]),
-  def('neo', 'NEO', 'Motors', 'motor', 120, 70, [], [
-    ...pwr('PWR', 'left', '12 AWG', APP, APP_LEADS),
-    ...data('Encoder', 'top'),
+  // NEO / NEO 550 — bare 3-phase brushless motors driven by a SPARK MAX. 3
+  // bare/tinned flying-lead phases (A/B/C) + a 6-pin JST-PH encoder cable.
+  def('neo', 'NEO', 'Motors', 'motor', 130, 104, [], [
+    { type: 'PWR', label: 'A', side: 'left', gauge: '12 AWG', fitting: BARE, requiredFittings: APP_LEADS },
+    { type: 'PWR', label: 'B', side: 'left', gauge: '12 AWG', fitting: BARE, requiredFittings: APP_LEADS },
+    { type: 'PWR', label: 'C', side: 'left', gauge: '12 AWG', fitting: BARE, requiredFittings: APP_LEADS },
+    ...data('Encoder (6-pin JST)', 'top'),
   ]),
-  def('neo550', 'NEO 550', 'Motors', 'motor', 120, 70, [], [
-    ...pwr('PWR', 'left', '12 AWG', APP, APP_LEADS),
-    ...data('Encoder', 'top'),
+  def('neo550', 'NEO 550', 'Motors', 'motor', 130, 104, [], [
+    { type: 'PWR', label: 'A', side: 'left', gauge: '14 AWG', fitting: BARE, requiredFittings: APP_LEADS },
+    { type: 'PWR', label: 'B', side: 'left', gauge: '14 AWG', fitting: BARE, requiredFittings: APP_LEADS },
+    { type: 'PWR', label: 'C', side: 'left', gauge: '14 AWG', fitting: BARE, requiredFittings: APP_LEADS },
+    ...data('Encoder (6-pin JST)', 'top'),
   ]),
-  def('neovortex', 'NEO Vortex', 'Motors', 'motor', 120, 70, [], [
-    ...pwr('PWR', 'left', '12 AWG', APP, APP_LEADS),
-    ...data('Encoder', 'top'),
+  // NEO Vortex — 3-phase brushless that docks directly to a SPARK Flex via
+  // bullet connectors (or breaks out to flying leads on the Solo Adapter).
+  def('neovortex', 'NEO Vortex', 'Motors', 'motor', 130, 104, [], [
+    { type: 'PWR', label: 'A', side: 'left', gauge: '12 AWG', fitting: BULLET, requiredFittings: PHASE_BULLET },
+    { type: 'PWR', label: 'B', side: 'left', gauge: '12 AWG', fitting: BULLET, requiredFittings: PHASE_BULLET },
+    { type: 'PWR', label: 'C', side: 'left', gauge: '12 AWG', fitting: BULLET, requiredFittings: PHASE_BULLET },
+    ...data('Encoder (6-pin JST)', 'top'),
   ]),
   def('generic_motor', 'Generic Motor', 'Motors', 'motor', 120, 70, [], [
     ...pwr('PWR', 'left', '12 AWG', FERRULE),
   ]),
 
   // ---------------- Sensors ----------------
+  // CTRE CANcoder — flying leads: a separate power pair plus a CAN pair (newer
+  // units use a keyed 6-pin Molex SL). Power and CAN are separate conductors.
   def('cancoder', 'CANcoder', 'Sensors', 'canSensor', 100, 60, ['canId'], [
-    ...pwr('PWR', 'left', '18 AWG', FERRULE, CAN_CTRE),
-    ...can('CAN', 'bottom', CAN_CTRE),
+    ...pwr('PWR', 'left', '22 AWG', BARE, [FERRULE, BARE, MOLEX_SL]),
+    ...can('CAN', 'bottom', CAN_MOLEX),
   ]),
+  // CTRE Pigeon 2.0 IMU — separate power and CAN flying leads (22 AWG).
   def('pigeon2', 'Pigeon 2', 'Sensors', 'canSensor', 100, 60, ['canId'], [
-    ...pwr('PWR', 'left', '18 AWG', FERRULE, CAN_CTRE),
+    ...pwr('PWR', 'left', '22 AWG', BARE, [FERRULE, BARE]),
     ...can('CAN', 'bottom', CAN_CTRE),
   ]),
-  def('candle', 'CANdle', 'Sensors', 'canSensor', 100, 60, ['canId'], [
+  // CTRE CANdle — Weidmuller push-in for VBat power + CAN; LED data out on a
+  // 3-pin JST. The power feed is the heavy lead (it drives the LED strip).
+  def('candle', 'CANdle', 'Sensors', 'canSensor', 110, 70, ['canId'], [
     ...pwr('PWR', 'left', '18 AWG', FERRULE, WEID),
-    ...can('CAN', 'bottom', CAN_CTRE),
-    ...data('LED out', 'top'),
+    ...can('CAN', 'bottom', CAN_WEID),
+    ...data('LED out (3-pin JST)', 'top'),
   ]),
+  // CTRE CANrange / CANdi — Weidmuller push-in terminals for separate power +
+  // CAN (the CANdi adds two signal inputs).
   def('canrange', 'CANrange', 'Sensors', 'canSensor', 100, 60, ['canId'], [
-    ...pwr('PWR', 'left', '18 AWG', FERRULE, CAN_CTRE),
-    ...can('CAN', 'bottom', CAN_CTRE),
+    ...pwr('PWR', 'left', '22 AWG', FERRULE, WEID),
+    ...can('CAN', 'bottom', CAN_WEID),
   ]),
-  def('candi', 'CANdi', 'Sensors', 'canSensor', 100, 60, ['canId'], [
-    ...pwr('PWR', 'left', '18 AWG', FERRULE, CAN_CTRE),
-    ...can('CAN', 'bottom', CAN_CTRE),
+  def('candi', 'CANdi', 'Sensors', 'canSensor', 110, 80, ['canId'], [
+    ...pwr('PWR', 'left', '22 AWG', FERRULE, WEID),
+    ...can('CAN', 'bottom', CAN_WEID),
     ...data('S1', 'top'),
     ...data('S2', 'top'),
   ]),
-  def('limelight4', 'Limelight 4', 'Sensors', 'camera', 120, 70, ['ipAddress'], [
+  // Limelight 4 — 12 V via Weidmuller (or passive PoE), RJ45 Ethernet + USB-C.
+  def('limelight4', 'Limelight 4', 'Sensors', 'camera', 120, 80, ['ipAddress'], [
     ...pwr('PWR', 'left', '18 AWG', FERRULE, WEID),
     ...eth('ETH', 'top'),
+    ...usbC('USB-C', 'right'),
   ]),
   def('limelight3g', 'Limelight 3G', 'Sensors', 'camera', 120, 70, ['ipAddress'], [
     ...pwr('PWR', 'left', '18 AWG', FERRULE, WEID),
     ...eth('ETH', 'top'),
   ]),
+  // Grapple LaserCAN — soldered pads / optional flying leads; separate power
+  // and CAN conductors (bare wire).
   def('lasercan', 'LaserCAN (Grapple)', 'Sensors', 'canSensor', 120, 80, ['canId'], [
-    ...pwr('PWR', 'bottom', '22 AWG', FERRULE, WEID),
-    ...pwr('PWR', 'top', '22 AWG', FERRULE, WEID),
-    { type: 'CAN', label: 'CAN IN', side: 'left', requiredFittings: CAN_WEID },
-    { type: 'CAN', label: 'CAN OUT', side: 'right', requiredFittings: CAN_WEID },
+    ...pwr('PWR', 'top', '22 AWG', BARE, [BARE, FERRULE]),
+    { type: 'CAN', label: 'CAN IN', side: 'left', requiredFittings: [BARE, FERRULE] },
+    { type: 'CAN', label: 'CAN OUT', side: 'right', requiredFittings: [BARE, FERRULE] },
   ]),
   def('thriftycam', 'ThriftyCAM (ThriftyBot)', 'Sensors', 'camera', 120, 70, [], [
     ...usbA('USB-A', 'left'),
@@ -310,9 +336,10 @@ export const COMPONENT_LIBRARY = [
   def('usbcamera', 'Generic USB Camera', 'Sensors', 'camera', 120, 70, [], [
     ...usbA('USB-A', 'left'),
   ]),
-  def('throughboreencoder', 'REV Through Bore Encoder', 'Sensors', 'canSensor', 100, 64, [], [
-    ...pwr('PWR', 'left', '18 AWG', FERRULE, WEID),
-    ...data('Data', 'left'),
+  // REV Through Bore Encoder — a single 6-pin JST-PH cable carries power +
+  // absolute + ABI quadrature (it is NOT a CAN device).
+  def('throughboreencoder', 'REV Through Bore Encoder', 'Sensors', 'sensor', 110, 64, [], [
+    ...data('Output (6-pin JST)', 'left'),
   ]),
   def('generic_sensor', 'Generic Sensor', 'Sensors', 'sensor', 100, 60, [], [
     ...pwr('PWR', 'left', '18 AWG', FERRULE),
