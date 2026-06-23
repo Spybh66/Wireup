@@ -9,11 +9,11 @@ import {
   FITTING_OPTIONS,
   typeHasGaugeFitting,
   typeGroup,
+  slotRatings,
 } from '../../data/wireTypes';
 
 const SIDES = ['top', 'right', 'bottom', 'left'];
-const BREAKER_OPTIONS = [10, 20, 30, 40]; // legal FRC branch breaker/fuse ratings (R619)
-// Only power-distribution devices expose per-output breaker selection.
+// Only power-distribution devices expose per-output breaker/fuse selection.
 const BREAKER_DEFS = new Set(['pdh', 'pdp2', 'pdp_legacy', 'mpm']);
 const uuid = () => crypto.randomUUID();
 
@@ -197,36 +197,52 @@ export default function ComponentConfigModal({ nodeId, onClose, onSelectEdge }) 
             </section>
           )}
 
-          {/* branch-breaker grid — power-distribution outputs only (PDH/PDP/MPM).
-              Excludes the main PWR input; covers CH* (PDH/PDP) and A–D (MPM). */}
+          {/* branch breaker / fuse grid — power-distribution outputs only
+              (PDH/PDP/MPM). Excludes the main PWR input. Each channel offers the
+              rating set for its slot: full-size ATO breakers (10–40 A) or
+              miniature ATM blade fuses (≤15 A, PDH ch20–23 + every MPM channel). */}
           {(() => {
             if (!BREAKER_DEFS.has(def.id)) return null;
-            const channels = data.ports.filter((p) => p.type === 'PWR' && p.label !== 'PWR');
+            const channels = data.ports.filter(
+              (p) => p.type === 'PWR' && p.label !== 'PWR' && p.label !== 'PWR IN'
+            );
             if (!channels.length) return null;
+            const hasFuse = channels.some((p) => p.slot === 'fuse');
+            const hasBreaker = channels.some((p) => (p.slot ?? 'breaker') !== 'fuse');
+            const heading =
+              hasFuse && hasBreaker ? 'Output breakers / fuses' : hasFuse ? 'Output fuses' : 'Output breakers';
             return (
               <section>
                 <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-neutral-400">
-                  Output breakers
+                  {heading}
                 </h3>
                 <div className="grid grid-cols-4 gap-1.5">
-                  {channels.map((p) => (
-                    <label key={p.id} className="flex items-center gap-1 text-xs text-neutral-300">
-                      <span className="w-9 shrink-0 text-right text-neutral-400">{p.label}</span>
-                      <select
-                        value={p.breaker ?? ''}
-                        onChange={(e) =>
-                          updatePort(p.id, { breaker: e.target.value === '' ? null : Number(e.target.value) })
-                        }
-                        aria-label={`${p.label} breaker`}
-                        className="min-w-0 flex-1 rounded border border-edge bg-surface-0 px-1 py-0.5 text-silver"
-                      >
-                        <option value="">—</option>
-                        {BREAKER_OPTIONS.map((a) => (
-                          <option key={a} value={a}>{a}A</option>
-                        ))}
-                      </select>
-                    </label>
-                  ))}
+                  {channels.map((p) => {
+                    const isFuse = p.slot === 'fuse';
+                    return (
+                      <label key={p.id} className="flex items-center gap-1 text-xs text-neutral-300">
+                        <span
+                          className={`w-9 shrink-0 text-right ${isFuse ? 'text-cyan-400' : 'text-neutral-400'}`}
+                          title={isFuse ? 'Miniature blade fuse (≤15 A)' : 'Full-size ATO breaker'}
+                        >
+                          {p.label}
+                        </span>
+                        <select
+                          value={p.breaker ?? ''}
+                          onChange={(e) =>
+                            updatePort(p.id, { breaker: e.target.value === '' ? null : Number(e.target.value) })
+                          }
+                          aria-label={`${p.label} ${isFuse ? 'fuse' : 'breaker'}`}
+                          className="min-w-0 flex-1 rounded border border-edge bg-surface-0 px-1 py-0.5 text-silver"
+                        >
+                          <option value="">—</option>
+                          {slotRatings(p.slot).map((a) => (
+                            <option key={a} value={a}>{a}A</option>
+                          ))}
+                        </select>
+                      </label>
+                    );
+                  })}
                 </div>
               </section>
             );

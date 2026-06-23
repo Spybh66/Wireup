@@ -25,15 +25,20 @@ const SIDE_POSITION = {
   left: Position.Left,
 };
 
+const FUSE_RING = '#67e8f9'; // cyan — marks a miniature blade-fuse slot
+
 function handleStyle(port, f) {
   const pct = `${f * 100}%`;
   const color = typeColor(port.type);
+  // Miniature fuse slots (PDH ch20–23, MPM) render as a square cyan-ringed dot
+  // so they read distinctly from the round full-size breaker/signal ports.
+  const isFuse = port.slot === 'fuse';
   const base = {
-    width: 8,
-    height: 8,
+    width: isFuse ? 9 : 8,
+    height: isFuse ? 9 : 8,
     background: color,
-    border: '1px solid #111113',
-    borderRadius: '50%',
+    border: isFuse ? `1px solid ${FUSE_RING}` : '1px solid #111113',
+    borderRadius: isFuse ? 2 : '50%',
   };
   if (port.side === 'left') return { ...base, left: -4, top: pct };
   if (port.side === 'right') return { ...base, right: -4, top: pct };
@@ -170,11 +175,26 @@ function ComponentNode({ id, data, selected }) {
             <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 56 * labelScale[p.side] }}>
               {p.label}
             </span>
-            {p.type === 'PWR' && p.breaker != null && (
-              <span style={{ color: BREAKER_COLOR[p.breaker] ?? '#fbbf24', fontWeight: 600 }}>
-                {p.breaker}A
-              </span>
-            )}
+            {p.type === 'PWR' && p.breaker != null &&
+              (p.slot === 'fuse' ? (
+                <span
+                  style={{
+                    color: FUSE_RING,
+                    fontWeight: 600,
+                    fontSize: '0.85em',
+                    border: `1px solid ${FUSE_RING}55`,
+                    borderRadius: 3,
+                    padding: '0 2px',
+                  }}
+                  title="Miniature blade fuse"
+                >
+                  {p.breaker}A
+                </span>
+              ) : (
+                <span style={{ color: BREAKER_COLOR[p.breaker] ?? '#fbbf24', fontWeight: 600 }}>
+                  {p.breaker}A
+                </span>
+              ))}
           </div>
         ))}
 
