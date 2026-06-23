@@ -16,6 +16,9 @@ const WAGO = 'Wago Lever Nut';
 const RING = 'Ring Terminal';
 const APP = 'Anderson Powerpole';
 const MOLEX_SL = 'Molex SL';
+const BARREL = 'Barrel Jack';
+const USB_A = 'USB-A';
+const USB_C = 'USB-C';
 const BARE = 'Bare Wire';
 
 // Allowed-fitting sets per physical termination style. `requiredFittings` on a
@@ -28,6 +31,8 @@ const APP_LEADS = [APP, BARE];         // flying power/motor leads (Powerpole or
 const APP_IN = [APP, FERRULE, BARE];   // controller power input (Powerpole or into a PD terminal)
 const CAN_WEID = [FERRULE, BARE];      // REV-style CAN terminal
 const CAN_CTRE = [FERRULE, BARE, 'JST']; // CTRE CAN cable: keyed connector or terminal
+const CAN_MOLEX = [MOLEX_SL, FERRULE, BARE]; // locking Molex SL CAN (MitoCANdria/ThriftyBot)
+const PHASE = [RING, BARE];            // brushless 3-phase motor lead
 
 // single unified power wire
 const pwr = (label, side, gauge = null, fitting = null, requiredFittings = null) => [
@@ -38,7 +43,10 @@ const can = (label = 'CAN', side = 'bottom', requiredFittings = null) => [
   { type: 'CAN', label, side, requiredFittings },
 ];
 const eth = (label = 'ETH', side = 'top') => [{ type: 'ETH', label, side }];
-const usb = (label = 'USB', side = 'top') => [{ type: 'USB', label, side }];
+// USB ports carry a connector variant so USB-A host ports and USB-C
+// power/config ports read distinctly in the diagram and the DRC.
+const usbA = (label = 'USB-A', side = 'top') => [{ type: 'USB', label, side, requiredFittings: [USB_A] }];
+const usbC = (label = 'USB-C', side = 'top') => [{ type: 'USB', label, side, requiredFittings: [USB_C] }];
 const data = (label = 'Data', side = 'top') => [{ type: 'DATA', label, side }];
 
 // Build a definition; assigns per-definition port ids and per-side order.
@@ -55,14 +63,20 @@ function def(id, name, category, icon, width, height, trackedFields, portSpecs) 
       gauge: p.gauge ?? null,
       fitting: p.fitting ?? null,
       breaker: p.breaker ?? null,
+      slot: p.slot ?? null, // 'breaker' | 'fuse' | null — branch protection type
       requiredFittings: p.requiredFittings ?? null,
     };
   });
   return { id, name, category, width: snapDim(width), height: snapDim(height), icon, defaultPorts, trackedFields };
 }
 
-// PDH/PDP shape: PWR IN (6 AWG/SB50), 2x CAN, N output channels (12 AWG/Ferrule).
-function powerDistPorts(numChannels) {
+// PDH/PDP shape: PWR IN (6 AWG/SB50), 2x CAN, N output channels.
+// `miniFrom` = index of the first low-current MINIATURE fuse channel. On the
+// REV PDH channels 20–23 are 15 A mini-fuse slots (20–22 non-switchable, used
+// for the roboRIO/radio on a 10 A fuse per R615); channels 0–19 are full-size
+// 40 A ATO breaker slots. Pass `null` (CTRE PDP 2.0) for all-breaker, every
+// channel 40 A — the PDP has no miniature tier.
+function powerDistPorts(numChannels, miniFrom = null) {
   const ports = [
     ...pwr('PWR', 'bottom', '6 AWG', SB50, MAIN),
     ...can('CAN IN', 'bottom', CAN_WEID),
@@ -70,10 +84,12 @@ function powerDistPorts(numChannels) {
   ];
   for (let i = 0; i < numChannels; i++) {
     const side = i <= 9 ? 'right' : 'left';
-    // PDH channels 20–22 are the non-switchable 10 A roboRIO/radio channels
-    // (R615); default the rest to a 40 A breaker.
-    const breaker = i >= 20 && i <= 22 ? 10 : 40;
-    ports.push({ type: 'PWR', label: `CH${i}`, side, gauge: '12 AWG', fitting: FERRULE, breaker, requiredFittings: WEID });
+    const isMini = miniFrom != null && i >= miniFrom;
+    ports.push(
+      isMini
+        ? { type: 'PWR', label: `CH${i}`, side, gauge: '18 AWG', fitting: FERRULE, slot: 'fuse', breaker: 10, requiredFittings: WEID }
+        : { type: 'PWR', label: `CH${i}`, side, gauge: '12 AWG', fitting: FERRULE, slot: 'breaker', breaker: 40, requiredFittings: WEID }
+    );
   }
   return ports;
 }
@@ -84,36 +100,38 @@ export const COMPONENT_LIBRARY = [
     ...pwr('PWR', 'top', '12 AWG', FERRULE, WEID),
     ...can('CAN', 'left', CAN_WEID),
     ...eth('ETH', 'top'),
-    ...usb('USB', 'right'),
-    ...usb('USB', 'right'),
+    ...usbA('USB-A', 'right'),
+    ...usbA('USB-A', 'right'),
     ...pwr('RSL', 'bottom', '18 AWG', FERRULE, WEID),
   ]),
   def('orangepi5', 'Orange Pi 5', 'Controllers', 'pi', 160, 80, ['ipAddress'], [
-    ...usb('USBC - PWR', 'left'),
+    ...usbC('USB-C PWR', 'left'),
     ...eth('ETH', 'top'),
-    ...usb('USB', 'right'),
-    ...usb('USB', 'right'),
+    ...usbA('USB-A', 'right'),
+    ...usbA('USB-A', 'right'),
   ]),
   def('raspberrypi5', 'Raspberry Pi 5', 'Controllers', 'pi', 160, 80, ['ipAddress'], [
-    ...usb('USBC - PWR', 'left'),
+    ...usbC('USB-C PWR', 'left'),
     ...eth('ETH', 'top'),
-    ...usb('USB', 'right'),
-    ...usb('USB', 'right'),
+    ...usbA('USB-A', 'right'),
+    ...usbA('USB-A', 'right'),
   ]),
-  def('jetsonorinnano', 'Jetson Orin Nano', 'Controllers', 'pi', 160, 80, ['ipAddress'], [
-    ...pwr('PWR', 'left'), // Barrel Jack
-    ...usb('USBC - PWR', 'top'),
+  // Jetson Orin Nano — primary power is the DC barrel jack (USB-C is an
+  // alternate input); 4× USB-A host ports + 1× USB-C + Gigabit Ethernet.
+  def('jetsonorinnano', 'Jetson Orin Nano', 'Controllers', 'pi', 160, 90, ['ipAddress'], [
+    ...pwr('PWR (Barrel)', 'left', null, BARREL, [BARREL]),
+    ...usbC('USB-C', 'top'),
     ...eth('ETH', 'top'),
-    ...usb('USB', 'bottom'),
-    ...usb('USB', 'bottom'),
-    ...usb('USB', 'bottom'),
-    ...usb('USB', 'bottom'),
+    ...usbA('USB-A', 'bottom'),
+    ...usbA('USB-A', 'bottom'),
+    ...usbA('USB-A', 'bottom'),
+    ...usbA('USB-A', 'bottom'),
   ]),
   def('beelink', 'Beelink Mini PC', 'Controllers', 'pi', 160, 80, ['ipAddress'], [
-    ...pwr('PWR', 'left'),
+    ...pwr('PWR (Barrel)', 'left', null, BARREL, [BARREL]),
     ...eth('ETH', 'top'),
-    ...usb('USB', 'right'),
-    ...usb('USB', 'right'),
+    ...usbA('USB-A', 'right'),
+    ...usbA('USB-A', 'right'),
   ]),
 
   // ---------------- Power ----------------
@@ -124,7 +142,9 @@ export const COMPONENT_LIBRARY = [
     { type: 'PWR', label: 'IN', side: 'left', gauge: '6 AWG', fitting: RING, requiredFittings: STUD },
     { type: 'PWR', label: 'OUT', side: 'right', gauge: '6 AWG', fitting: RING, requiredFittings: STUD },
   ]),
-  def('pdh', 'PDH (REV)', 'Power', 'powerdist', 240, 320, ['canId'], powerDistPorts(24)),
+  // PDH: 20 full-size breaker channels (0–19) + 4 miniature fuse channels (20–23).
+  def('pdh', 'PDH (REV)', 'Power', 'powerdist', 240, 320, ['canId'], powerDistPorts(24, 20)),
+  // PDP 2.0 / legacy PDP: 24 identical full-size channels, all default 40 A.
   def('pdp2', 'PDP 2.0 (CTRE)', 'Power', 'powerdist', 240, 320, ['canId'], powerDistPorts(24)),
   def('pdp_legacy', 'PDP (CTRE, legacy)', 'Power', 'powerdist', 240, 320, ['canId'], powerDistPorts(24)),
   def('vrm', 'VRM', 'Power', 'vrm', 160, 80, [], [
@@ -138,30 +158,29 @@ export const COMPONENT_LIBRARY = [
     ...pwr('5V/500mA', 'right', '18 AWG', FERRULE, WEID),
     ...pwr('5V/500mA', 'right', '18 AWG', FERRULE, WEID),
   ]),
-  def('rpm', 'Radio Power Module (REV RPM)', 'Power', 'radioPower', 140, 80, [], [
-    ...pwr('PWR', 'left', '18 AWG', FERRULE, WEID),
-    ...eth('ETH IN', 'top'),
-    ...eth('ETH OUT', 'top'),
-    ...pwr('AUX', 'right', '18 AWG', FERRULE, WEID),
+  // REV Mini Power Module — fed from one 40 A PDH channel, fans out to 6
+  // low-current outputs each protected by an ATM mini blade FUSE (15 A max),
+  // sized per peripheral. Same miniature-fuse picker as the PDH mini channels.
+  def('mpm', 'Mini Power Module (REV MPM)', 'Power', 'vrm', 120, 160, [], [
+    ...pwr('PWR', 'bottom', '12 AWG', FERRULE, WEID),
+    { type: 'PWR', label: 'CH0', side: 'right', gauge: '18 AWG', fitting: FERRULE, slot: 'fuse', requiredFittings: WEID },
+    { type: 'PWR', label: 'CH1', side: 'right', gauge: '18 AWG', fitting: FERRULE, slot: 'fuse', requiredFittings: WEID },
+    { type: 'PWR', label: 'CH2', side: 'right', gauge: '18 AWG', fitting: FERRULE, slot: 'fuse', requiredFittings: WEID },
+    { type: 'PWR', label: 'CH3', side: 'right', gauge: '18 AWG', fitting: FERRULE, slot: 'fuse', requiredFittings: WEID },
+    { type: 'PWR', label: 'CH4', side: 'right', gauge: '18 AWG', fitting: FERRULE, slot: 'fuse', requiredFittings: WEID },
+    { type: 'PWR', label: 'CH5', side: 'right', gauge: '18 AWG', fitting: FERRULE, slot: 'fuse', requiredFittings: WEID },
   ]),
-  def('mpm', 'Mini Power Module (CTRE MPM)', 'Power', 'vrm', 120, 160, [], [
-    ...pwr('PWR', 'bottom', '18 AWG', FERRULE, WEID),
-    ...pwr('CH0', 'right', '18 AWG', FERRULE, WEID),
-    ...pwr('CH1', 'right', '18 AWG', FERRULE, WEID),
-    ...pwr('CH2', 'right', '18 AWG', FERRULE, WEID),
-    ...pwr('CH3', 'right', '18 AWG', FERRULE, WEID),
-    ...pwr('CH4', 'right', '18 AWG', FERRULE, WEID),
-    ...pwr('CH5', 'right', '18 AWG', FERRULE, WEID),
-  ]),
-  def('mitocandria', 'MitoCANDria (ThriftyBot)', 'Power', 'vrm', 160, 80, ['canId'], [
-    ...pwr('PWR', 'left', '18 AWG', FERRULE, WEID),
-    ...can('CAN', 'bottom', CAN_WEID),
-    ...can('CAN', 'bottom', CAN_WEID),
-    ...usb('5V USBC', 'top'),
-    ...usb('5V USBC', 'top'),
-    ...pwr('BOOST', 'right', '20 AWG', FERRULE, WEID),
-    ...pwr('5VA', 'right', '20 AWG', FERRULE, WEID),
-    ...pwr('5VB', 'right', '20 AWG', FERRULE, WEID),
+  // MitoCANdria — 4.5–14 V in via locking Molex SL; 4× 5 V USB-C outputs +
+  // one adjustable 15–24 V boost; CAN over locking Molex SL.
+  def('mitocandria', 'MitoCANdria (ThriftyBot)', 'Power', 'vrm', 160, 96, ['canId'], [
+    ...pwr('PWR IN', 'left', '18 AWG', MOLEX_SL, [MOLEX_SL]),
+    ...can('CAN', 'bottom', CAN_MOLEX),
+    ...can('CAN', 'bottom', CAN_MOLEX),
+    ...usbC('5V USB-C', 'top'),
+    ...usbC('5V USB-C', 'top'),
+    ...usbC('5V USB-C', 'top'),
+    ...usbC('5V USB-C', 'top'),
+    ...pwr('15–24V BOOST', 'right', '20 AWG', FERRULE, WEID),
   ]),
   def('canjunction', 'CANJunction (ThriftyBot)', 'Power', 'canjunction', 120, 60, [], [
     ...can('CAN', 'left', MOLEX_SL),
@@ -169,25 +188,35 @@ export const COMPONENT_LIBRARY = [
   ]),
 
   // ---------------- Motor Controllers ----------------
-  def('sparkmax', 'SPARK MAX', 'Motor Controllers', 'motorController', 160, 80, ['canId'], [
-    ...pwr('PWR', 'left', '12 AWG', APP, APP_IN),
+  // SPARK MAX/Flex drive brushless motors over 3 phase leads (A/B/C flying
+  // leads); brushed motors use A/B only. Power in is V+/V- (red/black leads).
+  def('sparkmax', 'SPARK MAX', 'Motor Controllers', 'motorController', 160, 100, ['canId'], [
+    ...pwr('V+/V−', 'left', '12 AWG', APP, APP_IN),
     ...can('CAN', 'bottom', CAN_WEID),
     ...can('CAN', 'bottom', CAN_WEID),
-    ...pwr('MOTOR', 'right', '12 AWG', APP, APP_LEADS),
+    { type: 'PWR', label: 'A', side: 'right', gauge: '12 AWG', fitting: BARE, requiredFittings: APP_LEADS },
+    { type: 'PWR', label: 'B', side: 'right', gauge: '12 AWG', fitting: BARE, requiredFittings: APP_LEADS },
+    { type: 'PWR', label: 'C', side: 'right', gauge: '12 AWG', fitting: BARE, requiredFittings: APP_LEADS },
     ...data('Encoder', 'top'),
   ]),
-  def('sparkflex', 'SPARK Flex', 'Motor Controllers', 'motorController', 160, 80, ['canId'], [
-    ...pwr('PWR', 'left', '12 AWG', APP, APP_IN),
+  def('sparkflex', 'SPARK Flex', 'Motor Controllers', 'motorController', 160, 100, ['canId'], [
+    ...pwr('V+/V−', 'left', '12 AWG', APP, APP_IN),
     ...can('CAN', 'bottom', CAN_WEID),
     ...can('CAN', 'bottom', CAN_WEID),
-    ...pwr('MOTOR', 'right', '12 AWG', APP, APP_LEADS),
+    { type: 'PWR', label: 'A', side: 'right', gauge: '12 AWG', fitting: BARE, requiredFittings: APP_LEADS },
+    { type: 'PWR', label: 'B', side: 'right', gauge: '12 AWG', fitting: BARE, requiredFittings: APP_LEADS },
+    { type: 'PWR', label: 'C', side: 'right', gauge: '12 AWG', fitting: BARE, requiredFittings: APP_LEADS },
     ...data('Encoder', 'top'),
   ]),
-  def('talonfxs', 'Talon FXS', 'Motor Controllers', 'motorController', 120, 70, ['canId'], [
-    ...pwr('PWR', 'left', '12 AWG', APP, APP_IN),
+  // Talon FXS — brushless 3-phase out on 3 ring-terminal stator leads (U/V/W);
+  // brushed uses 2 of them. Power in is V+/V- ring terminals (6-32 studs).
+  def('talonfxs', 'Talon FXS', 'Motor Controllers', 'motorController', 140, 100, ['canId'], [
+    ...pwr('V+/V−', 'left', '12 AWG', RING, STUD),
     ...can('CAN', 'bottom', CAN_CTRE),
-    ...pwr('MOTOR', 'right', '12 AWG', APP, APP_LEADS),
-    ...data('Data port', 'top'),
+    { type: 'PWR', label: 'U', side: 'right', gauge: '12 AWG', fitting: RING, requiredFittings: PHASE },
+    { type: 'PWR', label: 'V', side: 'right', gauge: '12 AWG', fitting: RING, requiredFittings: PHASE },
+    { type: 'PWR', label: 'W', side: 'right', gauge: '12 AWG', fitting: RING, requiredFittings: PHASE },
+    ...data('Sensor (JST)', 'top'),
   ]),
   def('generic_mc', 'Generic Motor Controller', 'Motor Controllers', 'motorController', 120, 70, ['canId'], [
     ...pwr('PWR', 'left', '12 AWG', FERRULE),
@@ -276,10 +305,10 @@ export const COMPONENT_LIBRARY = [
     { type: 'CAN', label: 'CAN OUT', side: 'right', requiredFittings: CAN_WEID },
   ]),
   def('thriftycam', 'ThriftyCAM (ThriftyBot)', 'Sensors', 'camera', 120, 70, [], [
-    ...usb('USB', 'left'),
+    ...usbA('USB-A', 'left'),
   ]),
   def('usbcamera', 'Generic USB Camera', 'Sensors', 'camera', 120, 70, [], [
-    ...usb('USB', 'left'),
+    ...usbA('USB-A', 'left'),
   ]),
   def('throughboreencoder', 'REV Through Bore Encoder', 'Sensors', 'canSensor', 100, 64, [], [
     ...pwr('PWR', 'left', '18 AWG', FERRULE, WEID),
@@ -308,7 +337,7 @@ export const COMPONENT_LIBRARY = [
     ...eth('5', 'top'),
   ]),
   def('canivore', 'CANivore (CTRE)', 'Networking', 'canjunction', 120, 80, [], [
-    ...usb('USB', 'left'),
+    ...usbA('USB-A', 'left'),
     ...can('CAN', 'right', CAN_CTRE),
     ...pwr('V+/V-', 'bottom', '22 AWG', FERRULE, WEID),
   ]),

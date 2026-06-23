@@ -60,8 +60,24 @@ export const FITTING_OPTIONS = [
   'Ferrule',
   'Wago Lever Nut',
   'JST',
+  'Barrel Jack',
+  'USB-A',
+  'USB-C',
   'Bare Wire',
 ];
+
+// Power-distribution branch protection. Full-size channels (PDH ch 0–19, PDP)
+// take ATO blade circuit breakers; miniature/low-current channels (PDH ch
+// 20–23, REV MPM) take small ATM blade fuses. The valid amp ratings differ, so
+// the per-channel editor offers the right set based on each port's `slot`.
+export const BREAKER_RATINGS = [10, 20, 30, 40]; // ATO breaker (40 A branch max, R619)
+export const FUSE_RATINGS = [1, 2, 3, 5, 7.5, 10, 15]; // ATM mini blade fuse (15 A max/ch)
+
+// Valid amp ratings for a port's protection slot ('fuse' → mini fuses, else
+// full-size breakers). Defaults to breaker ratings for legacy/undefined slots.
+export function slotRatings(slot) {
+  return slot === 'fuse' ? FUSE_RATINGS : BREAKER_RATINGS;
+}
 
 // Approximate continuous current capacity (amps) per gauge for chassis/robot
 // power wiring. Advisory values used by the DRC gauge-vs-current check.

@@ -1,7 +1,7 @@
 {
   "app": "wireup",
   "version": 2,
-  "savedAt": "2026-06-15T03:07:08.505Z",
+  "savedAt": "2026-06-23T14:04:13.184Z",
   "projectName": "Swerve Robot (Example)",
   "nodes": [
     {
@@ -30,6 +30,7 @@
             "gauge": "6 AWG",
             "fitting": "Anderson SB50",
             "breaker": null,
+            "slot": null,
             "requiredFittings": [
               "Anderson SB50",
               "Ring Terminal"
@@ -64,6 +65,7 @@
             "gauge": "6 AWG",
             "fitting": "Ring Terminal",
             "breaker": null,
+            "slot": null,
             "requiredFittings": [
               "Ring Terminal"
             ]
@@ -77,6 +79,7 @@
             "gauge": "6 AWG",
             "fitting": "Ring Terminal",
             "breaker": null,
+            "slot": null,
             "requiredFittings": [
               "Ring Terminal"
             ]
@@ -110,6 +113,7 @@
             "gauge": "6 AWG",
             "fitting": "Anderson SB50",
             "breaker": null,
+            "slot": null,
             "requiredFittings": [
               "Anderson SB50",
               "Ring Terminal"
@@ -124,6 +128,7 @@
             "gauge": null,
             "fitting": null,
             "breaker": null,
+            "slot": null,
             "requiredFittings": [
               "Ferrule",
               "Bare Wire"
@@ -138,6 +143,7 @@
             "gauge": null,
             "fitting": null,
             "breaker": null,
+            "slot": null,
             "requiredFittings": [
               "Ferrule",
               "Bare Wire"
@@ -152,6 +158,7 @@
             "gauge": "12 AWG",
             "fitting": "Ferrule",
             "breaker": 40,
+            "slot": "breaker",
             "requiredFittings": [
               "Ferrule",
               "Bare Wire"
@@ -166,6 +173,7 @@
             "gauge": "12 AWG",
             "fitting": "Ferrule",
             "breaker": 40,
+            "slot": "breaker",
             "requiredFittings": [
               "Ferrule",
               "Bare Wire"
@@ -180,6 +188,7 @@
             "gauge": "12 AWG",
             "fitting": "Ferrule",
             "breaker": 40,
+            "slot": "breaker",
             "requiredFittings": [
               "Ferrule",
               "Bare Wire"
@@ -194,6 +203,7 @@
             "gauge": "12 AWG",
             "fitting": "Ferrule",
             "breaker": 40,
+            "slot": "breaker",
             "requiredFittings": [
               "Ferrule",
               "Bare Wire"
@@ -208,6 +218,7 @@
             "gauge": "12 AWG",
             "fitting": "Ferrule",
             "breaker": 40,
+            "slot": "breaker",
             "requiredFittings": [
               "Ferrule",
               "Bare Wire"
@@ -222,6 +233,7 @@
             "gauge": "12 AWG",
             "fitting": "Ferrule",
             "breaker": 40,
+            "slot": "breaker",
             "requiredFittings": [
               "Ferrule",
               "Bare Wire"
@@ -236,6 +248,7 @@
             "gauge": "12 AWG",
             "fitting": "Ferrule",
             "breaker": 40,
+            "slot": "breaker",
             "requiredFittings": [
               "Ferrule",
               "Bare Wire"
@@ -250,6 +263,7 @@
             "gauge": "12 AWG",
             "fitting": "Ferrule",
             "breaker": 40,
+            "slot": "breaker",
             "requiredFittings": [
               "Ferrule",
               "Bare Wire"
@@ -264,6 +278,7 @@
             "gauge": "12 AWG",
             "fitting": "Ferrule",
             "breaker": 40,
+            "slot": "breaker",
             "requiredFittings": [
               "Ferrule",
               "Bare Wire"
@@ -278,6 +293,7 @@
             "gauge": "12 AWG",
             "fitting": "Ferrule",
             "breaker": 40,
+            "slot": "breaker",
             "requiredFittings": [
               "Ferrule",
               "Bare Wire"
@@ -292,6 +308,7 @@
             "gauge": "12 AWG",
             "fitting": "Ferrule",
             "breaker": 40,
+            "slot": "breaker",
             "requiredFittings": [
               "Ferrule",
               "Bare Wire"
@@ -306,6 +323,7 @@
             "gauge": "12 AWG",
             "fitting": "Ferrule",
             "breaker": 40,
+            "slot": "breaker",
             "requiredFittings": [
               "Ferrule",
               "Bare Wire"
@@ -320,6 +338,7 @@
             "gauge": "12 AWG",
             "fitting": "Ferrule",
             "breaker": 40,
+            "slot": "breaker",
             "requiredFittings": [
               "Ferrule",
               "Bare Wire"
@@ -334,6 +353,7 @@
             "gauge": "12 AWG",
             "fitting": "Ferrule",
             "breaker": 40,
+            "slot": "breaker",
             "requiredFittings": [
               "Ferrule",
               "Bare Wire"
@@ -348,6 +368,7 @@
             "gauge": "12 AWG",
             "fitting": "Ferrule",
             "breaker": 40,
+            "slot": "breaker",
             "requiredFittings": [
               "Ferrule",
               "Bare Wire"
@@ -362,6 +383,7 @@
             "gauge": "12 AWG",
             "fitting": "Ferrule",
             "breaker": 40,
+            "slot": "breaker",
             "requiredFittings": [
               "Ferrule",
               "Bare Wire"
@@ -376,6 +398,7 @@
             "gauge": "12 AWG",
             "fitting": "Ferrule",
             "breaker": 40,
+            "slot": "breaker",
             "requiredFittings": [
               "Ferrule",
               "Bare Wire"
@@ -390,6 +413,7 @@
             "gauge": "12 AWG",
             "fitting": "Ferrule",
             "breaker": 40,
+            "slot": "breaker",
             "requiredFittings": [
               "Ferrule",
               "Bare Wire"
@@ -404,6 +428,7 @@
             "gauge": "12 AWG",
             "fitting": "Ferrule",
             "breaker": 40,
+            "slot": "breaker",
             "requiredFittings": [
               "Ferrule",
               "Bare Wire"
@@ -418,6 +443,7 @@
             "gauge": "12 AWG",
             "fitting": "Ferrule",
             "breaker": 40,
+            "slot": "breaker",
             "requiredFittings": [
               "Ferrule",
               "Bare Wire"
@@ -429,9 +455,10 @@
             "label": "CH20",
             "side": "left",
             "order": 10,
-            "gauge": "12 AWG",
+            "gauge": "18 AWG",
             "fitting": "Ferrule",
             "breaker": 10,
+            "slot": "fuse",
             "requiredFittings": [
               "Ferrule",
               "Bare Wire"
@@ -443,9 +470,10 @@
             "label": "CH21",
             "side": "left",
             "order": 11,
-            "gauge": "12 AWG",
+            "gauge": "18 AWG",
             "fitting": "Ferrule",
             "breaker": 10,
+            "slot": "fuse",
             "requiredFittings": [
               "Ferrule",
               "Bare Wire"
@@ -457,9 +485,10 @@
             "label": "CH22",
             "side": "left",
             "order": 12,
-            "gauge": "12 AWG",
+            "gauge": "18 AWG",
             "fitting": "Ferrule",
             "breaker": 10,
+            "slot": "fuse",
             "requiredFittings": [
               "Ferrule",
               "Bare Wire"
@@ -471,9 +500,10 @@
             "label": "CH23",
             "side": "left",
             "order": 13,
-            "gauge": "12 AWG",
+            "gauge": "18 AWG",
             "fitting": "Ferrule",
-            "breaker": 40,
+            "breaker": 10,
+            "slot": "fuse",
             "requiredFittings": [
               "Ferrule",
               "Bare Wire"
@@ -508,6 +538,7 @@
             "gauge": "12 AWG",
             "fitting": "Ferrule",
             "breaker": null,
+            "slot": null,
             "requiredFittings": [
               "Ferrule",
               "Bare Wire"
@@ -522,6 +553,7 @@
             "gauge": null,
             "fitting": null,
             "breaker": null,
+            "slot": null,
             "requiredFittings": [
               "Ferrule",
               "Bare Wire"
@@ -536,29 +568,36 @@
             "gauge": null,
             "fitting": null,
             "breaker": null,
+            "slot": null,
             "requiredFittings": null
           },
           {
             "id": "roborio2-p-37",
             "type": "USB",
-            "label": "USB1",
+            "label": "USB-A",
             "side": "right",
             "order": 0,
             "gauge": null,
             "fitting": null,
             "breaker": null,
-            "requiredFittings": null
+            "slot": null,
+            "requiredFittings": [
+              "USB-A"
+            ]
           },
           {
             "id": "roborio2-p-38",
             "type": "USB",
-            "label": "USB2",
+            "label": "USB-A",
             "side": "right",
             "order": 1,
             "gauge": null,
             "fitting": null,
             "breaker": null,
-            "requiredFittings": null
+            "slot": null,
+            "requiredFittings": [
+              "USB-A"
+            ]
           },
           {
             "id": "roborio2-p-39",
@@ -569,6 +608,7 @@
             "gauge": "18 AWG",
             "fitting": "Ferrule",
             "breaker": null,
+            "slot": null,
             "requiredFittings": [
               "Ferrule",
               "Bare Wire"
@@ -603,6 +643,7 @@
             "gauge": null,
             "fitting": null,
             "breaker": null,
+            "slot": null,
             "requiredFittings": null
           },
           {
@@ -614,6 +655,7 @@
             "gauge": null,
             "fitting": null,
             "breaker": null,
+            "slot": null,
             "requiredFittings": null
           },
           {
@@ -625,6 +667,7 @@
             "gauge": "18 AWG",
             "fitting": "Ferrule",
             "breaker": null,
+            "slot": null,
             "requiredFittings": [
               "Ferrule",
               "Bare Wire"
@@ -639,6 +682,7 @@
             "gauge": null,
             "fitting": null,
             "breaker": null,
+            "slot": null,
             "requiredFittings": null
           },
           {
@@ -650,6 +694,7 @@
             "gauge": null,
             "fitting": null,
             "breaker": null,
+            "slot": null,
             "requiredFittings": null
           }
         ]
@@ -681,6 +726,7 @@
             "gauge": "12 AWG",
             "fitting": "Ring Terminal",
             "breaker": null,
+            "slot": null,
             "requiredFittings": [
               "Ring Terminal"
             ]
@@ -694,6 +740,7 @@
             "gauge": null,
             "fitting": null,
             "breaker": null,
+            "slot": null,
             "requiredFittings": [
               "Ferrule",
               "Bare Wire",
@@ -709,6 +756,7 @@
             "gauge": null,
             "fitting": null,
             "breaker": null,
+            "slot": null,
             "requiredFittings": [
               "Ferrule",
               "Bare Wire",
@@ -744,6 +792,7 @@
             "gauge": "12 AWG",
             "fitting": "Ring Terminal",
             "breaker": null,
+            "slot": null,
             "requiredFittings": [
               "Ring Terminal"
             ]
@@ -757,6 +806,7 @@
             "gauge": null,
             "fitting": null,
             "breaker": null,
+            "slot": null,
             "requiredFittings": [
               "Ferrule",
               "Bare Wire",
@@ -772,6 +822,7 @@
             "gauge": null,
             "fitting": null,
             "breaker": null,
+            "slot": null,
             "requiredFittings": [
               "Ferrule",
               "Bare Wire",
@@ -807,6 +858,7 @@
             "gauge": null,
             "fitting": null,
             "breaker": null,
+            "slot": null,
             "requiredFittings": [
               "Ferrule",
               "Bare Wire",
@@ -842,6 +894,7 @@
             "gauge": "12 AWG",
             "fitting": "Ring Terminal",
             "breaker": null,
+            "slot": null,
             "requiredFittings": [
               "Ring Terminal"
             ]
@@ -855,6 +908,7 @@
             "gauge": null,
             "fitting": null,
             "breaker": null,
+            "slot": null,
             "requiredFittings": [
               "Ferrule",
               "Bare Wire",
@@ -870,6 +924,7 @@
             "gauge": null,
             "fitting": null,
             "breaker": null,
+            "slot": null,
             "requiredFittings": [
               "Ferrule",
               "Bare Wire",
@@ -905,6 +960,7 @@
             "gauge": "12 AWG",
             "fitting": "Ring Terminal",
             "breaker": null,
+            "slot": null,
             "requiredFittings": [
               "Ring Terminal"
             ]
@@ -918,6 +974,7 @@
             "gauge": null,
             "fitting": null,
             "breaker": null,
+            "slot": null,
             "requiredFittings": [
               "Ferrule",
               "Bare Wire",
@@ -933,6 +990,7 @@
             "gauge": null,
             "fitting": null,
             "breaker": null,
+            "slot": null,
             "requiredFittings": [
               "Ferrule",
               "Bare Wire",
@@ -968,6 +1026,7 @@
             "gauge": null,
             "fitting": null,
             "breaker": null,
+            "slot": null,
             "requiredFittings": [
               "Ferrule",
               "Bare Wire",
@@ -1003,6 +1062,7 @@
             "gauge": "12 AWG",
             "fitting": "Ring Terminal",
             "breaker": null,
+            "slot": null,
             "requiredFittings": [
               "Ring Terminal"
             ]
@@ -1016,6 +1076,7 @@
             "gauge": null,
             "fitting": null,
             "breaker": null,
+            "slot": null,
             "requiredFittings": [
               "Ferrule",
               "Bare Wire",
@@ -1031,6 +1092,7 @@
             "gauge": null,
             "fitting": null,
             "breaker": null,
+            "slot": null,
             "requiredFittings": [
               "Ferrule",
               "Bare Wire",
@@ -1066,6 +1128,7 @@
             "gauge": "12 AWG",
             "fitting": "Ring Terminal",
             "breaker": null,
+            "slot": null,
             "requiredFittings": [
               "Ring Terminal"
             ]
@@ -1079,6 +1142,7 @@
             "gauge": null,
             "fitting": null,
             "breaker": null,
+            "slot": null,
             "requiredFittings": [
               "Ferrule",
               "Bare Wire",
@@ -1094,6 +1158,7 @@
             "gauge": null,
             "fitting": null,
             "breaker": null,
+            "slot": null,
             "requiredFittings": [
               "Ferrule",
               "Bare Wire",
@@ -1129,6 +1194,7 @@
             "gauge": null,
             "fitting": null,
             "breaker": null,
+            "slot": null,
             "requiredFittings": [
               "Ferrule",
               "Bare Wire",
@@ -1164,6 +1230,7 @@
             "gauge": "12 AWG",
             "fitting": "Ring Terminal",
             "breaker": null,
+            "slot": null,
             "requiredFittings": [
               "Ring Terminal"
             ]
@@ -1177,6 +1244,7 @@
             "gauge": null,
             "fitting": null,
             "breaker": null,
+            "slot": null,
             "requiredFittings": [
               "Ferrule",
               "Bare Wire",
@@ -1192,6 +1260,7 @@
             "gauge": null,
             "fitting": null,
             "breaker": null,
+            "slot": null,
             "requiredFittings": [
               "Ferrule",
               "Bare Wire",
@@ -1227,6 +1296,7 @@
             "gauge": "12 AWG",
             "fitting": "Ring Terminal",
             "breaker": null,
+            "slot": null,
             "requiredFittings": [
               "Ring Terminal"
             ]
@@ -1240,6 +1310,7 @@
             "gauge": null,
             "fitting": null,
             "breaker": null,
+            "slot": null,
             "requiredFittings": [
               "Ferrule",
               "Bare Wire",
@@ -1255,6 +1326,7 @@
             "gauge": null,
             "fitting": null,
             "breaker": null,
+            "slot": null,
             "requiredFittings": [
               "Ferrule",
               "Bare Wire",
@@ -1290,6 +1362,7 @@
             "gauge": null,
             "fitting": null,
             "breaker": null,
+            "slot": null,
             "requiredFittings": [
               "Ferrule",
               "Bare Wire",
@@ -1325,6 +1398,7 @@
             "gauge": null,
             "fitting": null,
             "breaker": null,
+            "slot": null,
             "requiredFittings": null
           }
         ]
@@ -1406,7 +1480,7 @@
         "layerId": "power",
         "color": null,
         "color2": null,
-        "wireGauge": "12 AWG",
+        "wireGauge": "18 AWG",
         "wireFittingFrom": "Ferrule",
         "wireFittingTo": "Ferrule",
         "label": "PWR003",
@@ -1429,7 +1503,7 @@
         "layerId": "power",
         "color": null,
         "color2": null,
-        "wireGauge": "12 AWG",
+        "wireGauge": "18 AWG",
         "wireFittingFrom": "Ferrule",
         "wireFittingTo": "Ferrule",
         "label": "PWR004",
