@@ -146,9 +146,11 @@ const validationMatrix = (state) =>
 
 const BOM_WIRE_HEADERS = ['Gauge', 'Color', 'Length (in)', 'Length (ft)'];
 const BOM_CONN_HEADERS = ['Connector', 'Qty'];
+const BOM_INST_HEADERS = ['Installed Adapter', 'Qty'];
 const bomWireMatrix = (state) =>
   buildBom(state).wires.map((w) => [w.gauge, w.color, w.lengthIn, w.lengthFt]);
 const bomConnMatrix = (state) => buildBom(state).connectors.map((c) => [c.name, c.qty]);
+const bomInstMatrix = (state) => buildBom(state).installedConnectors.map((c) => [c.name, c.qty]);
 
 // §11 / decision 24 — two CSV files, downloaded sequentially.
 export function exportSheetCSV(state, name) {
@@ -168,9 +170,11 @@ export function exportSheetCSV(state, name) {
   }
   const wireBom = bomWireMatrix(state);
   const connBom = bomConnMatrix(state);
-  if (wireBom.length || connBom.length) {
+  const instBom = bomInstMatrix(state);
+  if (wireBom.length || connBom.length || instBom.length) {
     setTimeout(() => {
-      const bom = `Wire\r\n${toCSV(BOM_WIRE_HEADERS, wireBom)}\r\n\r\nConnectors\r\n${toCSV(BOM_CONN_HEADERS, connBom)}`;
+      let bom = `Wire\r\n${toCSV(BOM_WIRE_HEADERS, wireBom)}\r\n\r\nConnectors\r\n${toCSV(BOM_CONN_HEADERS, connBom)}`;
+      if (instBom.length) bom += `\r\n\r\nInstalled Adapters\r\n${toCSV(BOM_INST_HEADERS, instBom)}`;
       downloadBlob(new Blob([bom], { type: 'text/csv;charset=utf-8' }), `${base}-bom.csv`);
     }, 450);
   }
@@ -190,8 +194,10 @@ export async function exportSheetExcel(state, name) {
   }
   const wireBom = bomWireMatrix(state);
   const connBom = bomConnMatrix(state);
-  if (wireBom.length || connBom.length) {
+  const instBom = bomInstMatrix(state);
+  if (wireBom.length || connBom.length || instBom.length) {
     const bomRows = [['Wire'], BOM_WIRE_HEADERS, ...wireBom, [], ['Connectors'], BOM_CONN_HEADERS, ...connBom];
+    if (instBom.length) bomRows.push([], ['Installed Adapters'], BOM_INST_HEADERS, ...instBom);
     XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(bomRows), 'BOM');
   }
   XLSX.writeFile(wb, `${sanitizeFilename(name)}.xlsx`);
@@ -235,7 +241,8 @@ export async function exportSheetPDF(state, name) {
   }
   const wireBom = bomWireMatrix(state);
   const connBom = bomConnMatrix(state);
-  if (wireBom.length || connBom.length) {
+  const instBom = bomInstMatrix(state);
+  if (wireBom.length || connBom.length || instBom.length) {
     let y = doc.lastAutoTable.finalY + 28;
     doc.text('Bill of Materials — Wire', 40, y);
     autoTable(doc, {
@@ -254,6 +261,17 @@ export async function exportSheetPDF(state, name) {
       styles: { fontSize: 8 },
       headStyles: { fillColor: [35, 35, 38] },
     });
+    if (instBom.length) {
+      y = doc.lastAutoTable.finalY + 28;
+      doc.text('Bill of Materials — Installed Adapters', 40, y);
+      autoTable(doc, {
+        startY: y + 12,
+        head: [BOM_INST_HEADERS],
+        body: instBom,
+        styles: { fontSize: 8 },
+        headStyles: { fillColor: [35, 35, 38] },
+      });
+    }
   }
   doc.save(`${sanitizeFilename(name)}.pdf`);
 }

@@ -12,6 +12,9 @@ import {
   slotRatings,
 } from '../../data/wireTypes';
 
+// All fitting options plus a blank for "no installed connector".
+const ALL_FITTINGS = FITTING_OPTIONS;
+
 const SIDES = ['top', 'right', 'bottom', 'left'];
 // Only power-distribution devices expose per-output breaker/fuse selection.
 const BREAKER_DEFS = new Set(['pdh', 'pdp2', 'pdp_legacy', 'mpm']);
@@ -316,6 +319,18 @@ export default function ComponentConfigModal({ nodeId, onClose, onSelectEdge }) 
                         </select>
                       </>
                     )}
+                    <select
+                      value={p.installedConnector ?? ''}
+                      onChange={(e) => updatePort(p.id, { installedConnector: e.target.value || null })}
+                      aria-label="Installed connector"
+                      title="Connector/pigtail physically added to this port (soldered, crimped, etc.) — appears in BOM and overrides DRC fitting checks"
+                      className={`w-28 shrink-0 rounded border px-1 py-1 text-sm ${p.installedConnector ? 'border-amber-600 bg-amber-950/40 text-amber-300' : 'border-edge bg-surface-0 text-neutral-500'}`}
+                    >
+                      <option value="">+ adapter…</option>
+                      {ALL_FITTINGS.map((f) => (
+                        <option key={f} value={f}>{f}</option>
+                      ))}
+                    </select>
                     <button
                       onClick={() => onRemovePort(p)}
                       aria-label="Remove port"

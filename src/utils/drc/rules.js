@@ -532,8 +532,23 @@ export const DRC_RULES = [
         const check = (nodeId, portId, fitting) => {
           const node = ctx.nodeById.get(nodeId);
           const port = node?.data.ports.find((p) => p.id === portId);
+          if (!fitting) return;
+          // An installed connector (pigtail soldered to the port) overrides the
+          // port's native requiredFittings — the wire must mate with it instead.
+          if (port?.installedConnector && port.installedConnector !== 'Bare Wire') {
+            if (fitting !== port.installedConnector) {
+              out.push({
+                ruleId: this.id,
+                severity: this.severity,
+                message: `${node.data.label} · ${port.label} has a ${port.installedConnector} installed — wire has ${fitting}`,
+                nodes: [nodeId],
+                edges: [e.id],
+              });
+            }
+            return;
+          }
           const req = port?.requiredFittings;
-          if (!req?.length || !fitting) return;
+          if (!req?.length) return;
           if (!req.includes(fitting)) {
             out.push({
               ruleId: this.id,

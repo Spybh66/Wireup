@@ -7,14 +7,14 @@ export default function BomView() {
   const nodes = useDiagramStore((s) => s.nodes);
   const edges = useDiagramStore((s) => s.edges);
   // recompute when wiring changes
-  const { wires, connectors } = useMemo(() => buildBom({ nodes, edges }), [nodes, edges]);
+  const { wires, connectors, installedConnectors } = useMemo(() => buildBom({ nodes, edges }), [nodes, edges]);
 
-  if (!wires.length && !connectors.length) {
+  if (!wires.length && !connectors.length && !installedConnectors.length) {
     return <p className="text-sm text-neutral-500">No wires with a length or connector set yet.</p>;
   }
 
   return (
-    <div className="grid gap-6 md:grid-cols-2">
+    <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
       <div className="overflow-x-auto rounded-lg border border-edge">
         <table className="w-full text-left text-sm">
           <thead className="bg-surface-2 text-xs uppercase text-neutral-400">
@@ -67,6 +67,26 @@ export default function BomView() {
           </tbody>
         </table>
       </div>
+      {installedConnectors.length > 0 && (
+        <div className="overflow-x-auto rounded-lg border border-amber-900/50">
+          <table className="w-full text-left text-sm">
+            <thead className="bg-surface-2 text-xs uppercase text-neutral-400">
+              <tr>
+                <th className="px-3 py-2">Installed Adapter</th>
+                <th className="px-3 py-2 text-right">Qty</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-edge">
+              {installedConnectors.map((c) => (
+                <tr key={c.name} className="text-neutral-300">
+                  <td className="px-3 py-2 text-amber-300">{c.name}</td>
+                  <td className="px-3 py-2 text-right tabular-nums text-amber-300">{c.qty}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 }

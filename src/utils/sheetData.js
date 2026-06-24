@@ -34,12 +34,13 @@ function connectorUnits(type, fitting) {
   return type === 'PWR' ? [{ name: fitting, qty: 2 }] : [{ name: fitting, qty: 1 }];
 }
 
-// Returns { wires: [{gauge, hex, color, lengthIn, lengthFt}], connectors: [{name, qty}] }.
+// Returns { wires: [{gauge, hex, color, lengthIn, lengthFt}], connectors: [{name, qty}], installedConnectors: [{name, qty}] }.
 // PWR contributes its length to two conductors (color + color2); so does CAN.
 export function buildBom(state) {
-  const { edges } = state;
+  const { edges, nodes } = state;
   const wireMap = new Map(); // `${gauge}|${hex}` -> { gauge, hex, lengthIn }
   const connMap = new Map(); // name -> qty
+  const instMap = new Map(); // name -> qty (installed connectors / pigtails)
   const addWire = (gauge, hex, len) => {
     if (!gauge || !len) return;
     const key = `${gauge}|${hex}`;
@@ -48,6 +49,7 @@ export function buildBom(state) {
     wireMap.set(key, r);
   };
   const addConn = (name, qty) => connMap.set(name, (connMap.get(name) ?? 0) + qty);
+  const addInst = (name, qty) => instMap.set(name, (instMap.get(name) ?? 0) + qty);
 
   for (const e of edges) {
     const t = e.data.type;
@@ -64,6 +66,15 @@ export function buildBom(state) {
     }
   }
 
+  // Installed connectors/pigtails added to device ports by the builder.
+  for (const n of (nodes ?? [])) {
+    for (const p of (n.data?.ports ?? [])) {
+      if (p.installedConnector && p.installedConnector !== 'Bare Wire') {
+        addInst(p.installedConnector, 1);
+      }
+    }
+  }
+
   const wires = [...wireMap.values()]
     .map((r) => ({
       gauge: r.gauge,
@@ -76,7 +87,10 @@ export function buildBom(state) {
   const connectors = [...connMap.entries()]
     .map(([name, qty]) => ({ name, qty }))
     .sort((a, b) => a.name.localeCompare(b.name));
-  return { wires, connectors };
+  const installedConnectors = [...instMap.entries()]
+    .map(([name, qty]) => ({ name, qty }))
+    .sort((a, b) => a.name.localeCompare(b.name));
+  return { wires, connectors, installedConnectors };
 }
 
 const RULE_LABEL = new Map(DRC_RULES.map((r) => [r.id, r.label]));
