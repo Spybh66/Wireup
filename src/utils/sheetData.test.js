@@ -38,4 +38,21 @@ describe('buildBom', () => {
     expect(wires.find((w) => w.color === 'Red').lengthIn).toBe(15);
     expect(connectors).toHaveLength(0);
   });
+
+  it('counts installed connectors from node ports, excluding Bare Wire', () => {
+    const node = (ports) => ({ id: 'n1', data: { ports } });
+    const { installedConnectors } = buildBom({
+      edges: [],
+      nodes: [
+        node([
+          { id: 'p1', installedConnector: 'Molex SL' },
+          { id: 'p2', installedConnector: 'Molex SL' },
+          { id: 'p3', installedConnector: 'Bare Wire' }, // excluded
+          { id: 'p4', installedConnector: null },         // excluded
+        ]),
+      ],
+    });
+    expect(installedConnectors).toHaveLength(1);
+    expect(installedConnectors[0]).toEqual({ name: 'Molex SL', qty: 2 });
+  });
 });

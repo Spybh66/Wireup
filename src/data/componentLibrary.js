@@ -64,6 +64,7 @@ function def(id, name, category, icon, width, height, trackedFields, portSpecs) 
       order,
       gauge: p.gauge ?? null,
       fitting: p.fitting ?? null,
+      installedConnector: p.installedConnector ?? null,
       breaker: p.breaker ?? null,
       slot: p.slot ?? null, // 'breaker' | 'fuse' | null — branch protection type
       requiredFittings: p.requiredFittings ?? null,
