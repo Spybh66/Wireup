@@ -291,7 +291,7 @@ const PDF_CHAR_MAP = {
 };
 export function pdfText(value) {
   if (value == null) return '';
-  return String(value).replace(/[^\u0000-\u00FF]/gu, (c) => {
+  return String(value).replace(/[\u0100-\u{10FFFF}]/gu, (c) => {
     if (PDF_CHAR_MAP[c]) return PDF_CHAR_MAP[c];
     const ascii = c.normalize('NFKD').replace(/[\u0300-\u036f]/g, '');
     return /^[\x20-\x7E]+$/.test(ascii) ? ascii : '?';
