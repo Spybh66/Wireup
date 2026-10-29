@@ -1,870 +1,15 @@
 {
   "app": "wireup",
   "version": 4,
-  "savedAt": "2026-10-28T23:35:48.410Z",
+  "savedAt": "2026-10-29T23:54:05.154Z",
   "projectName": "Perry — 3467 (Example)",
   "nodes": [
     {
-      "id": "jetsonorinnano-8",
+      "id": "pdh-28",
       "type": "component",
       "position": {
-        "x": 336,
-        "y": 128
-      },
-      "draggable": true,
-      "data": {
-        "definitionId": "jetsonorinnano",
-        "label": "Jetson (c2 vision)",
-        "color": null,
-        "notes": "",
-        "locked": false,
-        "canId": null,
-        "ipAddress": "10.34.67.11",
-        "rotation": 0,
-        "ports": [
-          {
-            "id": "jetsonorinnano-p-1",
-            "type": "PWR",
-            "label": "PWR (Barrel)",
-            "side": "left",
-            "order": 0,
-            "gauge": null,
-            "fitting": "Barrel Jack",
-            "installedConnector": null,
-            "breaker": null,
-            "slot": null,
-            "requiredFittings": [
-              "Barrel Jack"
-            ]
-          },
-          {
-            "id": "jetsonorinnano-p-2",
-            "type": "USB",
-            "label": "USB-C",
-            "side": "top",
-            "order": 0,
-            "gauge": null,
-            "fitting": null,
-            "installedConnector": null,
-            "breaker": null,
-            "slot": null,
-            "requiredFittings": [
-              "USB-C"
-            ]
-          },
-          {
-            "id": "jetsonorinnano-p-3",
-            "type": "ETH",
-            "label": "ETH",
-            "side": "top",
-            "order": 1,
-            "gauge": null,
-            "fitting": null,
-            "installedConnector": null,
-            "breaker": null,
-            "slot": null,
-            "requiredFittings": null
-          },
-          {
-            "id": "jetsonorinnano-p-4",
-            "type": "USB",
-            "label": "USB-A",
-            "side": "bottom",
-            "order": 0,
-            "gauge": null,
-            "fitting": null,
-            "installedConnector": null,
-            "breaker": null,
-            "slot": null,
-            "requiredFittings": [
-              "USB-A"
-            ]
-          },
-          {
-            "id": "jetsonorinnano-p-5",
-            "type": "USB",
-            "label": "USB-A",
-            "side": "bottom",
-            "order": 1,
-            "gauge": null,
-            "fitting": null,
-            "installedConnector": null,
-            "breaker": null,
-            "slot": null,
-            "requiredFittings": [
-              "USB-A"
-            ]
-          },
-          {
-            "id": "jetsonorinnano-p-6",
-            "type": "USB",
-            "label": "USB-A",
-            "side": "bottom",
-            "order": 2,
-            "gauge": null,
-            "fitting": null,
-            "installedConnector": null,
-            "breaker": null,
-            "slot": null,
-            "requiredFittings": [
-              "USB-A"
-            ]
-          },
-          {
-            "id": "jetsonorinnano-p-7",
-            "type": "USB",
-            "label": "USB-A",
-            "side": "bottom",
-            "order": 3,
-            "gauge": null,
-            "fitting": null,
-            "installedConnector": null,
-            "breaker": null,
-            "slot": null,
-            "requiredFittings": [
-              "USB-A"
-            ]
-          }
-        ]
-      }
-    },
-    {
-      "id": "thriftycam-10",
-      "type": "component",
-      "position": {
-        "x": 64,
-        "y": 160
-      },
-      "draggable": true,
-      "data": {
-        "definitionId": "thriftycam",
-        "label": "ThriftyCAM 1",
-        "color": null,
-        "notes": "",
-        "locked": false,
-        "canId": null,
-        "ipAddress": null,
-        "rotation": 180,
-        "ports": [
-          {
-            "id": "thriftycam-p-9",
-            "type": "USB",
-            "label": "USB-A",
-            "side": "left",
-            "order": 0,
-            "gauge": null,
-            "fitting": null,
-            "installedConnector": null,
-            "breaker": null,
-            "slot": null,
-            "requiredFittings": [
-              "USB-A"
-            ]
-          }
-        ]
-      }
-    },
-    {
-      "id": "thriftycam-12",
-      "type": "component",
-      "position": {
-        "x": 64,
-        "y": 256
-      },
-      "draggable": true,
-      "data": {
-        "definitionId": "thriftycam",
-        "label": "ThriftyCAM 2",
-        "color": null,
-        "notes": "",
-        "locked": false,
-        "canId": null,
-        "ipAddress": null,
-        "rotation": 180,
-        "ports": [
-          {
-            "id": "thriftycam-p-11",
-            "type": "USB",
-            "label": "USB-A",
-            "side": "left",
-            "order": 0,
-            "gauge": null,
-            "fitting": null,
-            "installedConnector": null,
-            "breaker": null,
-            "slot": null,
-            "requiredFittings": [
-              "USB-A"
-            ]
-          }
-        ]
-      }
-    },
-    {
-      "id": "thriftycam-14",
-      "type": "component",
-      "position": {
-        "x": 64,
-        "y": 352
-      },
-      "draggable": true,
-      "data": {
-        "definitionId": "thriftycam",
-        "label": "ThriftyCAM 3",
-        "color": null,
-        "notes": "",
-        "locked": false,
-        "canId": null,
-        "ipAddress": null,
-        "rotation": 180,
-        "ports": [
-          {
-            "id": "thriftycam-p-13",
-            "type": "USB",
-            "label": "USB-A",
-            "side": "left",
-            "order": 0,
-            "gauge": null,
-            "fitting": null,
-            "installedConnector": null,
-            "breaker": null,
-            "slot": null,
-            "requiredFittings": [
-              "USB-A"
-            ]
-          }
-        ]
-      }
-    },
-    {
-      "id": "thriftycam-16",
-      "type": "component",
-      "position": {
-        "x": 64,
-        "y": 448
-      },
-      "draggable": true,
-      "data": {
-        "definitionId": "thriftycam",
-        "label": "ThriftyCAM 4",
-        "color": null,
-        "notes": "",
-        "locked": false,
-        "canId": null,
-        "ipAddress": null,
-        "rotation": 180,
-        "ports": [
-          {
-            "id": "thriftycam-p-15",
-            "type": "USB",
-            "label": "USB-A",
-            "side": "left",
-            "order": 0,
-            "gauge": null,
-            "fitting": null,
-            "installedConnector": null,
-            "breaker": null,
-            "slot": null,
-            "requiredFittings": [
-              "USB-A"
-            ]
-          }
-        ]
-      }
-    },
-    {
-      "id": "mitocandria-25",
-      "type": "component",
-      "position": {
-        "x": 336,
-        "y": 384
-      },
-      "draggable": true,
-      "data": {
-        "definitionId": "mitocandria",
-        "label": "MitoCANdria",
-        "color": null,
-        "notes": "",
-        "locked": false,
-        "canId": null,
-        "ipAddress": null,
-        "rotation": 0,
-        "ports": [
-          {
-            "id": "mitocandria-p-17",
-            "type": "PWR",
-            "label": "PWR IN",
-            "side": "left",
-            "order": 0,
-            "gauge": "18 AWG",
-            "fitting": "Molex SL",
-            "installedConnector": null,
-            "breaker": null,
-            "slot": null,
-            "requiredFittings": [
-              "Molex SL"
-            ]
-          },
-          {
-            "id": "mitocandria-p-20",
-            "type": "USB",
-            "label": "5V USB-C",
-            "side": "top",
-            "order": 0,
-            "gauge": null,
-            "fitting": null,
-            "installedConnector": null,
-            "breaker": null,
-            "slot": null,
-            "requiredFittings": [
-              "USB-C"
-            ]
-          },
-          {
-            "id": "mitocandria-p-21",
-            "type": "USB",
-            "label": "5V USB-C",
-            "side": "top",
-            "order": 1,
-            "gauge": null,
-            "fitting": null,
-            "installedConnector": null,
-            "breaker": null,
-            "slot": null,
-            "requiredFittings": [
-              "USB-C"
-            ]
-          },
-          {
-            "id": "mitocandria-p-22",
-            "type": "USB",
-            "label": "5V USB-C",
-            "side": "top",
-            "order": 2,
-            "gauge": null,
-            "fitting": null,
-            "installedConnector": null,
-            "breaker": null,
-            "slot": null,
-            "requiredFittings": [
-              "USB-C"
-            ]
-          },
-          {
-            "id": "mitocandria-p-23",
-            "type": "USB",
-            "label": "5V USB-C",
-            "side": "top",
-            "order": 3,
-            "gauge": null,
-            "fitting": null,
-            "installedConnector": null,
-            "breaker": null,
-            "slot": null,
-            "requiredFittings": [
-              "USB-C"
-            ]
-          },
-          {
-            "id": "mitocandria-p-24",
-            "type": "PWR",
-            "label": "15–24V BOOST",
-            "side": "right",
-            "order": 0,
-            "gauge": "20 AWG",
-            "fitting": "Ferrule",
-            "installedConnector": null,
-            "breaker": null,
-            "slot": null,
-            "requiredFittings": [
-              "Ferrule",
-              "Bare Wire"
-            ]
-          }
-        ]
-      }
-    },
-    {
-      "id": "roborio2-32",
-      "type": "component",
-      "position": {
-        "x": 704,
-        "y": 128
-      },
-      "draggable": true,
-      "data": {
-        "definitionId": "roborio2",
-        "label": "roboRIO 2",
-        "color": null,
-        "notes": "",
-        "locked": false,
-        "canId": null,
-        "ipAddress": "10.34.67.2",
-        "rotation": 0,
-        "ports": [
-          {
-            "id": "roborio2-p-26",
-            "type": "PWR",
-            "label": "PWR",
-            "side": "top",
-            "order": 0,
-            "gauge": "12 AWG",
-            "fitting": "Ferrule",
-            "installedConnector": null,
-            "breaker": null,
-            "slot": null,
-            "requiredFittings": [
-              "Ferrule",
-              "Bare Wire"
-            ]
-          },
-          {
-            "id": "roborio2-p-27",
-            "type": "CAN",
-            "label": "CAN",
-            "side": "left",
-            "order": 0,
-            "gauge": null,
-            "fitting": null,
-            "installedConnector": "Molex SL",
-            "breaker": null,
-            "slot": null,
-            "requiredFittings": [
-              "Ferrule",
-              "Bare Wire"
-            ]
-          },
-          {
-            "id": "roborio2-p-28",
-            "type": "ETH",
-            "label": "ETH",
-            "side": "top",
-            "order": 1,
-            "gauge": null,
-            "fitting": null,
-            "installedConnector": null,
-            "breaker": null,
-            "slot": null,
-            "requiredFittings": null
-          },
-          {
-            "id": "roborio2-p-29",
-            "type": "USB",
-            "label": "USB-A",
-            "side": "right",
-            "order": 0,
-            "gauge": null,
-            "fitting": null,
-            "installedConnector": null,
-            "breaker": null,
-            "slot": null,
-            "requiredFittings": [
-              "USB-A"
-            ]
-          },
-          {
-            "id": "roborio2-p-30",
-            "type": "USB",
-            "label": "USB-A",
-            "side": "right",
-            "order": 1,
-            "gauge": null,
-            "fitting": null,
-            "installedConnector": null,
-            "breaker": null,
-            "slot": null,
-            "requiredFittings": [
-              "USB-A"
-            ]
-          },
-          {
-            "id": "roborio2-p-31",
-            "type": "PWR",
-            "label": "RSL",
-            "side": "bottom",
-            "order": 0,
-            "gauge": "18 AWG",
-            "fitting": "Ferrule",
-            "installedConnector": null,
-            "breaker": null,
-            "slot": null,
-            "requiredFittings": [
-              "Ferrule",
-              "Bare Wire"
-            ]
-          }
-        ]
-      }
-    },
-    {
-      "id": "vh109-38",
-      "type": "component",
-      "position": {
-        "x": 704,
-        "y": 336
-      },
-      "draggable": true,
-      "data": {
-        "definitionId": "vh109",
-        "label": "VH-109 Radio",
-        "color": null,
-        "notes": "",
-        "locked": false,
-        "canId": null,
-        "ipAddress": "10.34.67.1",
-        "rotation": 0,
-        "ports": [
-          {
-            "id": "vh109-p-33",
-            "type": "ETH",
-            "label": "AUX2",
-            "side": "left",
-            "order": 0,
-            "gauge": null,
-            "fitting": null,
-            "installedConnector": null,
-            "breaker": null,
-            "slot": null,
-            "requiredFittings": null
-          },
-          {
-            "id": "vh109-p-34",
-            "type": "ETH",
-            "label": "RIO",
-            "side": "left",
-            "order": 1,
-            "gauge": null,
-            "fitting": null,
-            "installedConnector": null,
-            "breaker": null,
-            "slot": null,
-            "requiredFittings": null
-          },
-          {
-            "id": "vh109-p-35",
-            "type": "PWR",
-            "label": "PWR",
-            "side": "left",
-            "order": 2,
-            "gauge": "18 AWG",
-            "fitting": "Ferrule",
-            "installedConnector": null,
-            "breaker": null,
-            "slot": null,
-            "requiredFittings": [
-              "Ferrule",
-              "Bare Wire"
-            ]
-          },
-          {
-            "id": "vh109-p-36",
-            "type": "ETH",
-            "label": "AUX1",
-            "side": "right",
-            "order": 0,
-            "gauge": null,
-            "fitting": null,
-            "installedConnector": null,
-            "breaker": null,
-            "slot": null,
-            "requiredFittings": null
-          },
-          {
-            "id": "vh109-p-37",
-            "type": "ETH",
-            "label": "DS",
-            "side": "right",
-            "order": 1,
-            "gauge": null,
-            "fitting": null,
-            "installedConnector": null,
-            "breaker": null,
-            "slot": null,
-            "requiredFittings": null
-          }
-        ]
-      }
-    },
-    {
-      "id": "canivore-42",
-      "type": "component",
-      "position": {
-        "x": 1472,
-        "y": 128
-      },
-      "draggable": true,
-      "data": {
-        "definitionId": "canivore",
-        "label": "CANivore (Drivetrain)",
-        "color": null,
-        "notes": "",
-        "locked": false,
-        "canId": null,
-        "ipAddress": null,
-        "rotation": 0,
-        "ports": [
-          {
-            "id": "canivore-p-39",
-            "type": "USB",
-            "label": "USB-A",
-            "side": "left",
-            "order": 0,
-            "gauge": null,
-            "fitting": null,
-            "installedConnector": null,
-            "breaker": null,
-            "slot": null,
-            "requiredFittings": [
-              "USB-A"
-            ]
-          },
-          {
-            "id": "canivore-p-40",
-            "type": "CAN",
-            "label": "CAN",
-            "side": "right",
-            "order": 0,
-            "gauge": null,
-            "fitting": null,
-            "installedConnector": "Molex SL",
-            "breaker": null,
-            "slot": null,
-            "requiredFittings": [
-              "Ferrule",
-              "Bare Wire",
-              "JST"
-            ]
-          }
-        ]
-      }
-    },
-    {
-      "id": "mpm-50",
-      "type": "component",
-      "position": {
-        "x": 512,
-        "y": 320
-      },
-      "draggable": true,
-      "data": {
-        "definitionId": "mpm",
-        "label": "MPM",
-        "color": null,
-        "notes": "",
-        "locked": false,
-        "canId": null,
-        "ipAddress": null,
-        "rotation": 180,
-        "ports": [
-          {
-            "id": "mpm-p-43",
-            "type": "PWR",
-            "label": "PWR",
-            "side": "bottom",
-            "order": 0,
-            "gauge": "12 AWG",
-            "fitting": "Ferrule",
-            "installedConnector": null,
-            "breaker": null,
-            "slot": null,
-            "requiredFittings": [
-              "Ferrule",
-              "Bare Wire"
-            ]
-          },
-          {
-            "id": "mpm-p-44",
-            "type": "PWR",
-            "label": "CH0",
-            "side": "right",
-            "order": 0,
-            "gauge": "18 AWG",
-            "fitting": "Ferrule",
-            "installedConnector": null,
-            "breaker": 5,
-            "slot": "fuse",
-            "requiredFittings": [
-              "Ferrule",
-              "Bare Wire"
-            ]
-          },
-          {
-            "id": "mpm-p-45",
-            "type": "PWR",
-            "label": "CH1",
-            "side": "right",
-            "order": 1,
-            "gauge": "18 AWG",
-            "fitting": "Ferrule",
-            "installedConnector": null,
-            "breaker": 10,
-            "slot": "fuse",
-            "requiredFittings": [
-              "Ferrule",
-              "Bare Wire"
-            ]
-          },
-          {
-            "id": "mpm-p-46",
-            "type": "PWR",
-            "label": "CH2",
-            "side": "right",
-            "order": 2,
-            "gauge": "18 AWG",
-            "fitting": "Ferrule",
-            "installedConnector": null,
-            "breaker": null,
-            "slot": "fuse",
-            "requiredFittings": [
-              "Ferrule",
-              "Bare Wire"
-            ]
-          },
-          {
-            "id": "mpm-p-47",
-            "type": "PWR",
-            "label": "CH3",
-            "side": "right",
-            "order": 3,
-            "gauge": "18 AWG",
-            "fitting": "Ferrule",
-            "installedConnector": null,
-            "breaker": null,
-            "slot": "fuse",
-            "requiredFittings": [
-              "Ferrule",
-              "Bare Wire"
-            ]
-          },
-          {
-            "id": "mpm-p-48",
-            "type": "PWR",
-            "label": "CH4",
-            "side": "right",
-            "order": 4,
-            "gauge": "18 AWG",
-            "fitting": "Ferrule",
-            "installedConnector": null,
-            "breaker": null,
-            "slot": "fuse",
-            "requiredFittings": [
-              "Ferrule",
-              "Bare Wire"
-            ]
-          },
-          {
-            "id": "mpm-p-49",
-            "type": "PWR",
-            "label": "CH5",
-            "side": "right",
-            "order": 5,
-            "gauge": "18 AWG",
-            "fitting": "Ferrule",
-            "installedConnector": null,
-            "breaker": null,
-            "slot": "fuse",
-            "requiredFittings": [
-              "Ferrule",
-              "Bare Wire"
-            ]
-          }
-        ]
-      }
-    },
-    {
-      "id": "battery-52",
-      "type": "component",
-      "position": {
-        "x": 64,
-        "y": 640
-      },
-      "draggable": true,
-      "data": {
-        "definitionId": "battery",
-        "label": "Battery (12V)",
-        "color": null,
-        "notes": "",
-        "locked": false,
-        "canId": null,
-        "ipAddress": null,
-        "rotation": 0,
-        "ports": [
-          {
-            "id": "battery-p-51",
-            "type": "PWR",
-            "label": "BAT",
-            "side": "right",
-            "order": 0,
-            "gauge": "6 AWG",
-            "fitting": "Anderson SB50",
-            "installedConnector": null,
-            "breaker": null,
-            "slot": null,
-            "requiredFittings": [
-              "Anderson SB50",
-              "Ring Terminal"
-            ]
-          }
-        ]
-      }
-    },
-    {
-      "id": "mainbreaker-55",
-      "type": "component",
-      "position": {
-        "x": 288,
-        "y": 640
-      },
-      "draggable": true,
-      "data": {
-        "definitionId": "mainbreaker",
-        "label": "Main Breaker (120A)",
-        "color": null,
-        "notes": "",
-        "locked": false,
-        "canId": null,
-        "ipAddress": null,
-        "rotation": 0,
-        "ports": [
-          {
-            "id": "mainbreaker-p-53",
-            "type": "PWR",
-            "label": "IN",
-            "side": "left",
-            "order": 0,
-            "gauge": "6 AWG",
-            "fitting": "Ring Terminal",
-            "installedConnector": null,
-            "breaker": null,
-            "slot": null,
-            "requiredFittings": [
-              "Ring Terminal"
-            ]
-          },
-          {
-            "id": "mainbreaker-p-54",
-            "type": "PWR",
-            "label": "OUT",
-            "side": "right",
-            "order": 0,
-            "gauge": "6 AWG",
-            "fitting": "Ring Terminal",
-            "installedConnector": null,
-            "breaker": null,
-            "slot": null,
-            "requiredFittings": [
-              "Ring Terminal"
-            ]
-          }
-        ]
-      }
-    },
-    {
-      "id": "pdh-83",
-      "type": "component",
-      "position": {
-        "x": 1120,
-        "y": 144
+        "x": 640,
+        "y": 576
       },
       "draggable": true,
       "data": {
@@ -875,10 +20,10 @@
         "locked": false,
         "canId": 40,
         "ipAddress": null,
-        "rotation": 0,
+        "rotation": 180,
         "ports": [
           {
-            "id": "pdh-p-56",
+            "id": "pdh-p-1",
             "type": "PWR",
             "label": "PWR",
             "side": "bottom",
@@ -894,7 +39,7 @@
             ]
           },
           {
-            "id": "pdh-p-57",
+            "id": "pdh-p-2",
             "type": "CAN",
             "label": "CAN IN",
             "side": "bottom",
@@ -910,14 +55,14 @@
             ]
           },
           {
-            "id": "pdh-p-58",
+            "id": "pdh-p-3",
             "type": "CAN",
             "label": "CAN OUT",
             "side": "bottom",
             "order": 2,
             "gauge": null,
             "fitting": null,
-            "installedConnector": null,
+            "installedConnector": "Molex SL",
             "breaker": null,
             "slot": null,
             "requiredFittings": [
@@ -926,7 +71,7 @@
             ]
           },
           {
-            "id": "pdh-p-59",
+            "id": "pdh-p-4",
             "type": "PWR",
             "label": "CH0",
             "side": "right",
@@ -942,7 +87,7 @@
             ]
           },
           {
-            "id": "pdh-p-60",
+            "id": "pdh-p-5",
             "type": "PWR",
             "label": "CH1",
             "side": "right",
@@ -958,7 +103,7 @@
             ]
           },
           {
-            "id": "pdh-p-61",
+            "id": "pdh-p-6",
             "type": "PWR",
             "label": "CH2",
             "side": "right",
@@ -974,7 +119,7 @@
             ]
           },
           {
-            "id": "pdh-p-62",
+            "id": "pdh-p-7",
             "type": "PWR",
             "label": "CH3",
             "side": "right",
@@ -990,7 +135,7 @@
             ]
           },
           {
-            "id": "pdh-p-63",
+            "id": "pdh-p-8",
             "type": "PWR",
             "label": "CH4",
             "side": "right",
@@ -1006,7 +151,7 @@
             ]
           },
           {
-            "id": "pdh-p-64",
+            "id": "pdh-p-9",
             "type": "PWR",
             "label": "CH5",
             "side": "right",
@@ -1022,7 +167,7 @@
             ]
           },
           {
-            "id": "pdh-p-65",
+            "id": "pdh-p-10",
             "type": "PWR",
             "label": "CH6",
             "side": "right",
@@ -1038,7 +183,7 @@
             ]
           },
           {
-            "id": "pdh-p-66",
+            "id": "pdh-p-11",
             "type": "PWR",
             "label": "CH7",
             "side": "right",
@@ -1054,7 +199,7 @@
             ]
           },
           {
-            "id": "pdh-p-67",
+            "id": "pdh-p-12",
             "type": "PWR",
             "label": "CH8",
             "side": "right",
@@ -1062,7 +207,7 @@
             "gauge": "12 AWG",
             "fitting": "Ferrule",
             "installedConnector": null,
-            "breaker": 20,
+            "breaker": 40,
             "slot": "breaker",
             "requiredFittings": [
               "Ferrule",
@@ -1070,7 +215,7 @@
             ]
           },
           {
-            "id": "pdh-p-68",
+            "id": "pdh-p-13",
             "type": "PWR",
             "label": "CH9",
             "side": "right",
@@ -1086,7 +231,7 @@
             ]
           },
           {
-            "id": "pdh-p-69",
+            "id": "pdh-p-14",
             "type": "PWR",
             "label": "CH10",
             "side": "left",
@@ -1102,7 +247,7 @@
             ]
           },
           {
-            "id": "pdh-p-70",
+            "id": "pdh-p-15",
             "type": "PWR",
             "label": "CH11",
             "side": "left",
@@ -1118,7 +263,7 @@
             ]
           },
           {
-            "id": "pdh-p-71",
+            "id": "pdh-p-16",
             "type": "PWR",
             "label": "CH12",
             "side": "left",
@@ -1134,7 +279,7 @@
             ]
           },
           {
-            "id": "pdh-p-72",
+            "id": "pdh-p-17",
             "type": "PWR",
             "label": "CH13",
             "side": "left",
@@ -1150,7 +295,7 @@
             ]
           },
           {
-            "id": "pdh-p-73",
+            "id": "pdh-p-18",
             "type": "PWR",
             "label": "CH14",
             "side": "left",
@@ -1166,7 +311,7 @@
             ]
           },
           {
-            "id": "pdh-p-74",
+            "id": "pdh-p-19",
             "type": "PWR",
             "label": "CH15",
             "side": "left",
@@ -1182,7 +327,7 @@
             ]
           },
           {
-            "id": "pdh-p-75",
+            "id": "pdh-p-20",
             "type": "PWR",
             "label": "CH16",
             "side": "left",
@@ -1198,7 +343,7 @@
             ]
           },
           {
-            "id": "pdh-p-76",
+            "id": "pdh-p-21",
             "type": "PWR",
             "label": "CH17",
             "side": "left",
@@ -1214,7 +359,7 @@
             ]
           },
           {
-            "id": "pdh-p-77",
+            "id": "pdh-p-22",
             "type": "PWR",
             "label": "CH18",
             "side": "left",
@@ -1230,7 +375,7 @@
             ]
           },
           {
-            "id": "pdh-p-78",
+            "id": "pdh-p-23",
             "type": "PWR",
             "label": "CH19",
             "side": "left",
@@ -1238,7 +383,7 @@
             "gauge": "12 AWG",
             "fitting": "Ferrule",
             "installedConnector": null,
-            "breaker": 40,
+            "breaker": 20,
             "slot": "breaker",
             "requiredFittings": [
               "Ferrule",
@@ -1246,7 +391,7 @@
             ]
           },
           {
-            "id": "pdh-p-79",
+            "id": "pdh-p-24",
             "type": "PWR",
             "label": "CH20",
             "side": "top",
@@ -1262,7 +407,7 @@
             ]
           },
           {
-            "id": "pdh-p-80",
+            "id": "pdh-p-25",
             "type": "PWR",
             "label": "CH21",
             "side": "top",
@@ -1278,7 +423,7 @@
             ]
           },
           {
-            "id": "pdh-p-81",
+            "id": "pdh-p-26",
             "type": "PWR",
             "label": "CH22",
             "side": "top",
@@ -1294,7 +439,7 @@
             ]
           },
           {
-            "id": "pdh-p-82",
+            "id": "pdh-p-27",
             "type": "PWR",
             "label": "CH23",
             "side": "top",
@@ -1313,51 +458,158 @@
       }
     },
     {
-      "id": "pigeon2-86",
+      "id": "mainbreaker-31",
       "type": "component",
       "position": {
-        "x": 1680,
-        "y": 144
+        "x": 736,
+        "y": 384
       },
       "draggable": true,
       "data": {
-        "definitionId": "pigeon2",
-        "label": "Pigeon 2",
+        "definitionId": "mainbreaker",
+        "label": "Main Breaker (120A)",
         "color": null,
         "notes": "",
         "locked": false,
-        "canId": 14,
+        "canId": null,
         "ipAddress": null,
-        "rotation": 0,
+        "rotation": 90,
         "ports": [
           {
-            "id": "pigeon2-p-84",
+            "id": "mainbreaker-p-29",
             "type": "PWR",
-            "label": "PWR",
+            "label": "IN",
             "side": "left",
             "order": 0,
-            "gauge": "22 AWG",
-            "fitting": "Bare Wire",
+            "gauge": "6 AWG",
+            "fitting": "Ring Terminal",
             "installedConnector": null,
             "breaker": null,
             "slot": null,
             "requiredFittings": [
-              "Ferrule",
-              "Bare Wire"
+              "Ring Terminal"
             ]
           },
           {
-            "id": "pigeon2-p-85",
-            "type": "CAN",
-            "label": "CAN",
-            "side": "bottom",
+            "id": "mainbreaker-p-30",
+            "type": "PWR",
+            "label": "OUT",
+            "side": "right",
             "order": 0,
-            "gauge": null,
-            "fitting": null,
-            "installedConnector": "Molex SL",
+            "gauge": "6 AWG",
+            "fitting": "Ring Terminal",
+            "installedConnector": null,
             "breaker": null,
             "slot": null,
             "requiredFittings": [
+              "Ring Terminal"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "battery-33",
+      "type": "component",
+      "position": {
+        "x": 848,
+        "y": 224
+      },
+      "draggable": true,
+      "data": {
+        "definitionId": "battery",
+        "label": "Battery (12V)",
+        "color": null,
+        "notes": "",
+        "locked": false,
+        "canId": null,
+        "ipAddress": null,
+        "rotation": 180,
+        "ports": [
+          {
+            "id": "battery-p-32",
+            "type": "PWR",
+            "label": "BAT",
+            "side": "right",
+            "order": 0,
+            "gauge": "6 AWG",
+            "fitting": "Anderson SB50",
+            "installedConnector": null,
+            "breaker": null,
+            "slot": null,
+            "requiredFittings": [
+              "Anderson SB50",
+              "Ring Terminal"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "krakenx60_adapted-37",
+      "type": "component",
+      "position": {
+        "x": 320,
+        "y": 320
+      },
+      "draggable": true,
+      "data": {
+        "definitionId": "krakenx60_adapted",
+        "label": "Intake Roller",
+        "color": null,
+        "notes": "",
+        "locked": false,
+        "canId": 28,
+        "ipAddress": null,
+        "rotation": 180,
+        "ports": [
+          {
+            "id": "krakenx60_adapted-p-34",
+            "type": "PWR",
+            "label": "PWR",
+            "side": "left",
+            "order": 0,
+            "gauge": "12 AWG",
+            "fitting": "Anderson Powerpole",
+            "installedConnector": null,
+            "breaker": null,
+            "slot": null,
+            "requiredFittings": [
+              "Anderson Powerpole",
+              "Molex SL"
+            ]
+          },
+          {
+            "id": "krakenx60_adapted-p-35",
+            "type": "CAN",
+            "label": "CAN IN",
+            "side": "right",
+            "order": 0,
+            "gauge": null,
+            "fitting": "Molex SL",
+            "installedConnector": null,
+            "breaker": null,
+            "slot": null,
+            "requiredFittings": [
+              "Molex SL",
+              "Ferrule",
+              "Bare Wire",
+              "JST"
+            ]
+          },
+          {
+            "id": "krakenx60_adapted-p-36",
+            "type": "CAN",
+            "label": "CAN OUT",
+            "side": "right",
+            "order": 1,
+            "gauge": null,
+            "fitting": "Molex SL",
+            "installedConnector": null,
+            "breaker": null,
+            "slot": null,
+            "requiredFittings": [
+              "Molex SL",
               "Ferrule",
               "Bare Wire",
               "JST"
@@ -1367,11 +619,716 @@
       }
     },
     {
-      "id": "krakenx60_adapted-90",
+      "id": "krakenx44_adapted-41",
       "type": "component",
       "position": {
-        "x": 1504,
-        "y": 304
+        "x": 320,
+        "y": 400
+      },
+      "draggable": true,
+      "data": {
+        "definitionId": "krakenx44_adapted",
+        "label": "Intake Linear",
+        "color": null,
+        "notes": "",
+        "locked": false,
+        "canId": 27,
+        "ipAddress": null,
+        "rotation": 180,
+        "ports": [
+          {
+            "id": "krakenx44_adapted-p-38",
+            "type": "PWR",
+            "label": "PWR",
+            "side": "left",
+            "order": 0,
+            "gauge": "12 AWG",
+            "fitting": "Anderson Powerpole",
+            "installedConnector": null,
+            "breaker": null,
+            "slot": null,
+            "requiredFittings": [
+              "Anderson Powerpole",
+              "Molex SL"
+            ]
+          },
+          {
+            "id": "krakenx44_adapted-p-39",
+            "type": "CAN",
+            "label": "CAN IN",
+            "side": "right",
+            "order": 0,
+            "gauge": null,
+            "fitting": "Molex SL",
+            "installedConnector": null,
+            "breaker": null,
+            "slot": null,
+            "requiredFittings": [
+              "Molex SL",
+              "Ferrule",
+              "Bare Wire",
+              "JST"
+            ]
+          },
+          {
+            "id": "krakenx44_adapted-p-40",
+            "type": "CAN",
+            "label": "CAN OUT",
+            "side": "right",
+            "order": 1,
+            "gauge": null,
+            "fitting": "Molex SL",
+            "installedConnector": null,
+            "breaker": null,
+            "slot": null,
+            "requiredFittings": [
+              "Molex SL",
+              "Ferrule",
+              "Bare Wire",
+              "JST"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "zone-42",
+      "type": "zone",
+      "position": {
+        "x": 272,
+        "y": 280
+      },
+      "draggable": true,
+      "zIndex": -1,
+      "data": {
+        "text": "Intake",
+        "color": "#22c55e",
+        "width": 240,
+        "height": 200
+      }
+    },
+    {
+      "id": "krakenx44_adapted-46",
+      "type": "component",
+      "position": {
+        "x": 320,
+        "y": 536
+      },
+      "draggable": true,
+      "data": {
+        "definitionId": "krakenx44_adapted",
+        "label": "Indexer",
+        "color": null,
+        "notes": "",
+        "locked": false,
+        "canId": 25,
+        "ipAddress": null,
+        "rotation": 180,
+        "ports": [
+          {
+            "id": "krakenx44_adapted-p-43",
+            "type": "PWR",
+            "label": "PWR",
+            "side": "left",
+            "order": 0,
+            "gauge": "12 AWG",
+            "fitting": "Anderson Powerpole",
+            "installedConnector": null,
+            "breaker": null,
+            "slot": null,
+            "requiredFittings": [
+              "Anderson Powerpole",
+              "Molex SL"
+            ]
+          },
+          {
+            "id": "krakenx44_adapted-p-44",
+            "type": "CAN",
+            "label": "CAN IN",
+            "side": "right",
+            "order": 0,
+            "gauge": null,
+            "fitting": "Molex SL",
+            "installedConnector": null,
+            "breaker": null,
+            "slot": null,
+            "requiredFittings": [
+              "Molex SL",
+              "Ferrule",
+              "Bare Wire",
+              "JST"
+            ]
+          },
+          {
+            "id": "krakenx44_adapted-p-45",
+            "type": "CAN",
+            "label": "CAN OUT",
+            "side": "right",
+            "order": 1,
+            "gauge": null,
+            "fitting": "Molex SL",
+            "installedConnector": null,
+            "breaker": null,
+            "slot": null,
+            "requiredFittings": [
+              "Molex SL",
+              "Ferrule",
+              "Bare Wire",
+              "JST"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "krakenx44_adapted-50",
+      "type": "component",
+      "position": {
+        "x": 320,
+        "y": 616
+      },
+      "draggable": true,
+      "data": {
+        "definitionId": "krakenx44_adapted",
+        "label": "Indexer Follower",
+        "color": null,
+        "notes": "",
+        "locked": false,
+        "canId": 26,
+        "ipAddress": null,
+        "rotation": 180,
+        "ports": [
+          {
+            "id": "krakenx44_adapted-p-47",
+            "type": "PWR",
+            "label": "PWR",
+            "side": "left",
+            "order": 0,
+            "gauge": "12 AWG",
+            "fitting": "Anderson Powerpole",
+            "installedConnector": null,
+            "breaker": null,
+            "slot": null,
+            "requiredFittings": [
+              "Anderson Powerpole",
+              "Molex SL"
+            ]
+          },
+          {
+            "id": "krakenx44_adapted-p-48",
+            "type": "CAN",
+            "label": "CAN IN",
+            "side": "right",
+            "order": 0,
+            "gauge": null,
+            "fitting": "Molex SL",
+            "installedConnector": null,
+            "breaker": null,
+            "slot": null,
+            "requiredFittings": [
+              "Molex SL",
+              "Ferrule",
+              "Bare Wire",
+              "JST"
+            ]
+          },
+          {
+            "id": "krakenx44_adapted-p-49",
+            "type": "CAN",
+            "label": "CAN OUT",
+            "side": "right",
+            "order": 1,
+            "gauge": null,
+            "fitting": "Molex SL",
+            "installedConnector": null,
+            "breaker": null,
+            "slot": null,
+            "requiredFittings": [
+              "Molex SL",
+              "Ferrule",
+              "Bare Wire",
+              "JST"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "krakenx44_adapted-54",
+      "type": "component",
+      "position": {
+        "x": 320,
+        "y": 696
+      },
+      "draggable": true,
+      "data": {
+        "definitionId": "krakenx44_adapted",
+        "label": "Tower",
+        "color": null,
+        "notes": "",
+        "locked": false,
+        "canId": 20,
+        "ipAddress": null,
+        "rotation": 180,
+        "ports": [
+          {
+            "id": "krakenx44_adapted-p-51",
+            "type": "PWR",
+            "label": "PWR",
+            "side": "left",
+            "order": 0,
+            "gauge": "12 AWG",
+            "fitting": "Anderson Powerpole",
+            "installedConnector": null,
+            "breaker": null,
+            "slot": null,
+            "requiredFittings": [
+              "Anderson Powerpole",
+              "Molex SL"
+            ]
+          },
+          {
+            "id": "krakenx44_adapted-p-52",
+            "type": "CAN",
+            "label": "CAN IN",
+            "side": "right",
+            "order": 0,
+            "gauge": null,
+            "fitting": "Molex SL",
+            "installedConnector": null,
+            "breaker": null,
+            "slot": null,
+            "requiredFittings": [
+              "Molex SL",
+              "Ferrule",
+              "Bare Wire",
+              "JST"
+            ]
+          },
+          {
+            "id": "krakenx44_adapted-p-53",
+            "type": "CAN",
+            "label": "CAN OUT",
+            "side": "right",
+            "order": 1,
+            "gauge": null,
+            "fitting": "Molex SL",
+            "installedConnector": null,
+            "breaker": null,
+            "slot": null,
+            "requiredFittings": [
+              "Molex SL",
+              "Ferrule",
+              "Bare Wire",
+              "JST"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "zone-55",
+      "type": "zone",
+      "position": {
+        "x": 272,
+        "y": 496
+      },
+      "draggable": true,
+      "zIndex": -1,
+      "data": {
+        "text": "Indexer / Tower",
+        "color": "#eab308",
+        "width": 240,
+        "height": 280
+      }
+    },
+    {
+      "id": "krakenx60_adapted-59",
+      "type": "component",
+      "position": {
+        "x": 320,
+        "y": 832
+      },
+      "draggable": true,
+      "data": {
+        "definitionId": "krakenx60_adapted",
+        "label": "Hood",
+        "color": null,
+        "notes": "",
+        "locked": false,
+        "canId": 19,
+        "ipAddress": null,
+        "rotation": 180,
+        "ports": [
+          {
+            "id": "krakenx60_adapted-p-56",
+            "type": "PWR",
+            "label": "PWR",
+            "side": "left",
+            "order": 0,
+            "gauge": "12 AWG",
+            "fitting": "Anderson Powerpole",
+            "installedConnector": null,
+            "breaker": null,
+            "slot": null,
+            "requiredFittings": [
+              "Anderson Powerpole",
+              "Molex SL"
+            ]
+          },
+          {
+            "id": "krakenx60_adapted-p-57",
+            "type": "CAN",
+            "label": "CAN IN",
+            "side": "right",
+            "order": 0,
+            "gauge": null,
+            "fitting": "Molex SL",
+            "installedConnector": null,
+            "breaker": null,
+            "slot": null,
+            "requiredFittings": [
+              "Molex SL",
+              "Ferrule",
+              "Bare Wire",
+              "JST"
+            ]
+          },
+          {
+            "id": "krakenx60_adapted-p-58",
+            "type": "CAN",
+            "label": "CAN OUT",
+            "side": "right",
+            "order": 1,
+            "gauge": null,
+            "fitting": "Molex SL",
+            "installedConnector": null,
+            "breaker": null,
+            "slot": null,
+            "requiredFittings": [
+              "Molex SL",
+              "Ferrule",
+              "Bare Wire",
+              "JST"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "krakenx60_adapted-63",
+      "type": "component",
+      "position": {
+        "x": 320,
+        "y": 912
+      },
+      "draggable": true,
+      "data": {
+        "definitionId": "krakenx60_adapted",
+        "label": "Flywheel TL",
+        "color": null,
+        "notes": "",
+        "locked": false,
+        "canId": 18,
+        "ipAddress": null,
+        "rotation": 180,
+        "ports": [
+          {
+            "id": "krakenx60_adapted-p-60",
+            "type": "PWR",
+            "label": "PWR",
+            "side": "left",
+            "order": 0,
+            "gauge": "12 AWG",
+            "fitting": "Anderson Powerpole",
+            "installedConnector": null,
+            "breaker": null,
+            "slot": null,
+            "requiredFittings": [
+              "Anderson Powerpole",
+              "Molex SL"
+            ]
+          },
+          {
+            "id": "krakenx60_adapted-p-61",
+            "type": "CAN",
+            "label": "CAN IN",
+            "side": "right",
+            "order": 0,
+            "gauge": null,
+            "fitting": "Molex SL",
+            "installedConnector": null,
+            "breaker": null,
+            "slot": null,
+            "requiredFittings": [
+              "Molex SL",
+              "Ferrule",
+              "Bare Wire",
+              "JST"
+            ]
+          },
+          {
+            "id": "krakenx60_adapted-p-62",
+            "type": "CAN",
+            "label": "CAN OUT",
+            "side": "right",
+            "order": 1,
+            "gauge": null,
+            "fitting": "Molex SL",
+            "installedConnector": null,
+            "breaker": null,
+            "slot": null,
+            "requiredFittings": [
+              "Molex SL",
+              "Ferrule",
+              "Bare Wire",
+              "JST"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "krakenx60_adapted-67",
+      "type": "component",
+      "position": {
+        "x": 320,
+        "y": 992
+      },
+      "draggable": true,
+      "data": {
+        "definitionId": "krakenx60_adapted",
+        "label": "Flywheel TR",
+        "color": null,
+        "notes": "",
+        "locked": false,
+        "canId": 16,
+        "ipAddress": null,
+        "rotation": 180,
+        "ports": [
+          {
+            "id": "krakenx60_adapted-p-64",
+            "type": "PWR",
+            "label": "PWR",
+            "side": "left",
+            "order": 0,
+            "gauge": "12 AWG",
+            "fitting": "Anderson Powerpole",
+            "installedConnector": null,
+            "breaker": null,
+            "slot": null,
+            "requiredFittings": [
+              "Anderson Powerpole",
+              "Molex SL"
+            ]
+          },
+          {
+            "id": "krakenx60_adapted-p-65",
+            "type": "CAN",
+            "label": "CAN IN",
+            "side": "right",
+            "order": 0,
+            "gauge": null,
+            "fitting": "Molex SL",
+            "installedConnector": null,
+            "breaker": null,
+            "slot": null,
+            "requiredFittings": [
+              "Molex SL",
+              "Ferrule",
+              "Bare Wire",
+              "JST"
+            ]
+          },
+          {
+            "id": "krakenx60_adapted-p-66",
+            "type": "CAN",
+            "label": "CAN OUT",
+            "side": "right",
+            "order": 1,
+            "gauge": null,
+            "fitting": "Molex SL",
+            "installedConnector": null,
+            "breaker": null,
+            "slot": null,
+            "requiredFittings": [
+              "Molex SL",
+              "Ferrule",
+              "Bare Wire",
+              "JST"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "krakenx60_adapted-71",
+      "type": "component",
+      "position": {
+        "x": 320,
+        "y": 1072
+      },
+      "draggable": true,
+      "data": {
+        "definitionId": "krakenx60_adapted",
+        "label": "Flywheel BL",
+        "color": null,
+        "notes": "",
+        "locked": false,
+        "canId": 21,
+        "ipAddress": null,
+        "rotation": 180,
+        "ports": [
+          {
+            "id": "krakenx60_adapted-p-68",
+            "type": "PWR",
+            "label": "PWR",
+            "side": "left",
+            "order": 0,
+            "gauge": "12 AWG",
+            "fitting": "Anderson Powerpole",
+            "installedConnector": null,
+            "breaker": null,
+            "slot": null,
+            "requiredFittings": [
+              "Anderson Powerpole",
+              "Molex SL"
+            ]
+          },
+          {
+            "id": "krakenx60_adapted-p-69",
+            "type": "CAN",
+            "label": "CAN IN",
+            "side": "right",
+            "order": 0,
+            "gauge": null,
+            "fitting": "Molex SL",
+            "installedConnector": null,
+            "breaker": null,
+            "slot": null,
+            "requiredFittings": [
+              "Molex SL",
+              "Ferrule",
+              "Bare Wire",
+              "JST"
+            ]
+          },
+          {
+            "id": "krakenx60_adapted-p-70",
+            "type": "CAN",
+            "label": "CAN OUT",
+            "side": "right",
+            "order": 1,
+            "gauge": null,
+            "fitting": "Molex SL",
+            "installedConnector": null,
+            "breaker": null,
+            "slot": null,
+            "requiredFittings": [
+              "Molex SL",
+              "Ferrule",
+              "Bare Wire",
+              "JST"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "krakenx60_adapted-75",
+      "type": "component",
+      "position": {
+        "x": 320,
+        "y": 1152
+      },
+      "draggable": true,
+      "data": {
+        "definitionId": "krakenx60_adapted",
+        "label": "Flywheel BR",
+        "color": null,
+        "notes": "",
+        "locked": false,
+        "canId": 22,
+        "ipAddress": null,
+        "rotation": 180,
+        "ports": [
+          {
+            "id": "krakenx60_adapted-p-72",
+            "type": "PWR",
+            "label": "PWR",
+            "side": "left",
+            "order": 0,
+            "gauge": "12 AWG",
+            "fitting": "Anderson Powerpole",
+            "installedConnector": null,
+            "breaker": null,
+            "slot": null,
+            "requiredFittings": [
+              "Anderson Powerpole",
+              "Molex SL"
+            ]
+          },
+          {
+            "id": "krakenx60_adapted-p-73",
+            "type": "CAN",
+            "label": "CAN IN",
+            "side": "right",
+            "order": 0,
+            "gauge": null,
+            "fitting": "Molex SL",
+            "installedConnector": null,
+            "breaker": null,
+            "slot": null,
+            "requiredFittings": [
+              "Molex SL",
+              "Ferrule",
+              "Bare Wire",
+              "JST"
+            ]
+          },
+          {
+            "id": "krakenx60_adapted-p-74",
+            "type": "CAN",
+            "label": "CAN OUT",
+            "side": "right",
+            "order": 1,
+            "gauge": null,
+            "fitting": "Molex SL",
+            "installedConnector": null,
+            "breaker": null,
+            "slot": null,
+            "requiredFittings": [
+              "Molex SL",
+              "Ferrule",
+              "Bare Wire",
+              "JST"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "zone-76",
+      "type": "zone",
+      "position": {
+        "x": 272,
+        "y": 792
+      },
+      "draggable": true,
+      "zIndex": -1,
+      "data": {
+        "text": "Shooter",
+        "color": "#f97316",
+        "width": 240,
+        "height": 440
+      }
+    },
+    {
+      "id": "krakenx60_adapted-80",
+      "type": "component",
+      "position": {
+        "x": 992,
+        "y": 384
       },
       "draggable": true,
       "data": {
@@ -1385,7 +1342,7 @@
         "rotation": 0,
         "ports": [
           {
-            "id": "krakenx60_adapted-p-87",
+            "id": "krakenx60_adapted-p-77",
             "type": "PWR",
             "label": "PWR",
             "side": "left",
@@ -1401,7 +1358,7 @@
             ]
           },
           {
-            "id": "krakenx60_adapted-p-88",
+            "id": "krakenx60_adapted-p-78",
             "type": "CAN",
             "label": "CAN IN",
             "side": "right",
@@ -1419,7 +1376,7 @@
             ]
           },
           {
-            "id": "krakenx60_adapted-p-89",
+            "id": "krakenx60_adapted-p-79",
             "type": "CAN",
             "label": "CAN OUT",
             "side": "right",
@@ -1440,11 +1397,11 @@
       }
     },
     {
-      "id": "krakenx60_adapted-94",
+      "id": "krakenx60_adapted-84",
       "type": "component",
       "position": {
-        "x": 1504,
-        "y": 400
+        "x": 992,
+        "y": 464
       },
       "draggable": true,
       "data": {
@@ -1458,7 +1415,7 @@
         "rotation": 0,
         "ports": [
           {
-            "id": "krakenx60_adapted-p-91",
+            "id": "krakenx60_adapted-p-81",
             "type": "PWR",
             "label": "PWR",
             "side": "left",
@@ -1474,7 +1431,7 @@
             ]
           },
           {
-            "id": "krakenx60_adapted-p-92",
+            "id": "krakenx60_adapted-p-82",
             "type": "CAN",
             "label": "CAN IN",
             "side": "right",
@@ -1492,7 +1449,7 @@
             ]
           },
           {
-            "id": "krakenx60_adapted-p-93",
+            "id": "krakenx60_adapted-p-83",
             "type": "CAN",
             "label": "CAN OUT",
             "side": "right",
@@ -1513,11 +1470,11 @@
       }
     },
     {
-      "id": "cancoder-97",
+      "id": "cancoder-88",
       "type": "component",
       "position": {
-        "x": 1536,
-        "y": 496
+        "x": 1216,
+        "y": 480
       },
       "draggable": true,
       "data": {
@@ -1528,14 +1485,48 @@
         "locked": false,
         "canId": 5,
         "ipAddress": null,
-        "rotation": 0,
+        "rotation": 90,
         "ports": [
           {
-            "id": "cancoder-p-96",
+            "id": "cancoder-p-85",
+            "type": "PWR",
+            "label": "PWR",
+            "side": "left",
+            "order": 0,
+            "gauge": "22 AWG",
+            "fitting": "Bare Wire",
+            "installedConnector": null,
+            "breaker": null,
+            "slot": null,
+            "requiredFittings": [
+              "Ferrule",
+              "Bare Wire",
+              "Molex SL"
+            ]
+          },
+          {
+            "id": "cancoder-p-86",
             "type": "CAN",
-            "label": "CAN",
+            "label": "CAN IN",
             "side": "bottom",
             "order": 0,
+            "gauge": null,
+            "fitting": null,
+            "installedConnector": null,
+            "breaker": null,
+            "slot": null,
+            "requiredFittings": [
+              "Molex SL",
+              "Ferrule",
+              "Bare Wire"
+            ]
+          },
+          {
+            "id": "cancoder-p-87",
+            "type": "CAN",
+            "label": "CAN OUT",
+            "side": "bottom",
+            "order": 1,
             "gauge": null,
             "fitting": null,
             "installedConnector": null,
@@ -1551,11 +1542,11 @@
       }
     },
     {
-      "id": "krakenx60_adapted-101",
+      "id": "krakenx60_adapted-92",
       "type": "component",
       "position": {
-        "x": 1824,
-        "y": 304
+        "x": 992,
+        "y": 592
       },
       "draggable": true,
       "data": {
@@ -1569,7 +1560,7 @@
         "rotation": 0,
         "ports": [
           {
-            "id": "krakenx60_adapted-p-98",
+            "id": "krakenx60_adapted-p-89",
             "type": "PWR",
             "label": "PWR",
             "side": "left",
@@ -1585,7 +1576,7 @@
             ]
           },
           {
-            "id": "krakenx60_adapted-p-99",
+            "id": "krakenx60_adapted-p-90",
             "type": "CAN",
             "label": "CAN IN",
             "side": "right",
@@ -1603,7 +1594,7 @@
             ]
           },
           {
-            "id": "krakenx60_adapted-p-100",
+            "id": "krakenx60_adapted-p-91",
             "type": "CAN",
             "label": "CAN OUT",
             "side": "right",
@@ -1624,11 +1615,11 @@
       }
     },
     {
-      "id": "krakenx60_adapted-105",
+      "id": "krakenx60_adapted-96",
       "type": "component",
       "position": {
-        "x": 1824,
-        "y": 400
+        "x": 992,
+        "y": 672
       },
       "draggable": true,
       "data": {
@@ -1642,7 +1633,7 @@
         "rotation": 0,
         "ports": [
           {
-            "id": "krakenx60_adapted-p-102",
+            "id": "krakenx60_adapted-p-93",
             "type": "PWR",
             "label": "PWR",
             "side": "left",
@@ -1658,7 +1649,7 @@
             ]
           },
           {
-            "id": "krakenx60_adapted-p-103",
+            "id": "krakenx60_adapted-p-94",
             "type": "CAN",
             "label": "CAN IN",
             "side": "right",
@@ -1676,7 +1667,7 @@
             ]
           },
           {
-            "id": "krakenx60_adapted-p-104",
+            "id": "krakenx60_adapted-p-95",
             "type": "CAN",
             "label": "CAN OUT",
             "side": "right",
@@ -1697,11 +1688,11 @@
       }
     },
     {
-      "id": "cancoder-108",
+      "id": "cancoder-100",
       "type": "component",
       "position": {
-        "x": 1856,
-        "y": 496
+        "x": 1216,
+        "y": 688
       },
       "draggable": true,
       "data": {
@@ -1712,14 +1703,48 @@
         "locked": false,
         "canId": 10,
         "ipAddress": null,
-        "rotation": 0,
+        "rotation": 90,
         "ports": [
           {
-            "id": "cancoder-p-107",
+            "id": "cancoder-p-97",
+            "type": "PWR",
+            "label": "PWR",
+            "side": "left",
+            "order": 0,
+            "gauge": "22 AWG",
+            "fitting": "Bare Wire",
+            "installedConnector": null,
+            "breaker": null,
+            "slot": null,
+            "requiredFittings": [
+              "Ferrule",
+              "Bare Wire",
+              "Molex SL"
+            ]
+          },
+          {
+            "id": "cancoder-p-98",
             "type": "CAN",
-            "label": "CAN",
+            "label": "CAN IN",
             "side": "bottom",
             "order": 0,
+            "gauge": null,
+            "fitting": null,
+            "installedConnector": null,
+            "breaker": null,
+            "slot": null,
+            "requiredFittings": [
+              "Molex SL",
+              "Ferrule",
+              "Bare Wire"
+            ]
+          },
+          {
+            "id": "cancoder-p-99",
+            "type": "CAN",
+            "label": "CAN OUT",
+            "side": "bottom",
+            "order": 1,
             "gauge": null,
             "fitting": null,
             "installedConnector": null,
@@ -1735,11 +1760,11 @@
       }
     },
     {
-      "id": "krakenx60_adapted-112",
+      "id": "krakenx60_adapted-104",
       "type": "component",
       "position": {
-        "x": 1504,
-        "y": 624
+        "x": 992,
+        "y": 800
       },
       "draggable": true,
       "data": {
@@ -1753,7 +1778,7 @@
         "rotation": 0,
         "ports": [
           {
-            "id": "krakenx60_adapted-p-109",
+            "id": "krakenx60_adapted-p-101",
             "type": "PWR",
             "label": "PWR",
             "side": "left",
@@ -1769,7 +1794,7 @@
             ]
           },
           {
-            "id": "krakenx60_adapted-p-110",
+            "id": "krakenx60_adapted-p-102",
             "type": "CAN",
             "label": "CAN IN",
             "side": "right",
@@ -1787,7 +1812,7 @@
             ]
           },
           {
-            "id": "krakenx60_adapted-p-111",
+            "id": "krakenx60_adapted-p-103",
             "type": "CAN",
             "label": "CAN OUT",
             "side": "right",
@@ -1808,11 +1833,11 @@
       }
     },
     {
-      "id": "krakenx60_adapted-116",
+      "id": "krakenx60_adapted-108",
       "type": "component",
       "position": {
-        "x": 1504,
-        "y": 720
+        "x": 992,
+        "y": 880
       },
       "draggable": true,
       "data": {
@@ -1822,6 +1847,151 @@
         "notes": "",
         "locked": false,
         "canId": 1,
+        "ipAddress": null,
+        "rotation": 0,
+        "ports": [
+          {
+            "id": "krakenx60_adapted-p-105",
+            "type": "PWR",
+            "label": "PWR",
+            "side": "left",
+            "order": 0,
+            "gauge": "12 AWG",
+            "fitting": "Anderson Powerpole",
+            "installedConnector": null,
+            "breaker": null,
+            "slot": null,
+            "requiredFittings": [
+              "Anderson Powerpole",
+              "Molex SL"
+            ]
+          },
+          {
+            "id": "krakenx60_adapted-p-106",
+            "type": "CAN",
+            "label": "CAN IN",
+            "side": "right",
+            "order": 0,
+            "gauge": null,
+            "fitting": "Molex SL",
+            "installedConnector": null,
+            "breaker": null,
+            "slot": null,
+            "requiredFittings": [
+              "Molex SL",
+              "Ferrule",
+              "Bare Wire",
+              "JST"
+            ]
+          },
+          {
+            "id": "krakenx60_adapted-p-107",
+            "type": "CAN",
+            "label": "CAN OUT",
+            "side": "right",
+            "order": 1,
+            "gauge": null,
+            "fitting": "Molex SL",
+            "installedConnector": null,
+            "breaker": null,
+            "slot": null,
+            "requiredFittings": [
+              "Molex SL",
+              "Ferrule",
+              "Bare Wire",
+              "JST"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "cancoder-112",
+      "type": "component",
+      "position": {
+        "x": 1216,
+        "y": 896
+      },
+      "draggable": true,
+      "data": {
+        "definitionId": "cancoder",
+        "label": "BL Enc",
+        "color": null,
+        "notes": "",
+        "locked": false,
+        "canId": 3,
+        "ipAddress": null,
+        "rotation": 90,
+        "ports": [
+          {
+            "id": "cancoder-p-109",
+            "type": "PWR",
+            "label": "PWR",
+            "side": "left",
+            "order": 0,
+            "gauge": "22 AWG",
+            "fitting": "Bare Wire",
+            "installedConnector": null,
+            "breaker": null,
+            "slot": null,
+            "requiredFittings": [
+              "Ferrule",
+              "Bare Wire",
+              "Molex SL"
+            ]
+          },
+          {
+            "id": "cancoder-p-110",
+            "type": "CAN",
+            "label": "CAN IN",
+            "side": "bottom",
+            "order": 0,
+            "gauge": null,
+            "fitting": null,
+            "installedConnector": null,
+            "breaker": null,
+            "slot": null,
+            "requiredFittings": [
+              "Molex SL",
+              "Ferrule",
+              "Bare Wire"
+            ]
+          },
+          {
+            "id": "cancoder-p-111",
+            "type": "CAN",
+            "label": "CAN OUT",
+            "side": "bottom",
+            "order": 1,
+            "gauge": null,
+            "fitting": null,
+            "installedConnector": null,
+            "breaker": null,
+            "slot": null,
+            "requiredFittings": [
+              "Molex SL",
+              "Ferrule",
+              "Bare Wire"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "krakenx60_adapted-116",
+      "type": "component",
+      "position": {
+        "x": 992,
+        "y": 1008
+      },
+      "draggable": true,
+      "data": {
+        "definitionId": "krakenx60_adapted",
+        "label": "BR Drive",
+        "color": null,
+        "notes": "",
+        "locked": false,
+        "canId": 11,
         "ipAddress": null,
         "rotation": 0,
         "ports": [
@@ -1881,122 +2051,11 @@
       }
     },
     {
-      "id": "cancoder-119",
+      "id": "krakenx60_adapted-120",
       "type": "component",
       "position": {
-        "x": 1536,
-        "y": 816
-      },
-      "draggable": true,
-      "data": {
-        "definitionId": "cancoder",
-        "label": "BL Enc",
-        "color": null,
-        "notes": "",
-        "locked": false,
-        "canId": 3,
-        "ipAddress": null,
-        "rotation": 0,
-        "ports": [
-          {
-            "id": "cancoder-p-118",
-            "type": "CAN",
-            "label": "CAN",
-            "side": "bottom",
-            "order": 0,
-            "gauge": null,
-            "fitting": null,
-            "installedConnector": null,
-            "breaker": null,
-            "slot": null,
-            "requiredFittings": [
-              "Molex SL",
-              "Ferrule",
-              "Bare Wire"
-            ]
-          }
-        ]
-      }
-    },
-    {
-      "id": "krakenx60_adapted-123",
-      "type": "component",
-      "position": {
-        "x": 1824,
-        "y": 624
-      },
-      "draggable": true,
-      "data": {
-        "definitionId": "krakenx60_adapted",
-        "label": "BR Drive",
-        "color": null,
-        "notes": "",
-        "locked": false,
-        "canId": 11,
-        "ipAddress": null,
-        "rotation": 0,
-        "ports": [
-          {
-            "id": "krakenx60_adapted-p-120",
-            "type": "PWR",
-            "label": "PWR",
-            "side": "left",
-            "order": 0,
-            "gauge": "12 AWG",
-            "fitting": "Anderson Powerpole",
-            "installedConnector": null,
-            "breaker": null,
-            "slot": null,
-            "requiredFittings": [
-              "Anderson Powerpole",
-              "Molex SL"
-            ]
-          },
-          {
-            "id": "krakenx60_adapted-p-121",
-            "type": "CAN",
-            "label": "CAN IN",
-            "side": "right",
-            "order": 0,
-            "gauge": null,
-            "fitting": "Molex SL",
-            "installedConnector": null,
-            "breaker": null,
-            "slot": null,
-            "requiredFittings": [
-              "Molex SL",
-              "Ferrule",
-              "Bare Wire",
-              "JST"
-            ]
-          },
-          {
-            "id": "krakenx60_adapted-p-122",
-            "type": "CAN",
-            "label": "CAN OUT",
-            "side": "right",
-            "order": 1,
-            "gauge": null,
-            "fitting": "Molex SL",
-            "installedConnector": null,
-            "breaker": null,
-            "slot": null,
-            "requiredFittings": [
-              "Molex SL",
-              "Ferrule",
-              "Bare Wire",
-              "JST"
-            ]
-          }
-        ]
-      }
-    },
-    {
-      "id": "krakenx60_adapted-127",
-      "type": "component",
-      "position": {
-        "x": 1824,
-        "y": 720
+        "x": 992,
+        "y": 1088
       },
       "draggable": true,
       "data": {
@@ -2010,7 +2069,7 @@
         "rotation": 0,
         "ports": [
           {
-            "id": "krakenx60_adapted-p-124",
+            "id": "krakenx60_adapted-p-117",
             "type": "PWR",
             "label": "PWR",
             "side": "left",
@@ -2026,7 +2085,7 @@
             ]
           },
           {
-            "id": "krakenx60_adapted-p-125",
+            "id": "krakenx60_adapted-p-118",
             "type": "CAN",
             "label": "CAN IN",
             "side": "right",
@@ -2044,7 +2103,7 @@
             ]
           },
           {
-            "id": "krakenx60_adapted-p-126",
+            "id": "krakenx60_adapted-p-119",
             "type": "CAN",
             "label": "CAN OUT",
             "side": "right",
@@ -2065,11 +2124,11 @@
       }
     },
     {
-      "id": "cancoder-130",
+      "id": "cancoder-124",
       "type": "component",
       "position": {
-        "x": 1856,
-        "y": 816
+        "x": 1216,
+        "y": 1104
       },
       "draggable": true,
       "data": {
@@ -2080,14 +2139,48 @@
         "locked": false,
         "canId": 12,
         "ipAddress": null,
-        "rotation": 0,
+        "rotation": 90,
         "ports": [
           {
-            "id": "cancoder-p-129",
+            "id": "cancoder-p-121",
+            "type": "PWR",
+            "label": "PWR",
+            "side": "left",
+            "order": 0,
+            "gauge": "22 AWG",
+            "fitting": "Bare Wire",
+            "installedConnector": null,
+            "breaker": null,
+            "slot": null,
+            "requiredFittings": [
+              "Ferrule",
+              "Bare Wire",
+              "Molex SL"
+            ]
+          },
+          {
+            "id": "cancoder-p-122",
             "type": "CAN",
-            "label": "CAN",
+            "label": "CAN IN",
             "side": "bottom",
             "order": 0,
+            "gauge": null,
+            "fitting": null,
+            "installedConnector": null,
+            "breaker": null,
+            "slot": null,
+            "requiredFittings": [
+              "Molex SL",
+              "Ferrule",
+              "Bare Wire"
+            ]
+          },
+          {
+            "id": "cancoder-p-123",
+            "type": "CAN",
+            "label": "CAN OUT",
+            "side": "bottom",
+            "order": 1,
             "gauge": null,
             "fitting": null,
             "installedConnector": null,
@@ -2103,11 +2196,11 @@
       }
     },
     {
-      "id": "canterminator-132",
+      "id": "canterminator-126",
       "type": "component",
       "position": {
-        "x": 2048,
-        "y": 832
+        "x": 1200,
+        "y": 368
       },
       "draggable": true,
       "data": {
@@ -2121,7 +2214,7 @@
         "rotation": 0,
         "ports": [
           {
-            "id": "canterminator-p-131",
+            "id": "canterminator-p-125",
             "type": "CAN",
             "label": "CAN",
             "side": "left",
@@ -2137,807 +2230,900 @@
       }
     },
     {
-      "id": "zone-133",
+      "id": "canivore-131",
+      "type": "component",
+      "position": {
+        "x": 1008,
+        "y": 1264
+      },
+      "draggable": true,
+      "data": {
+        "definitionId": "canivore",
+        "label": "CANivore (Drivetrain)",
+        "color": null,
+        "notes": "",
+        "locked": false,
+        "canId": null,
+        "ipAddress": null,
+        "rotation": 0,
+        "ports": [
+          {
+            "id": "canivore-p-127",
+            "type": "USB",
+            "label": "USB-A",
+            "side": "left",
+            "order": 0,
+            "gauge": null,
+            "fitting": null,
+            "installedConnector": null,
+            "breaker": null,
+            "slot": null,
+            "requiredFittings": [
+              "USB-A"
+            ]
+          },
+          {
+            "id": "canivore-p-128",
+            "type": "CAN",
+            "label": "CAN IN",
+            "side": "right",
+            "order": 0,
+            "gauge": null,
+            "fitting": null,
+            "installedConnector": "Molex SL",
+            "breaker": null,
+            "slot": null,
+            "requiredFittings": [
+              "Ferrule",
+              "Bare Wire",
+              "JST"
+            ]
+          },
+          {
+            "id": "canivore-p-129",
+            "type": "CAN",
+            "label": "CAN OUT",
+            "side": "right",
+            "order": 1,
+            "gauge": null,
+            "fitting": null,
+            "installedConnector": "Molex SL",
+            "breaker": null,
+            "slot": null,
+            "requiredFittings": [
+              "Ferrule",
+              "Bare Wire",
+              "JST"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "pigeon2-135",
+      "type": "component",
+      "position": {
+        "x": 1200,
+        "y": 1264
+      },
+      "draggable": true,
+      "data": {
+        "definitionId": "pigeon2",
+        "label": "Pigeon 2",
+        "color": null,
+        "notes": "",
+        "locked": false,
+        "canId": 14,
+        "ipAddress": null,
+        "rotation": 90,
+        "ports": [
+          {
+            "id": "pigeon2-p-132",
+            "type": "PWR",
+            "label": "PWR",
+            "side": "left",
+            "order": 0,
+            "gauge": "22 AWG",
+            "fitting": "Bare Wire",
+            "installedConnector": null,
+            "breaker": null,
+            "slot": null,
+            "requiredFittings": [
+              "Ferrule",
+              "Bare Wire"
+            ]
+          },
+          {
+            "id": "pigeon2-p-133",
+            "type": "CAN",
+            "label": "CAN IN",
+            "side": "bottom",
+            "order": 0,
+            "gauge": null,
+            "fitting": null,
+            "installedConnector": "Molex SL",
+            "breaker": null,
+            "slot": null,
+            "requiredFittings": [
+              "Ferrule",
+              "Bare Wire",
+              "JST"
+            ]
+          },
+          {
+            "id": "pigeon2-p-134",
+            "type": "CAN",
+            "label": "CAN OUT",
+            "side": "bottom",
+            "order": 1,
+            "gauge": null,
+            "fitting": null,
+            "installedConnector": "Molex SL",
+            "breaker": null,
+            "slot": null,
+            "requiredFittings": [
+              "Ferrule",
+              "Bare Wire",
+              "JST"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "mpm-143",
+      "type": "component",
+      "position": {
+        "x": 1376,
+        "y": 352
+      },
+      "draggable": true,
+      "data": {
+        "definitionId": "mpm",
+        "label": "MPM",
+        "color": null,
+        "notes": "",
+        "locked": false,
+        "canId": null,
+        "ipAddress": null,
+        "rotation": 180,
+        "ports": [
+          {
+            "id": "mpm-p-136",
+            "type": "PWR",
+            "label": "PWR",
+            "side": "bottom",
+            "order": 0,
+            "gauge": "12 AWG",
+            "fitting": "Ferrule",
+            "installedConnector": null,
+            "breaker": null,
+            "slot": null,
+            "requiredFittings": [
+              "Ferrule",
+              "Bare Wire"
+            ]
+          },
+          {
+            "id": "mpm-p-137",
+            "type": "PWR",
+            "label": "CH0",
+            "side": "right",
+            "order": 0,
+            "gauge": "18 AWG",
+            "fitting": "Ferrule",
+            "installedConnector": null,
+            "breaker": 5,
+            "slot": "fuse",
+            "requiredFittings": [
+              "Ferrule",
+              "Bare Wire"
+            ]
+          },
+          {
+            "id": "mpm-p-138",
+            "type": "PWR",
+            "label": "CH1",
+            "side": "right",
+            "order": 1,
+            "gauge": "18 AWG",
+            "fitting": "Ferrule",
+            "installedConnector": null,
+            "breaker": 5,
+            "slot": "fuse",
+            "requiredFittings": [
+              "Ferrule",
+              "Bare Wire"
+            ]
+          },
+          {
+            "id": "mpm-p-139",
+            "type": "PWR",
+            "label": "CH2",
+            "side": "right",
+            "order": 2,
+            "gauge": "18 AWG",
+            "fitting": "Ferrule",
+            "installedConnector": null,
+            "breaker": 5,
+            "slot": "fuse",
+            "requiredFittings": [
+              "Ferrule",
+              "Bare Wire"
+            ]
+          },
+          {
+            "id": "mpm-p-140",
+            "type": "PWR",
+            "label": "CH3",
+            "side": "right",
+            "order": 3,
+            "gauge": "18 AWG",
+            "fitting": "Ferrule",
+            "installedConnector": null,
+            "breaker": 5,
+            "slot": "fuse",
+            "requiredFittings": [
+              "Ferrule",
+              "Bare Wire"
+            ]
+          },
+          {
+            "id": "mpm-p-141",
+            "type": "PWR",
+            "label": "CH4",
+            "side": "right",
+            "order": 4,
+            "gauge": "18 AWG",
+            "fitting": "Ferrule",
+            "installedConnector": null,
+            "breaker": 5,
+            "slot": "fuse",
+            "requiredFittings": [
+              "Ferrule",
+              "Bare Wire"
+            ]
+          },
+          {
+            "id": "mpm-p-142",
+            "type": "PWR",
+            "label": "CH5",
+            "side": "right",
+            "order": 5,
+            "gauge": "18 AWG",
+            "fitting": "Ferrule",
+            "installedConnector": null,
+            "breaker": null,
+            "slot": "fuse",
+            "requiredFittings": [
+              "Ferrule",
+              "Bare Wire"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "zone-144",
       "type": "zone",
       "position": {
-        "x": 1440,
-        "y": 96
+        "x": 960,
+        "y": 336
       },
       "draggable": true,
       "zIndex": -1,
       "data": {
         "text": "Drive Base (CANivore bus)",
         "color": "#3b82f6",
-        "width": 704,
-        "height": 848
+        "width": 560,
+        "height": 1040
       }
     },
     {
-      "id": "krakenx60_adapted-137",
+      "id": "roborio2-151",
       "type": "component",
       "position": {
-        "x": 640,
-        "y": 1024
+        "x": 736,
+        "y": 1296
       },
       "draggable": true,
       "data": {
-        "definitionId": "krakenx60_adapted",
-        "label": "Intake Roller",
+        "definitionId": "roborio2",
+        "label": "roboRIO 2",
         "color": null,
         "notes": "",
         "locked": false,
-        "canId": 28,
-        "ipAddress": null,
-        "rotation": 180,
-        "ports": [
-          {
-            "id": "krakenx60_adapted-p-134",
-            "type": "PWR",
-            "label": "PWR",
-            "side": "left",
-            "order": 0,
-            "gauge": "12 AWG",
-            "fitting": "Anderson Powerpole",
-            "installedConnector": null,
-            "breaker": null,
-            "slot": null,
-            "requiredFittings": [
-              "Anderson Powerpole",
-              "Molex SL"
-            ]
-          },
-          {
-            "id": "krakenx60_adapted-p-135",
-            "type": "CAN",
-            "label": "CAN IN",
-            "side": "right",
-            "order": 0,
-            "gauge": null,
-            "fitting": "Molex SL",
-            "installedConnector": null,
-            "breaker": null,
-            "slot": null,
-            "requiredFittings": [
-              "Molex SL",
-              "Ferrule",
-              "Bare Wire",
-              "JST"
-            ]
-          },
-          {
-            "id": "krakenx60_adapted-p-136",
-            "type": "CAN",
-            "label": "CAN OUT",
-            "side": "right",
-            "order": 1,
-            "gauge": null,
-            "fitting": "Molex SL",
-            "installedConnector": null,
-            "breaker": null,
-            "slot": null,
-            "requiredFittings": [
-              "Molex SL",
-              "Ferrule",
-              "Bare Wire",
-              "JST"
-            ]
-          }
-        ]
-      }
-    },
-    {
-      "id": "krakenx44_adapted-141",
-      "type": "component",
-      "position": {
-        "x": 640,
-        "y": 1120
-      },
-      "draggable": true,
-      "data": {
-        "definitionId": "krakenx44_adapted",
-        "label": "Intake Linear",
-        "color": null,
-        "notes": "",
-        "locked": false,
-        "canId": 27,
-        "ipAddress": null,
-        "rotation": 180,
-        "ports": [
-          {
-            "id": "krakenx44_adapted-p-138",
-            "type": "PWR",
-            "label": "PWR",
-            "side": "left",
-            "order": 0,
-            "gauge": "12 AWG",
-            "fitting": "Anderson Powerpole",
-            "installedConnector": null,
-            "breaker": null,
-            "slot": null,
-            "requiredFittings": [
-              "Anderson Powerpole",
-              "Molex SL"
-            ]
-          },
-          {
-            "id": "krakenx44_adapted-p-139",
-            "type": "CAN",
-            "label": "CAN IN",
-            "side": "right",
-            "order": 0,
-            "gauge": null,
-            "fitting": "Molex SL",
-            "installedConnector": null,
-            "breaker": null,
-            "slot": null,
-            "requiredFittings": [
-              "Molex SL",
-              "Ferrule",
-              "Bare Wire",
-              "JST"
-            ]
-          },
-          {
-            "id": "krakenx44_adapted-p-140",
-            "type": "CAN",
-            "label": "CAN OUT",
-            "side": "right",
-            "order": 1,
-            "gauge": null,
-            "fitting": "Molex SL",
-            "installedConnector": null,
-            "breaker": null,
-            "slot": null,
-            "requiredFittings": [
-              "Molex SL",
-              "Ferrule",
-              "Bare Wire",
-              "JST"
-            ]
-          }
-        ]
-      }
-    },
-    {
-      "id": "zone-142",
-      "type": "zone",
-      "position": {
-        "x": 608,
-        "y": 976
-      },
-      "draggable": true,
-      "zIndex": -1,
-      "data": {
-        "text": "Intake",
-        "color": "#22c55e",
-        "width": 224,
-        "height": 240
-      }
-    },
-    {
-      "id": "krakenx44_adapted-146",
-      "type": "component",
-      "position": {
-        "x": 896,
-        "y": 1024
-      },
-      "draggable": true,
-      "data": {
-        "definitionId": "krakenx44_adapted",
-        "label": "Indexer",
-        "color": null,
-        "notes": "",
-        "locked": false,
-        "canId": 25,
-        "ipAddress": null,
+        "canId": null,
+        "ipAddress": "10.34.67.2",
         "rotation": 0,
         "ports": [
           {
-            "id": "krakenx44_adapted-p-143",
+            "id": "roborio2-p-145",
             "type": "PWR",
             "label": "PWR",
-            "side": "left",
+            "side": "top",
             "order": 0,
             "gauge": "12 AWG",
-            "fitting": "Anderson Powerpole",
+            "fitting": "Ferrule",
             "installedConnector": null,
             "breaker": null,
             "slot": null,
             "requiredFittings": [
-              "Anderson Powerpole",
-              "Molex SL"
+              "Ferrule",
+              "Bare Wire"
             ]
           },
           {
-            "id": "krakenx44_adapted-p-144",
+            "id": "roborio2-p-146",
             "type": "CAN",
-            "label": "CAN IN",
+            "label": "CAN",
+            "side": "left",
+            "order": 0,
+            "gauge": null,
+            "fitting": null,
+            "installedConnector": "Molex SL",
+            "breaker": null,
+            "slot": null,
+            "requiredFittings": [
+              "Ferrule",
+              "Bare Wire"
+            ]
+          },
+          {
+            "id": "roborio2-p-147",
+            "type": "ETH",
+            "label": "ETH",
+            "side": "top",
+            "order": 1,
+            "gauge": null,
+            "fitting": null,
+            "installedConnector": null,
+            "breaker": null,
+            "slot": null,
+            "requiredFittings": null
+          },
+          {
+            "id": "roborio2-p-148",
+            "type": "USB",
+            "label": "USB-A",
             "side": "right",
             "order": 0,
             "gauge": null,
-            "fitting": "Molex SL",
+            "fitting": null,
             "installedConnector": null,
             "breaker": null,
             "slot": null,
             "requiredFittings": [
-              "Molex SL",
-              "Ferrule",
-              "Bare Wire",
-              "JST"
+              "USB-A"
             ]
           },
           {
-            "id": "krakenx44_adapted-p-145",
-            "type": "CAN",
-            "label": "CAN OUT",
+            "id": "roborio2-p-149",
+            "type": "USB",
+            "label": "USB-A",
             "side": "right",
             "order": 1,
             "gauge": null,
-            "fitting": "Molex SL",
+            "fitting": null,
             "installedConnector": null,
             "breaker": null,
             "slot": null,
             "requiredFittings": [
-              "Molex SL",
+              "USB-A"
+            ]
+          },
+          {
+            "id": "roborio2-p-150",
+            "type": "PWR",
+            "label": "RSL",
+            "side": "bottom",
+            "order": 0,
+            "gauge": "18 AWG",
+            "fitting": "Ferrule",
+            "installedConnector": null,
+            "breaker": null,
+            "slot": null,
+            "requiredFittings": [
               "Ferrule",
-              "Bare Wire",
-              "JST"
+              "Bare Wire"
             ]
           }
         ]
       }
     },
     {
-      "id": "krakenx44_adapted-150",
+      "id": "vh109-157",
       "type": "component",
       "position": {
-        "x": 896,
-        "y": 1120
-      },
-      "draggable": true,
-      "data": {
-        "definitionId": "krakenx44_adapted",
-        "label": "Indexer Follower",
-        "color": null,
-        "notes": "",
-        "locked": false,
-        "canId": 26,
-        "ipAddress": null,
-        "rotation": 0,
-        "ports": [
-          {
-            "id": "krakenx44_adapted-p-147",
-            "type": "PWR",
-            "label": "PWR",
-            "side": "left",
-            "order": 0,
-            "gauge": "12 AWG",
-            "fitting": "Anderson Powerpole",
-            "installedConnector": null,
-            "breaker": null,
-            "slot": null,
-            "requiredFittings": [
-              "Anderson Powerpole",
-              "Molex SL"
-            ]
-          },
-          {
-            "id": "krakenx44_adapted-p-148",
-            "type": "CAN",
-            "label": "CAN IN",
-            "side": "right",
-            "order": 0,
-            "gauge": null,
-            "fitting": "Molex SL",
-            "installedConnector": null,
-            "breaker": null,
-            "slot": null,
-            "requiredFittings": [
-              "Molex SL",
-              "Ferrule",
-              "Bare Wire",
-              "JST"
-            ]
-          },
-          {
-            "id": "krakenx44_adapted-p-149",
-            "type": "CAN",
-            "label": "CAN OUT",
-            "side": "right",
-            "order": 1,
-            "gauge": null,
-            "fitting": "Molex SL",
-            "installedConnector": null,
-            "breaker": null,
-            "slot": null,
-            "requiredFittings": [
-              "Molex SL",
-              "Ferrule",
-              "Bare Wire",
-              "JST"
-            ]
-          }
-        ]
-      }
-    },
-    {
-      "id": "krakenx44_adapted-154",
-      "type": "component",
-      "position": {
-        "x": 896,
-        "y": 1216
-      },
-      "draggable": true,
-      "data": {
-        "definitionId": "krakenx44_adapted",
-        "label": "Tower",
-        "color": null,
-        "notes": "",
-        "locked": false,
-        "canId": 20,
-        "ipAddress": null,
-        "rotation": 0,
-        "ports": [
-          {
-            "id": "krakenx44_adapted-p-151",
-            "type": "PWR",
-            "label": "PWR",
-            "side": "left",
-            "order": 0,
-            "gauge": "12 AWG",
-            "fitting": "Anderson Powerpole",
-            "installedConnector": null,
-            "breaker": null,
-            "slot": null,
-            "requiredFittings": [
-              "Anderson Powerpole",
-              "Molex SL"
-            ]
-          },
-          {
-            "id": "krakenx44_adapted-p-152",
-            "type": "CAN",
-            "label": "CAN IN",
-            "side": "right",
-            "order": 0,
-            "gauge": null,
-            "fitting": "Molex SL",
-            "installedConnector": null,
-            "breaker": null,
-            "slot": null,
-            "requiredFittings": [
-              "Molex SL",
-              "Ferrule",
-              "Bare Wire",
-              "JST"
-            ]
-          },
-          {
-            "id": "krakenx44_adapted-p-153",
-            "type": "CAN",
-            "label": "CAN OUT",
-            "side": "right",
-            "order": 1,
-            "gauge": null,
-            "fitting": "Molex SL",
-            "installedConnector": null,
-            "breaker": null,
-            "slot": null,
-            "requiredFittings": [
-              "Molex SL",
-              "Ferrule",
-              "Bare Wire",
-              "JST"
-            ]
-          }
-        ]
-      }
-    },
-    {
-      "id": "zone-155",
-      "type": "zone",
-      "position": {
-        "x": 864,
-        "y": 976
-      },
-      "draggable": true,
-      "zIndex": -1,
-      "data": {
-        "text": "Indexer / Tower",
-        "color": "#eab308",
-        "width": 224,
-        "height": 336
-      }
-    },
-    {
-      "id": "krakenx60_adapted-159",
-      "type": "component",
-      "position": {
-        "x": 1152,
-        "y": 1024
-      },
-      "draggable": true,
-      "data": {
-        "definitionId": "krakenx60_adapted",
-        "label": "Hood",
-        "color": null,
-        "notes": "",
-        "locked": false,
-        "canId": 19,
-        "ipAddress": null,
-        "rotation": 0,
-        "ports": [
-          {
-            "id": "krakenx60_adapted-p-156",
-            "type": "PWR",
-            "label": "PWR",
-            "side": "left",
-            "order": 0,
-            "gauge": "12 AWG",
-            "fitting": "Anderson Powerpole",
-            "installedConnector": null,
-            "breaker": null,
-            "slot": null,
-            "requiredFittings": [
-              "Anderson Powerpole",
-              "Molex SL"
-            ]
-          },
-          {
-            "id": "krakenx60_adapted-p-157",
-            "type": "CAN",
-            "label": "CAN IN",
-            "side": "right",
-            "order": 0,
-            "gauge": null,
-            "fitting": "Molex SL",
-            "installedConnector": null,
-            "breaker": null,
-            "slot": null,
-            "requiredFittings": [
-              "Molex SL",
-              "Ferrule",
-              "Bare Wire",
-              "JST"
-            ]
-          },
-          {
-            "id": "krakenx60_adapted-p-158",
-            "type": "CAN",
-            "label": "CAN OUT",
-            "side": "right",
-            "order": 1,
-            "gauge": null,
-            "fitting": "Molex SL",
-            "installedConnector": null,
-            "breaker": null,
-            "slot": null,
-            "requiredFittings": [
-              "Molex SL",
-              "Ferrule",
-              "Bare Wire",
-              "JST"
-            ]
-          }
-        ]
-      }
-    },
-    {
-      "id": "krakenx60_adapted-163",
-      "type": "component",
-      "position": {
-        "x": 1152,
-        "y": 1120
-      },
-      "draggable": true,
-      "data": {
-        "definitionId": "krakenx60_adapted",
-        "label": "Flywheel TL",
-        "color": null,
-        "notes": "",
-        "locked": false,
-        "canId": 18,
-        "ipAddress": null,
-        "rotation": 0,
-        "ports": [
-          {
-            "id": "krakenx60_adapted-p-160",
-            "type": "PWR",
-            "label": "PWR",
-            "side": "left",
-            "order": 0,
-            "gauge": "12 AWG",
-            "fitting": "Anderson Powerpole",
-            "installedConnector": null,
-            "breaker": null,
-            "slot": null,
-            "requiredFittings": [
-              "Anderson Powerpole",
-              "Molex SL"
-            ]
-          },
-          {
-            "id": "krakenx60_adapted-p-161",
-            "type": "CAN",
-            "label": "CAN IN",
-            "side": "right",
-            "order": 0,
-            "gauge": null,
-            "fitting": "Molex SL",
-            "installedConnector": null,
-            "breaker": null,
-            "slot": null,
-            "requiredFittings": [
-              "Molex SL",
-              "Ferrule",
-              "Bare Wire",
-              "JST"
-            ]
-          },
-          {
-            "id": "krakenx60_adapted-p-162",
-            "type": "CAN",
-            "label": "CAN OUT",
-            "side": "right",
-            "order": 1,
-            "gauge": null,
-            "fitting": "Molex SL",
-            "installedConnector": null,
-            "breaker": null,
-            "slot": null,
-            "requiredFittings": [
-              "Molex SL",
-              "Ferrule",
-              "Bare Wire",
-              "JST"
-            ]
-          }
-        ]
-      }
-    },
-    {
-      "id": "krakenx60_adapted-167",
-      "type": "component",
-      "position": {
-        "x": 1152,
-        "y": 1216
-      },
-      "draggable": true,
-      "data": {
-        "definitionId": "krakenx60_adapted",
-        "label": "Flywheel TR",
-        "color": null,
-        "notes": "",
-        "locked": false,
-        "canId": 16,
-        "ipAddress": null,
-        "rotation": 0,
-        "ports": [
-          {
-            "id": "krakenx60_adapted-p-164",
-            "type": "PWR",
-            "label": "PWR",
-            "side": "left",
-            "order": 0,
-            "gauge": "12 AWG",
-            "fitting": "Anderson Powerpole",
-            "installedConnector": null,
-            "breaker": null,
-            "slot": null,
-            "requiredFittings": [
-              "Anderson Powerpole",
-              "Molex SL"
-            ]
-          },
-          {
-            "id": "krakenx60_adapted-p-165",
-            "type": "CAN",
-            "label": "CAN IN",
-            "side": "right",
-            "order": 0,
-            "gauge": null,
-            "fitting": "Molex SL",
-            "installedConnector": null,
-            "breaker": null,
-            "slot": null,
-            "requiredFittings": [
-              "Molex SL",
-              "Ferrule",
-              "Bare Wire",
-              "JST"
-            ]
-          },
-          {
-            "id": "krakenx60_adapted-p-166",
-            "type": "CAN",
-            "label": "CAN OUT",
-            "side": "right",
-            "order": 1,
-            "gauge": null,
-            "fitting": "Molex SL",
-            "installedConnector": null,
-            "breaker": null,
-            "slot": null,
-            "requiredFittings": [
-              "Molex SL",
-              "Ferrule",
-              "Bare Wire",
-              "JST"
-            ]
-          }
-        ]
-      }
-    },
-    {
-      "id": "krakenx60_adapted-171",
-      "type": "component",
-      "position": {
-        "x": 1152,
+        "x": 512,
         "y": 1312
       },
       "draggable": true,
       "data": {
-        "definitionId": "krakenx60_adapted",
-        "label": "Flywheel BL",
+        "definitionId": "vh109",
+        "label": "VH-109 Radio",
         "color": null,
         "notes": "",
         "locked": false,
-        "canId": 21,
-        "ipAddress": null,
-        "rotation": 0,
+        "canId": null,
+        "ipAddress": "10.34.67.1",
+        "rotation": 180,
         "ports": [
           {
-            "id": "krakenx60_adapted-p-168",
+            "id": "vh109-p-152",
+            "type": "ETH",
+            "label": "AUX2",
+            "side": "left",
+            "order": 0,
+            "gauge": null,
+            "fitting": null,
+            "installedConnector": null,
+            "breaker": null,
+            "slot": null,
+            "requiredFittings": null
+          },
+          {
+            "id": "vh109-p-153",
+            "type": "ETH",
+            "label": "RIO",
+            "side": "left",
+            "order": 1,
+            "gauge": null,
+            "fitting": null,
+            "installedConnector": null,
+            "breaker": null,
+            "slot": null,
+            "requiredFittings": null
+          },
+          {
+            "id": "vh109-p-154",
             "type": "PWR",
             "label": "PWR",
             "side": "left",
-            "order": 0,
-            "gauge": "12 AWG",
-            "fitting": "Anderson Powerpole",
+            "order": 2,
+            "gauge": "18 AWG",
+            "fitting": "Ferrule",
             "installedConnector": null,
             "breaker": null,
             "slot": null,
             "requiredFittings": [
-              "Anderson Powerpole",
-              "Molex SL"
+              "Ferrule",
+              "Bare Wire"
             ]
           },
           {
-            "id": "krakenx60_adapted-p-169",
-            "type": "CAN",
-            "label": "CAN IN",
+            "id": "vh109-p-155",
+            "type": "ETH",
+            "label": "AUX1",
             "side": "right",
             "order": 0,
             "gauge": null,
-            "fitting": "Molex SL",
+            "fitting": null,
             "installedConnector": null,
             "breaker": null,
             "slot": null,
-            "requiredFittings": [
-              "Molex SL",
-              "Ferrule",
-              "Bare Wire",
-              "JST"
-            ]
+            "requiredFittings": null
           },
           {
-            "id": "krakenx60_adapted-p-170",
-            "type": "CAN",
-            "label": "CAN OUT",
+            "id": "vh109-p-156",
+            "type": "ETH",
+            "label": "DS",
             "side": "right",
             "order": 1,
             "gauge": null,
-            "fitting": "Molex SL",
+            "fitting": null,
             "installedConnector": null,
             "breaker": null,
             "slot": null,
-            "requiredFittings": [
-              "Molex SL",
-              "Ferrule",
-              "Bare Wire",
-              "JST"
-            ]
+            "requiredFittings": null
           }
         ]
       }
     },
     {
-      "id": "krakenx60_adapted-175",
+      "id": "jetsonorinnano-165",
       "type": "component",
       "position": {
-        "x": 1152,
-        "y": 1408
+        "x": 272,
+        "y": 1328
       },
       "draggable": true,
       "data": {
-        "definitionId": "krakenx60_adapted",
-        "label": "Flywheel BR",
+        "definitionId": "jetsonorinnano",
+        "label": "Jetson (c2 vision)",
         "color": null,
         "notes": "",
         "locked": false,
-        "canId": 22,
-        "ipAddress": null,
+        "canId": null,
+        "ipAddress": "10.34.67.11",
         "rotation": 0,
         "ports": [
           {
-            "id": "krakenx60_adapted-p-172",
+            "id": "jetsonorinnano-p-158",
             "type": "PWR",
-            "label": "PWR",
+            "label": "PWR (Barrel)",
             "side": "left",
             "order": 0,
-            "gauge": "12 AWG",
-            "fitting": "Anderson Powerpole",
+            "gauge": null,
+            "fitting": "Barrel Jack",
             "installedConnector": null,
             "breaker": null,
             "slot": null,
             "requiredFittings": [
-              "Anderson Powerpole",
-              "Molex SL"
+              "Barrel Jack"
             ]
           },
           {
-            "id": "krakenx60_adapted-p-173",
-            "type": "CAN",
-            "label": "CAN IN",
-            "side": "right",
+            "id": "jetsonorinnano-p-159",
+            "type": "USB",
+            "label": "USB-C",
+            "side": "top",
             "order": 0,
             "gauge": null,
-            "fitting": "Molex SL",
+            "fitting": null,
             "installedConnector": null,
             "breaker": null,
             "slot": null,
             "requiredFittings": [
-              "Molex SL",
-              "Ferrule",
-              "Bare Wire",
-              "JST"
+              "USB-C"
             ]
           },
           {
-            "id": "krakenx60_adapted-p-174",
-            "type": "CAN",
-            "label": "CAN OUT",
-            "side": "right",
+            "id": "jetsonorinnano-p-160",
+            "type": "ETH",
+            "label": "ETH",
+            "side": "top",
             "order": 1,
             "gauge": null,
-            "fitting": "Molex SL",
+            "fitting": null,
+            "installedConnector": null,
+            "breaker": null,
+            "slot": null,
+            "requiredFittings": null
+          },
+          {
+            "id": "jetsonorinnano-p-161",
+            "type": "USB",
+            "label": "USB-A",
+            "side": "bottom",
+            "order": 0,
+            "gauge": null,
+            "fitting": null,
             "installedConnector": null,
             "breaker": null,
             "slot": null,
             "requiredFittings": [
-              "Molex SL",
-              "Ferrule",
-              "Bare Wire",
-              "JST"
+              "USB-A"
+            ]
+          },
+          {
+            "id": "jetsonorinnano-p-162",
+            "type": "USB",
+            "label": "USB-A",
+            "side": "bottom",
+            "order": 1,
+            "gauge": null,
+            "fitting": null,
+            "installedConnector": null,
+            "breaker": null,
+            "slot": null,
+            "requiredFittings": [
+              "USB-A"
+            ]
+          },
+          {
+            "id": "jetsonorinnano-p-163",
+            "type": "USB",
+            "label": "USB-A",
+            "side": "bottom",
+            "order": 2,
+            "gauge": null,
+            "fitting": null,
+            "installedConnector": null,
+            "breaker": null,
+            "slot": null,
+            "requiredFittings": [
+              "USB-A"
+            ]
+          },
+          {
+            "id": "jetsonorinnano-p-164",
+            "type": "USB",
+            "label": "USB-A",
+            "side": "bottom",
+            "order": 3,
+            "gauge": null,
+            "fitting": null,
+            "installedConnector": null,
+            "breaker": null,
+            "slot": null,
+            "requiredFittings": [
+              "USB-A"
             ]
           }
         ]
       }
     },
     {
-      "id": "zone-176",
+      "id": "thriftycam-167",
+      "type": "component",
+      "position": {
+        "x": 176,
+        "y": 1520
+      },
+      "draggable": true,
+      "data": {
+        "definitionId": "thriftycam",
+        "label": "ThriftyCAM 1",
+        "color": null,
+        "notes": "",
+        "locked": false,
+        "canId": null,
+        "ipAddress": null,
+        "rotation": 90,
+        "ports": [
+          {
+            "id": "thriftycam-p-166",
+            "type": "USB",
+            "label": "USB-A",
+            "side": "left",
+            "order": 0,
+            "gauge": null,
+            "fitting": null,
+            "installedConnector": null,
+            "breaker": null,
+            "slot": null,
+            "requiredFittings": [
+              "USB-A"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "thriftycam-169",
+      "type": "component",
+      "position": {
+        "x": 256,
+        "y": 1520
+      },
+      "draggable": true,
+      "data": {
+        "definitionId": "thriftycam",
+        "label": "ThriftyCAM 2",
+        "color": null,
+        "notes": "",
+        "locked": false,
+        "canId": null,
+        "ipAddress": null,
+        "rotation": 90,
+        "ports": [
+          {
+            "id": "thriftycam-p-168",
+            "type": "USB",
+            "label": "USB-A",
+            "side": "left",
+            "order": 0,
+            "gauge": null,
+            "fitting": null,
+            "installedConnector": null,
+            "breaker": null,
+            "slot": null,
+            "requiredFittings": [
+              "USB-A"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "thriftycam-171",
+      "type": "component",
+      "position": {
+        "x": 336,
+        "y": 1520
+      },
+      "draggable": true,
+      "data": {
+        "definitionId": "thriftycam",
+        "label": "ThriftyCAM 3",
+        "color": null,
+        "notes": "",
+        "locked": false,
+        "canId": null,
+        "ipAddress": null,
+        "rotation": 90,
+        "ports": [
+          {
+            "id": "thriftycam-p-170",
+            "type": "USB",
+            "label": "USB-A",
+            "side": "left",
+            "order": 0,
+            "gauge": null,
+            "fitting": null,
+            "installedConnector": null,
+            "breaker": null,
+            "slot": null,
+            "requiredFittings": [
+              "USB-A"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "thriftycam-173",
+      "type": "component",
+      "position": {
+        "x": 416,
+        "y": 1520
+      },
+      "draggable": true,
+      "data": {
+        "definitionId": "thriftycam",
+        "label": "ThriftyCAM 4",
+        "color": null,
+        "notes": "",
+        "locked": false,
+        "canId": null,
+        "ipAddress": null,
+        "rotation": 90,
+        "ports": [
+          {
+            "id": "thriftycam-p-172",
+            "type": "USB",
+            "label": "USB-A",
+            "side": "left",
+            "order": 0,
+            "gauge": null,
+            "fitting": null,
+            "installedConnector": null,
+            "breaker": null,
+            "slot": null,
+            "requiredFittings": [
+              "USB-A"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "mitocandria-182",
+      "type": "component",
+      "position": {
+        "x": 64,
+        "y": 1344
+      },
+      "draggable": true,
+      "data": {
+        "definitionId": "mitocandria",
+        "label": "MitoCANdria",
+        "color": null,
+        "notes": "",
+        "locked": false,
+        "canId": null,
+        "ipAddress": null,
+        "rotation": 0,
+        "ports": [
+          {
+            "id": "mitocandria-p-174",
+            "type": "PWR",
+            "label": "PWR IN",
+            "side": "left",
+            "order": 0,
+            "gauge": "18 AWG",
+            "fitting": "Molex SL",
+            "installedConnector": null,
+            "breaker": null,
+            "slot": null,
+            "requiredFittings": [
+              "Molex SL"
+            ]
+          },
+          {
+            "id": "mitocandria-p-177",
+            "type": "USB",
+            "label": "5V USB-C",
+            "side": "top",
+            "order": 0,
+            "gauge": null,
+            "fitting": null,
+            "installedConnector": null,
+            "breaker": null,
+            "slot": null,
+            "requiredFittings": [
+              "USB-C"
+            ]
+          },
+          {
+            "id": "mitocandria-p-178",
+            "type": "USB",
+            "label": "5V USB-C",
+            "side": "top",
+            "order": 1,
+            "gauge": null,
+            "fitting": null,
+            "installedConnector": null,
+            "breaker": null,
+            "slot": null,
+            "requiredFittings": [
+              "USB-C"
+            ]
+          },
+          {
+            "id": "mitocandria-p-179",
+            "type": "USB",
+            "label": "5V USB-C",
+            "side": "top",
+            "order": 2,
+            "gauge": null,
+            "fitting": null,
+            "installedConnector": null,
+            "breaker": null,
+            "slot": null,
+            "requiredFittings": [
+              "USB-C"
+            ]
+          },
+          {
+            "id": "mitocandria-p-180",
+            "type": "USB",
+            "label": "5V USB-C",
+            "side": "top",
+            "order": 3,
+            "gauge": null,
+            "fitting": null,
+            "installedConnector": null,
+            "breaker": null,
+            "slot": null,
+            "requiredFittings": [
+              "USB-C"
+            ]
+          },
+          {
+            "id": "mitocandria-p-181",
+            "type": "PWR",
+            "label": "15–24V BOOST",
+            "side": "right",
+            "order": 0,
+            "gauge": "20 AWG",
+            "fitting": "Ferrule",
+            "installedConnector": null,
+            "breaker": null,
+            "slot": null,
+            "requiredFittings": [
+              "Ferrule",
+              "Bare Wire"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "zone-183",
       "type": "zone",
       "position": {
-        "x": 1120,
-        "y": 976
+        "x": 32,
+        "y": 1296
       },
       "draggable": true,
       "zIndex": -1,
       "data": {
-        "text": "Shooter",
-        "color": "#f97316",
-        "width": 224,
-        "height": 528
+        "text": "Vision",
+        "color": "#a855f7",
+        "width": 464,
+        "height": 384
       }
     }
   ],
   "edges": [
     {
-      "id": "e-177",
-      "source": "battery-52",
-      "target": "mainbreaker-55",
-      "sourceHandle": "battery-p-51",
-      "targetHandle": "mainbreaker-p-53",
+      "id": "e-184",
+      "source": "battery-33",
+      "target": "mainbreaker-31",
+      "sourceHandle": "battery-p-32",
+      "targetHandle": "mainbreaker-p-29",
       "type": "wire",
       "data": {
         "type": "PWR",
@@ -2956,11 +3142,11 @@
       }
     },
     {
-      "id": "e-178",
-      "source": "mainbreaker-55",
-      "target": "pdh-83",
-      "sourceHandle": "mainbreaker-p-54",
-      "targetHandle": "pdh-p-56",
+      "id": "e-185",
+      "source": "mainbreaker-31",
+      "target": "pdh-28",
+      "sourceHandle": "mainbreaker-p-30",
+      "targetHandle": "pdh-p-1",
       "type": "wire",
       "data": {
         "type": "PWR",
@@ -2979,11 +3165,11 @@
       }
     },
     {
-      "id": "e-179",
-      "source": "pdh-83",
-      "target": "roborio2-32",
-      "sourceHandle": "pdh-p-79",
-      "targetHandle": "roborio2-p-26",
+      "id": "e-186",
+      "source": "pdh-28",
+      "target": "roborio2-151",
+      "sourceHandle": "pdh-p-24",
+      "targetHandle": "roborio2-p-145",
       "type": "wire",
       "data": {
         "type": "PWR",
@@ -3002,11 +3188,11 @@
       }
     },
     {
-      "id": "e-180",
-      "source": "pdh-83",
-      "target": "vh109-38",
-      "sourceHandle": "pdh-p-81",
-      "targetHandle": "vh109-p-35",
+      "id": "e-187",
+      "source": "pdh-28",
+      "target": "vh109-157",
+      "sourceHandle": "pdh-p-26",
+      "targetHandle": "vh109-p-154",
       "type": "wire",
       "data": {
         "type": "PWR",
@@ -3025,241 +3211,11 @@
       }
     },
     {
-      "id": "e-181",
-      "source": "pdh-83",
-      "target": "krakenx60_adapted-90",
-      "sourceHandle": "pdh-p-59",
-      "targetHandle": "krakenx60_adapted-p-87",
-      "type": "wire",
-      "data": {
-        "type": "PWR",
-        "layerId": "power",
-        "color": null,
-        "color2": null,
-        "wireGauge": "12 AWG",
-        "wireFittingFrom": "Ferrule",
-        "wireFittingTo": "Anderson Powerpole",
-        "label": "PWR005",
-        "labelEdited": false,
-        "length": null,
-        "notes": "",
-        "manual": false,
-        "waypoints": []
-      }
-    },
-    {
-      "id": "e-182",
-      "source": "pdh-83",
-      "target": "krakenx60_adapted-94",
-      "sourceHandle": "pdh-p-60",
-      "targetHandle": "krakenx60_adapted-p-91",
-      "type": "wire",
-      "data": {
-        "type": "PWR",
-        "layerId": "power",
-        "color": null,
-        "color2": null,
-        "wireGauge": "12 AWG",
-        "wireFittingFrom": "Ferrule",
-        "wireFittingTo": "Anderson Powerpole",
-        "label": "PWR006",
-        "labelEdited": false,
-        "length": null,
-        "notes": "",
-        "manual": false,
-        "waypoints": []
-      }
-    },
-    {
-      "id": "e-183",
-      "source": "pdh-83",
-      "target": "krakenx60_adapted-101",
-      "sourceHandle": "pdh-p-61",
-      "targetHandle": "krakenx60_adapted-p-98",
-      "type": "wire",
-      "data": {
-        "type": "PWR",
-        "layerId": "power",
-        "color": null,
-        "color2": null,
-        "wireGauge": "12 AWG",
-        "wireFittingFrom": "Ferrule",
-        "wireFittingTo": "Anderson Powerpole",
-        "label": "PWR007",
-        "labelEdited": false,
-        "length": null,
-        "notes": "",
-        "manual": false,
-        "waypoints": []
-      }
-    },
-    {
-      "id": "e-184",
-      "source": "pdh-83",
-      "target": "krakenx60_adapted-105",
-      "sourceHandle": "pdh-p-62",
-      "targetHandle": "krakenx60_adapted-p-102",
-      "type": "wire",
-      "data": {
-        "type": "PWR",
-        "layerId": "power",
-        "color": null,
-        "color2": null,
-        "wireGauge": "12 AWG",
-        "wireFittingFrom": "Ferrule",
-        "wireFittingTo": "Anderson Powerpole",
-        "label": "PWR008",
-        "labelEdited": false,
-        "length": null,
-        "notes": "",
-        "manual": false,
-        "waypoints": []
-      }
-    },
-    {
-      "id": "e-185",
-      "source": "pdh-83",
-      "target": "krakenx60_adapted-112",
-      "sourceHandle": "pdh-p-63",
-      "targetHandle": "krakenx60_adapted-p-109",
-      "type": "wire",
-      "data": {
-        "type": "PWR",
-        "layerId": "power",
-        "color": null,
-        "color2": null,
-        "wireGauge": "12 AWG",
-        "wireFittingFrom": "Ferrule",
-        "wireFittingTo": "Anderson Powerpole",
-        "label": "PWR009",
-        "labelEdited": false,
-        "length": null,
-        "notes": "",
-        "manual": false,
-        "waypoints": []
-      }
-    },
-    {
-      "id": "e-186",
-      "source": "pdh-83",
-      "target": "krakenx60_adapted-116",
-      "sourceHandle": "pdh-p-64",
-      "targetHandle": "krakenx60_adapted-p-113",
-      "type": "wire",
-      "data": {
-        "type": "PWR",
-        "layerId": "power",
-        "color": null,
-        "color2": null,
-        "wireGauge": "12 AWG",
-        "wireFittingFrom": "Ferrule",
-        "wireFittingTo": "Anderson Powerpole",
-        "label": "PWR010",
-        "labelEdited": false,
-        "length": null,
-        "notes": "",
-        "manual": false,
-        "waypoints": []
-      }
-    },
-    {
-      "id": "e-187",
-      "source": "pdh-83",
-      "target": "krakenx60_adapted-123",
-      "sourceHandle": "pdh-p-65",
-      "targetHandle": "krakenx60_adapted-p-120",
-      "type": "wire",
-      "data": {
-        "type": "PWR",
-        "layerId": "power",
-        "color": null,
-        "color2": null,
-        "wireGauge": "12 AWG",
-        "wireFittingFrom": "Ferrule",
-        "wireFittingTo": "Anderson Powerpole",
-        "label": "PWR011",
-        "labelEdited": false,
-        "length": null,
-        "notes": "",
-        "manual": false,
-        "waypoints": []
-      }
-    },
-    {
       "id": "e-188",
-      "source": "pdh-83",
-      "target": "krakenx60_adapted-127",
-      "sourceHandle": "pdh-p-66",
-      "targetHandle": "krakenx60_adapted-p-124",
-      "type": "wire",
-      "data": {
-        "type": "PWR",
-        "layerId": "power",
-        "color": null,
-        "color2": null,
-        "wireGauge": "12 AWG",
-        "wireFittingFrom": "Ferrule",
-        "wireFittingTo": "Anderson Powerpole",
-        "label": "PWR012",
-        "labelEdited": false,
-        "length": null,
-        "notes": "",
-        "manual": false,
-        "waypoints": []
-      }
-    },
-    {
-      "id": "e-189",
-      "source": "pdh-83",
-      "target": "mpm-50",
-      "sourceHandle": "pdh-p-67",
-      "targetHandle": "mpm-p-43",
-      "type": "wire",
-      "data": {
-        "type": "PWR",
-        "layerId": "power",
-        "color": null,
-        "color2": null,
-        "wireGauge": "12 AWG",
-        "wireFittingFrom": "Ferrule",
-        "wireFittingTo": "Ferrule",
-        "label": "PWR013",
-        "labelEdited": false,
-        "length": null,
-        "notes": "",
-        "manual": false,
-        "waypoints": []
-      }
-    },
-    {
-      "id": "e-190",
-      "source": "mpm-50",
-      "target": "pigeon2-86",
-      "sourceHandle": "mpm-p-44",
-      "targetHandle": "pigeon2-p-84",
-      "type": "wire",
-      "data": {
-        "type": "PWR",
-        "layerId": "power",
-        "color": null,
-        "color2": null,
-        "wireGauge": "18 AWG",
-        "wireFittingFrom": "Ferrule",
-        "wireFittingTo": "Bare Wire",
-        "label": "PWR014",
-        "labelEdited": false,
-        "length": null,
-        "notes": "",
-        "manual": false,
-        "waypoints": []
-      }
-    },
-    {
-      "id": "e-191",
-      "source": "mpm-50",
-      "target": "mitocandria-25",
-      "sourceHandle": "mpm-p-45",
-      "targetHandle": "mitocandria-p-17",
+      "source": "pdh-28",
+      "target": "mitocandria-182",
+      "sourceHandle": "pdh-p-27",
+      "targetHandle": "mitocandria-p-174",
       "type": "wire",
       "data": {
         "type": "PWR",
@@ -3269,7 +3225,76 @@
         "wireGauge": "18 AWG",
         "wireFittingFrom": "Ferrule",
         "wireFittingTo": "Molex SL",
-        "label": "PWR015",
+        "label": "PWR005",
+        "labelEdited": false,
+        "length": null,
+        "notes": "",
+        "manual": false,
+        "waypoints": []
+      }
+    },
+    {
+      "id": "e-189",
+      "source": "pdh-28",
+      "target": "mpm-143",
+      "sourceHandle": "pdh-p-23",
+      "targetHandle": "mpm-p-136",
+      "type": "wire",
+      "data": {
+        "type": "PWR",
+        "layerId": "power",
+        "color": null,
+        "color2": null,
+        "wireGauge": "12 AWG",
+        "wireFittingFrom": "Ferrule",
+        "wireFittingTo": "Ferrule",
+        "label": "PWR006",
+        "labelEdited": false,
+        "length": null,
+        "notes": "",
+        "manual": false,
+        "waypoints": []
+      }
+    },
+    {
+      "id": "e-190",
+      "source": "mpm-143",
+      "target": "cancoder-88",
+      "sourceHandle": "mpm-p-141",
+      "targetHandle": "cancoder-p-85",
+      "type": "wire",
+      "data": {
+        "type": "PWR",
+        "layerId": "power",
+        "color": null,
+        "color2": null,
+        "wireGauge": "18 AWG",
+        "wireFittingFrom": "Ferrule",
+        "wireFittingTo": "Bare Wire",
+        "label": "PWR007",
+        "labelEdited": false,
+        "length": null,
+        "notes": "",
+        "manual": false,
+        "waypoints": []
+      }
+    },
+    {
+      "id": "e-191",
+      "source": "mpm-143",
+      "target": "cancoder-100",
+      "sourceHandle": "mpm-p-140",
+      "targetHandle": "cancoder-p-97",
+      "type": "wire",
+      "data": {
+        "type": "PWR",
+        "layerId": "power",
+        "color": null,
+        "color2": null,
+        "wireGauge": "18 AWG",
+        "wireFittingFrom": "Ferrule",
+        "wireFittingTo": "Bare Wire",
+        "label": "PWR008",
         "labelEdited": false,
         "length": null,
         "notes": "",
@@ -3279,20 +3304,20 @@
     },
     {
       "id": "e-192",
-      "source": "mitocandria-25",
-      "target": "jetsonorinnano-8",
-      "sourceHandle": "mitocandria-p-24",
-      "targetHandle": "jetsonorinnano-p-1",
+      "source": "mpm-143",
+      "target": "cancoder-112",
+      "sourceHandle": "mpm-p-139",
+      "targetHandle": "cancoder-p-109",
       "type": "wire",
       "data": {
         "type": "PWR",
         "layerId": "power",
         "color": null,
         "color2": null,
-        "wireGauge": "20 AWG",
+        "wireGauge": "18 AWG",
         "wireFittingFrom": "Ferrule",
-        "wireFittingTo": "Barrel Jack",
-        "label": "PWR016",
+        "wireFittingTo": "Bare Wire",
+        "label": "PWR009",
         "labelEdited": false,
         "length": null,
         "notes": "",
@@ -3302,10 +3327,171 @@
     },
     {
       "id": "e-193",
-      "source": "pdh-83",
-      "target": "krakenx60_adapted-137",
-      "sourceHandle": "pdh-p-69",
-      "targetHandle": "krakenx60_adapted-p-134",
+      "source": "mpm-143",
+      "target": "cancoder-124",
+      "sourceHandle": "mpm-p-138",
+      "targetHandle": "cancoder-p-121",
+      "type": "wire",
+      "data": {
+        "type": "PWR",
+        "layerId": "power",
+        "color": null,
+        "color2": null,
+        "wireGauge": "18 AWG",
+        "wireFittingFrom": "Ferrule",
+        "wireFittingTo": "Bare Wire",
+        "label": "PWR010",
+        "labelEdited": false,
+        "length": null,
+        "notes": "",
+        "manual": false,
+        "waypoints": []
+      }
+    },
+    {
+      "id": "e-194",
+      "source": "mpm-143",
+      "target": "pigeon2-135",
+      "sourceHandle": "mpm-p-137",
+      "targetHandle": "pigeon2-p-132",
+      "type": "wire",
+      "data": {
+        "type": "PWR",
+        "layerId": "power",
+        "color": null,
+        "color2": null,
+        "wireGauge": "18 AWG",
+        "wireFittingFrom": "Ferrule",
+        "wireFittingTo": "Bare Wire",
+        "label": "PWR011",
+        "labelEdited": false,
+        "length": null,
+        "notes": "",
+        "manual": false,
+        "waypoints": []
+      }
+    },
+    {
+      "id": "e-195",
+      "source": "mitocandria-182",
+      "target": "jetsonorinnano-165",
+      "sourceHandle": "mitocandria-p-181",
+      "targetHandle": "jetsonorinnano-p-158",
+      "type": "wire",
+      "data": {
+        "type": "PWR",
+        "layerId": "power",
+        "color": null,
+        "color2": null,
+        "wireGauge": "20 AWG",
+        "wireFittingFrom": "Ferrule",
+        "wireFittingTo": "Barrel Jack",
+        "label": "PWR012",
+        "labelEdited": false,
+        "length": null,
+        "notes": "",
+        "manual": false,
+        "waypoints": []
+      }
+    },
+    {
+      "id": "e-196",
+      "source": "pdh-28",
+      "target": "krakenx60_adapted-37",
+      "sourceHandle": "pdh-p-13",
+      "targetHandle": "krakenx60_adapted-p-34",
+      "type": "wire",
+      "data": {
+        "type": "PWR",
+        "layerId": "power",
+        "color": null,
+        "color2": null,
+        "wireGauge": "12 AWG",
+        "wireFittingFrom": "Ferrule",
+        "wireFittingTo": "Anderson Powerpole",
+        "label": "PWR013",
+        "labelEdited": false,
+        "length": null,
+        "notes": "",
+        "manual": false,
+        "waypoints": []
+      }
+    },
+    {
+      "id": "e-197",
+      "source": "pdh-28",
+      "target": "krakenx44_adapted-41",
+      "sourceHandle": "pdh-p-12",
+      "targetHandle": "krakenx44_adapted-p-38",
+      "type": "wire",
+      "data": {
+        "type": "PWR",
+        "layerId": "power",
+        "color": null,
+        "color2": null,
+        "wireGauge": "12 AWG",
+        "wireFittingFrom": "Ferrule",
+        "wireFittingTo": "Anderson Powerpole",
+        "label": "PWR014",
+        "labelEdited": false,
+        "length": null,
+        "notes": "",
+        "manual": false,
+        "waypoints": []
+      }
+    },
+    {
+      "id": "e-198",
+      "source": "pdh-28",
+      "target": "krakenx44_adapted-46",
+      "sourceHandle": "pdh-p-11",
+      "targetHandle": "krakenx44_adapted-p-43",
+      "type": "wire",
+      "data": {
+        "type": "PWR",
+        "layerId": "power",
+        "color": null,
+        "color2": null,
+        "wireGauge": "12 AWG",
+        "wireFittingFrom": "Ferrule",
+        "wireFittingTo": "Anderson Powerpole",
+        "label": "PWR015",
+        "labelEdited": false,
+        "length": null,
+        "notes": "",
+        "manual": false,
+        "waypoints": []
+      }
+    },
+    {
+      "id": "e-199",
+      "source": "pdh-28",
+      "target": "krakenx44_adapted-50",
+      "sourceHandle": "pdh-p-10",
+      "targetHandle": "krakenx44_adapted-p-47",
+      "type": "wire",
+      "data": {
+        "type": "PWR",
+        "layerId": "power",
+        "color": null,
+        "color2": null,
+        "wireGauge": "12 AWG",
+        "wireFittingFrom": "Ferrule",
+        "wireFittingTo": "Anderson Powerpole",
+        "label": "PWR016",
+        "labelEdited": false,
+        "length": null,
+        "notes": "",
+        "manual": false,
+        "waypoints": []
+      }
+    },
+    {
+      "id": "e-200",
+      "source": "pdh-28",
+      "target": "krakenx44_adapted-54",
+      "sourceHandle": "pdh-p-9",
+      "targetHandle": "krakenx44_adapted-p-51",
       "type": "wire",
       "data": {
         "type": "PWR",
@@ -3324,11 +3510,11 @@
       }
     },
     {
-      "id": "e-194",
-      "source": "pdh-83",
-      "target": "krakenx44_adapted-141",
-      "sourceHandle": "pdh-p-70",
-      "targetHandle": "krakenx44_adapted-p-138",
+      "id": "e-201",
+      "source": "pdh-28",
+      "target": "krakenx60_adapted-59",
+      "sourceHandle": "pdh-p-8",
+      "targetHandle": "krakenx60_adapted-p-56",
       "type": "wire",
       "data": {
         "type": "PWR",
@@ -3347,11 +3533,11 @@
       }
     },
     {
-      "id": "e-195",
-      "source": "pdh-83",
-      "target": "krakenx44_adapted-146",
-      "sourceHandle": "pdh-p-71",
-      "targetHandle": "krakenx44_adapted-p-143",
+      "id": "e-202",
+      "source": "pdh-28",
+      "target": "krakenx60_adapted-63",
+      "sourceHandle": "pdh-p-7",
+      "targetHandle": "krakenx60_adapted-p-60",
       "type": "wire",
       "data": {
         "type": "PWR",
@@ -3370,11 +3556,11 @@
       }
     },
     {
-      "id": "e-196",
-      "source": "pdh-83",
-      "target": "krakenx44_adapted-150",
-      "sourceHandle": "pdh-p-72",
-      "targetHandle": "krakenx44_adapted-p-147",
+      "id": "e-203",
+      "source": "pdh-28",
+      "target": "krakenx60_adapted-67",
+      "sourceHandle": "pdh-p-6",
+      "targetHandle": "krakenx60_adapted-p-64",
       "type": "wire",
       "data": {
         "type": "PWR",
@@ -3393,11 +3579,11 @@
       }
     },
     {
-      "id": "e-197",
-      "source": "pdh-83",
-      "target": "krakenx44_adapted-154",
-      "sourceHandle": "pdh-p-73",
-      "targetHandle": "krakenx44_adapted-p-151",
+      "id": "e-204",
+      "source": "pdh-28",
+      "target": "krakenx60_adapted-71",
+      "sourceHandle": "pdh-p-5",
+      "targetHandle": "krakenx60_adapted-p-68",
       "type": "wire",
       "data": {
         "type": "PWR",
@@ -3416,11 +3602,11 @@
       }
     },
     {
-      "id": "e-198",
-      "source": "pdh-83",
-      "target": "krakenx60_adapted-159",
-      "sourceHandle": "pdh-p-74",
-      "targetHandle": "krakenx60_adapted-p-156",
+      "id": "e-205",
+      "source": "pdh-28",
+      "target": "krakenx60_adapted-75",
+      "sourceHandle": "pdh-p-4",
+      "targetHandle": "krakenx60_adapted-p-72",
       "type": "wire",
       "data": {
         "type": "PWR",
@@ -3439,11 +3625,11 @@
       }
     },
     {
-      "id": "e-199",
-      "source": "pdh-83",
-      "target": "krakenx60_adapted-163",
-      "sourceHandle": "pdh-p-75",
-      "targetHandle": "krakenx60_adapted-p-160",
+      "id": "e-206",
+      "source": "pdh-28",
+      "target": "krakenx60_adapted-80",
+      "sourceHandle": "pdh-p-22",
+      "targetHandle": "krakenx60_adapted-p-77",
       "type": "wire",
       "data": {
         "type": "PWR",
@@ -3462,11 +3648,11 @@
       }
     },
     {
-      "id": "e-200",
-      "source": "pdh-83",
-      "target": "krakenx60_adapted-167",
-      "sourceHandle": "pdh-p-76",
-      "targetHandle": "krakenx60_adapted-p-164",
+      "id": "e-207",
+      "source": "pdh-28",
+      "target": "krakenx60_adapted-84",
+      "sourceHandle": "pdh-p-21",
+      "targetHandle": "krakenx60_adapted-p-81",
       "type": "wire",
       "data": {
         "type": "PWR",
@@ -3485,11 +3671,11 @@
       }
     },
     {
-      "id": "e-201",
-      "source": "pdh-83",
-      "target": "krakenx60_adapted-171",
-      "sourceHandle": "pdh-p-77",
-      "targetHandle": "krakenx60_adapted-p-168",
+      "id": "e-208",
+      "source": "pdh-28",
+      "target": "krakenx60_adapted-92",
+      "sourceHandle": "pdh-p-20",
+      "targetHandle": "krakenx60_adapted-p-89",
       "type": "wire",
       "data": {
         "type": "PWR",
@@ -3508,11 +3694,11 @@
       }
     },
     {
-      "id": "e-202",
-      "source": "pdh-83",
-      "target": "krakenx60_adapted-175",
-      "sourceHandle": "pdh-p-78",
-      "targetHandle": "krakenx60_adapted-p-172",
+      "id": "e-209",
+      "source": "pdh-28",
+      "target": "krakenx60_adapted-96",
+      "sourceHandle": "pdh-p-19",
+      "targetHandle": "krakenx60_adapted-p-93",
       "type": "wire",
       "data": {
         "type": "PWR",
@@ -3531,11 +3717,103 @@
       }
     },
     {
-      "id": "e-203",
-      "source": "roborio2-32",
-      "target": "krakenx60_adapted-137",
-      "sourceHandle": "roborio2-p-27",
-      "targetHandle": "krakenx60_adapted-p-135",
+      "id": "e-210",
+      "source": "pdh-28",
+      "target": "krakenx60_adapted-104",
+      "sourceHandle": "pdh-p-18",
+      "targetHandle": "krakenx60_adapted-p-101",
+      "type": "wire",
+      "data": {
+        "type": "PWR",
+        "layerId": "power",
+        "color": null,
+        "color2": null,
+        "wireGauge": "12 AWG",
+        "wireFittingFrom": "Ferrule",
+        "wireFittingTo": "Anderson Powerpole",
+        "label": "PWR027",
+        "labelEdited": false,
+        "length": null,
+        "notes": "",
+        "manual": false,
+        "waypoints": []
+      }
+    },
+    {
+      "id": "e-211",
+      "source": "pdh-28",
+      "target": "krakenx60_adapted-108",
+      "sourceHandle": "pdh-p-17",
+      "targetHandle": "krakenx60_adapted-p-105",
+      "type": "wire",
+      "data": {
+        "type": "PWR",
+        "layerId": "power",
+        "color": null,
+        "color2": null,
+        "wireGauge": "12 AWG",
+        "wireFittingFrom": "Ferrule",
+        "wireFittingTo": "Anderson Powerpole",
+        "label": "PWR028",
+        "labelEdited": false,
+        "length": null,
+        "notes": "",
+        "manual": false,
+        "waypoints": []
+      }
+    },
+    {
+      "id": "e-212",
+      "source": "pdh-28",
+      "target": "krakenx60_adapted-116",
+      "sourceHandle": "pdh-p-16",
+      "targetHandle": "krakenx60_adapted-p-113",
+      "type": "wire",
+      "data": {
+        "type": "PWR",
+        "layerId": "power",
+        "color": null,
+        "color2": null,
+        "wireGauge": "12 AWG",
+        "wireFittingFrom": "Ferrule",
+        "wireFittingTo": "Anderson Powerpole",
+        "label": "PWR029",
+        "labelEdited": false,
+        "length": null,
+        "notes": "",
+        "manual": false,
+        "waypoints": []
+      }
+    },
+    {
+      "id": "e-213",
+      "source": "pdh-28",
+      "target": "krakenx60_adapted-120",
+      "sourceHandle": "pdh-p-15",
+      "targetHandle": "krakenx60_adapted-p-117",
+      "type": "wire",
+      "data": {
+        "type": "PWR",
+        "layerId": "power",
+        "color": null,
+        "color2": null,
+        "wireGauge": "12 AWG",
+        "wireFittingFrom": "Ferrule",
+        "wireFittingTo": "Anderson Powerpole",
+        "label": "PWR030",
+        "labelEdited": false,
+        "length": null,
+        "notes": "",
+        "manual": false,
+        "waypoints": []
+      }
+    },
+    {
+      "id": "e-214",
+      "source": "roborio2-151",
+      "target": "krakenx60_adapted-75",
+      "sourceHandle": "roborio2-p-146",
+      "targetHandle": "krakenx60_adapted-p-73",
       "type": "wire",
       "data": {
         "type": "CAN",
@@ -3554,11 +3832,11 @@
       }
     },
     {
-      "id": "e-204",
-      "source": "krakenx60_adapted-137",
-      "target": "krakenx44_adapted-141",
-      "sourceHandle": "krakenx60_adapted-p-136",
-      "targetHandle": "krakenx44_adapted-p-139",
+      "id": "e-215",
+      "source": "krakenx60_adapted-75",
+      "target": "krakenx60_adapted-71",
+      "sourceHandle": "krakenx60_adapted-p-74",
+      "targetHandle": "krakenx60_adapted-p-69",
       "type": "wire",
       "data": {
         "type": "CAN",
@@ -3577,11 +3855,11 @@
       }
     },
     {
-      "id": "e-205",
-      "source": "krakenx44_adapted-141",
-      "target": "krakenx44_adapted-146",
-      "sourceHandle": "krakenx44_adapted-p-140",
-      "targetHandle": "krakenx44_adapted-p-144",
+      "id": "e-216",
+      "source": "krakenx60_adapted-71",
+      "target": "krakenx60_adapted-67",
+      "sourceHandle": "krakenx60_adapted-p-70",
+      "targetHandle": "krakenx60_adapted-p-65",
       "type": "wire",
       "data": {
         "type": "CAN",
@@ -3600,11 +3878,11 @@
       }
     },
     {
-      "id": "e-206",
-      "source": "krakenx44_adapted-146",
-      "target": "krakenx44_adapted-150",
-      "sourceHandle": "krakenx44_adapted-p-145",
-      "targetHandle": "krakenx44_adapted-p-148",
+      "id": "e-217",
+      "source": "krakenx60_adapted-67",
+      "target": "krakenx60_adapted-63",
+      "sourceHandle": "krakenx60_adapted-p-66",
+      "targetHandle": "krakenx60_adapted-p-61",
       "type": "wire",
       "data": {
         "type": "CAN",
@@ -3623,11 +3901,11 @@
       }
     },
     {
-      "id": "e-207",
-      "source": "krakenx44_adapted-150",
-      "target": "krakenx44_adapted-154",
-      "sourceHandle": "krakenx44_adapted-p-149",
-      "targetHandle": "krakenx44_adapted-p-152",
+      "id": "e-218",
+      "source": "krakenx60_adapted-63",
+      "target": "krakenx60_adapted-59",
+      "sourceHandle": "krakenx60_adapted-p-62",
+      "targetHandle": "krakenx60_adapted-p-57",
       "type": "wire",
       "data": {
         "type": "CAN",
@@ -3646,11 +3924,11 @@
       }
     },
     {
-      "id": "e-208",
-      "source": "krakenx44_adapted-154",
-      "target": "krakenx60_adapted-159",
-      "sourceHandle": "krakenx44_adapted-p-153",
-      "targetHandle": "krakenx60_adapted-p-157",
+      "id": "e-219",
+      "source": "krakenx60_adapted-59",
+      "target": "krakenx44_adapted-54",
+      "sourceHandle": "krakenx60_adapted-p-58",
+      "targetHandle": "krakenx44_adapted-p-52",
       "type": "wire",
       "data": {
         "type": "CAN",
@@ -3669,11 +3947,11 @@
       }
     },
     {
-      "id": "e-209",
-      "source": "krakenx60_adapted-159",
-      "target": "krakenx60_adapted-163",
-      "sourceHandle": "krakenx60_adapted-p-158",
-      "targetHandle": "krakenx60_adapted-p-161",
+      "id": "e-220",
+      "source": "krakenx44_adapted-54",
+      "target": "krakenx44_adapted-50",
+      "sourceHandle": "krakenx44_adapted-p-53",
+      "targetHandle": "krakenx44_adapted-p-48",
       "type": "wire",
       "data": {
         "type": "CAN",
@@ -3692,11 +3970,11 @@
       }
     },
     {
-      "id": "e-210",
-      "source": "krakenx60_adapted-163",
-      "target": "krakenx60_adapted-167",
-      "sourceHandle": "krakenx60_adapted-p-162",
-      "targetHandle": "krakenx60_adapted-p-165",
+      "id": "e-221",
+      "source": "krakenx44_adapted-50",
+      "target": "krakenx44_adapted-46",
+      "sourceHandle": "krakenx44_adapted-p-49",
+      "targetHandle": "krakenx44_adapted-p-44",
       "type": "wire",
       "data": {
         "type": "CAN",
@@ -3715,11 +3993,11 @@
       }
     },
     {
-      "id": "e-211",
-      "source": "krakenx60_adapted-167",
-      "target": "krakenx60_adapted-171",
-      "sourceHandle": "krakenx60_adapted-p-166",
-      "targetHandle": "krakenx60_adapted-p-169",
+      "id": "e-222",
+      "source": "krakenx44_adapted-46",
+      "target": "krakenx44_adapted-41",
+      "sourceHandle": "krakenx44_adapted-p-45",
+      "targetHandle": "krakenx44_adapted-p-39",
       "type": "wire",
       "data": {
         "type": "CAN",
@@ -3738,11 +4016,11 @@
       }
     },
     {
-      "id": "e-212",
-      "source": "krakenx60_adapted-171",
-      "target": "krakenx60_adapted-175",
-      "sourceHandle": "krakenx60_adapted-p-170",
-      "targetHandle": "krakenx60_adapted-p-173",
+      "id": "e-223",
+      "source": "krakenx44_adapted-41",
+      "target": "krakenx60_adapted-37",
+      "sourceHandle": "krakenx44_adapted-p-40",
+      "targetHandle": "krakenx60_adapted-p-35",
       "type": "wire",
       "data": {
         "type": "CAN",
@@ -3761,11 +4039,11 @@
       }
     },
     {
-      "id": "e-213",
-      "source": "krakenx60_adapted-175",
-      "target": "pdh-83",
-      "sourceHandle": "krakenx60_adapted-p-174",
-      "targetHandle": "pdh-p-57",
+      "id": "e-224",
+      "source": "krakenx60_adapted-37",
+      "target": "pdh-28",
+      "sourceHandle": "krakenx60_adapted-p-36",
+      "targetHandle": "pdh-p-3",
       "type": "wire",
       "data": {
         "type": "CAN",
@@ -3784,11 +4062,11 @@
       }
     },
     {
-      "id": "e-214",
-      "source": "canivore-42",
-      "target": "pigeon2-86",
-      "sourceHandle": "canivore-p-40",
-      "targetHandle": "pigeon2-p-85",
+      "id": "e-225",
+      "source": "canivore-131",
+      "target": "pigeon2-135",
+      "sourceHandle": "canivore-p-129",
+      "targetHandle": "pigeon2-p-134",
       "type": "wire",
       "data": {
         "type": "CAN",
@@ -3807,11 +4085,11 @@
       }
     },
     {
-      "id": "e-215",
-      "source": "pigeon2-86",
-      "target": "krakenx60_adapted-90",
-      "sourceHandle": "pigeon2-p-85",
-      "targetHandle": "krakenx60_adapted-p-88",
+      "id": "e-226",
+      "source": "cancoder-124",
+      "target": "pigeon2-135",
+      "sourceHandle": "cancoder-p-123",
+      "targetHandle": "pigeon2-p-133",
       "type": "wire",
       "data": {
         "type": "CAN",
@@ -3830,11 +4108,11 @@
       }
     },
     {
-      "id": "e-216",
-      "source": "krakenx60_adapted-90",
-      "target": "krakenx60_adapted-94",
-      "sourceHandle": "krakenx60_adapted-p-89",
-      "targetHandle": "krakenx60_adapted-p-92",
+      "id": "e-227",
+      "source": "krakenx60_adapted-120",
+      "target": "cancoder-124",
+      "sourceHandle": "krakenx60_adapted-p-119",
+      "targetHandle": "cancoder-p-122",
       "type": "wire",
       "data": {
         "type": "CAN",
@@ -3853,11 +4131,11 @@
       }
     },
     {
-      "id": "e-217",
-      "source": "krakenx60_adapted-94",
-      "target": "cancoder-97",
-      "sourceHandle": "krakenx60_adapted-p-93",
-      "targetHandle": "cancoder-p-96",
+      "id": "e-228",
+      "source": "krakenx60_adapted-116",
+      "target": "krakenx60_adapted-120",
+      "sourceHandle": "krakenx60_adapted-p-115",
+      "targetHandle": "krakenx60_adapted-p-118",
       "type": "wire",
       "data": {
         "type": "CAN",
@@ -3876,11 +4154,11 @@
       }
     },
     {
-      "id": "e-218",
-      "source": "cancoder-97",
-      "target": "krakenx60_adapted-112",
-      "sourceHandle": "cancoder-p-96",
-      "targetHandle": "krakenx60_adapted-p-110",
+      "id": "e-229",
+      "source": "cancoder-112",
+      "target": "krakenx60_adapted-116",
+      "sourceHandle": "cancoder-p-111",
+      "targetHandle": "krakenx60_adapted-p-114",
       "type": "wire",
       "data": {
         "type": "CAN",
@@ -3899,11 +4177,11 @@
       }
     },
     {
-      "id": "e-219",
-      "source": "krakenx60_adapted-112",
-      "target": "krakenx60_adapted-116",
-      "sourceHandle": "krakenx60_adapted-p-111",
-      "targetHandle": "krakenx60_adapted-p-114",
+      "id": "e-230",
+      "source": "krakenx60_adapted-108",
+      "target": "cancoder-112",
+      "sourceHandle": "krakenx60_adapted-p-107",
+      "targetHandle": "cancoder-p-110",
       "type": "wire",
       "data": {
         "type": "CAN",
@@ -3922,11 +4200,11 @@
       }
     },
     {
-      "id": "e-220",
-      "source": "krakenx60_adapted-116",
-      "target": "cancoder-119",
-      "sourceHandle": "krakenx60_adapted-p-115",
-      "targetHandle": "cancoder-p-118",
+      "id": "e-231",
+      "source": "krakenx60_adapted-104",
+      "target": "krakenx60_adapted-108",
+      "sourceHandle": "krakenx60_adapted-p-103",
+      "targetHandle": "krakenx60_adapted-p-106",
       "type": "wire",
       "data": {
         "type": "CAN",
@@ -3945,11 +4223,11 @@
       }
     },
     {
-      "id": "e-221",
-      "source": "cancoder-119",
-      "target": "krakenx60_adapted-101",
-      "sourceHandle": "cancoder-p-118",
-      "targetHandle": "krakenx60_adapted-p-99",
+      "id": "e-232",
+      "source": "cancoder-100",
+      "target": "krakenx60_adapted-104",
+      "sourceHandle": "cancoder-p-99",
+      "targetHandle": "krakenx60_adapted-p-102",
       "type": "wire",
       "data": {
         "type": "CAN",
@@ -3968,11 +4246,11 @@
       }
     },
     {
-      "id": "e-222",
-      "source": "krakenx60_adapted-101",
-      "target": "krakenx60_adapted-105",
-      "sourceHandle": "krakenx60_adapted-p-100",
-      "targetHandle": "krakenx60_adapted-p-103",
+      "id": "e-233",
+      "source": "krakenx60_adapted-96",
+      "target": "cancoder-100",
+      "sourceHandle": "krakenx60_adapted-p-95",
+      "targetHandle": "cancoder-p-98",
       "type": "wire",
       "data": {
         "type": "CAN",
@@ -3991,11 +4269,11 @@
       }
     },
     {
-      "id": "e-223",
-      "source": "krakenx60_adapted-105",
-      "target": "cancoder-108",
-      "sourceHandle": "krakenx60_adapted-p-104",
-      "targetHandle": "cancoder-p-107",
+      "id": "e-234",
+      "source": "krakenx60_adapted-92",
+      "target": "krakenx60_adapted-96",
+      "sourceHandle": "krakenx60_adapted-p-91",
+      "targetHandle": "krakenx60_adapted-p-94",
       "type": "wire",
       "data": {
         "type": "CAN",
@@ -4014,11 +4292,11 @@
       }
     },
     {
-      "id": "e-224",
-      "source": "cancoder-108",
-      "target": "krakenx60_adapted-123",
-      "sourceHandle": "cancoder-p-107",
-      "targetHandle": "krakenx60_adapted-p-121",
+      "id": "e-235",
+      "source": "cancoder-88",
+      "target": "krakenx60_adapted-92",
+      "sourceHandle": "cancoder-p-87",
+      "targetHandle": "krakenx60_adapted-p-90",
       "type": "wire",
       "data": {
         "type": "CAN",
@@ -4037,11 +4315,11 @@
       }
     },
     {
-      "id": "e-225",
-      "source": "krakenx60_adapted-123",
-      "target": "krakenx60_adapted-127",
-      "sourceHandle": "krakenx60_adapted-p-122",
-      "targetHandle": "krakenx60_adapted-p-125",
+      "id": "e-236",
+      "source": "krakenx60_adapted-84",
+      "target": "cancoder-88",
+      "sourceHandle": "krakenx60_adapted-p-83",
+      "targetHandle": "cancoder-p-86",
       "type": "wire",
       "data": {
         "type": "CAN",
@@ -4060,11 +4338,11 @@
       }
     },
     {
-      "id": "e-226",
-      "source": "krakenx60_adapted-127",
-      "target": "cancoder-130",
-      "sourceHandle": "krakenx60_adapted-p-126",
-      "targetHandle": "cancoder-p-129",
+      "id": "e-237",
+      "source": "krakenx60_adapted-80",
+      "target": "krakenx60_adapted-84",
+      "sourceHandle": "krakenx60_adapted-p-79",
+      "targetHandle": "krakenx60_adapted-p-82",
       "type": "wire",
       "data": {
         "type": "CAN",
@@ -4083,11 +4361,11 @@
       }
     },
     {
-      "id": "e-227",
-      "source": "cancoder-130",
-      "target": "canterminator-132",
-      "sourceHandle": "cancoder-p-129",
-      "targetHandle": "canterminator-p-131",
+      "id": "e-238",
+      "source": "krakenx60_adapted-80",
+      "target": "canterminator-126",
+      "sourceHandle": "krakenx60_adapted-p-78",
+      "targetHandle": "canterminator-p-125",
       "type": "wire",
       "data": {
         "type": "CAN",
@@ -4106,11 +4384,11 @@
       }
     },
     {
-      "id": "e-228",
-      "source": "roborio2-32",
-      "target": "vh109-38",
-      "sourceHandle": "roborio2-p-28",
-      "targetHandle": "vh109-p-34",
+      "id": "e-239",
+      "source": "roborio2-151",
+      "target": "vh109-157",
+      "sourceHandle": "roborio2-p-147",
+      "targetHandle": "vh109-p-153",
       "type": "wire",
       "data": {
         "type": "ETH",
@@ -4129,11 +4407,11 @@
       }
     },
     {
-      "id": "e-229",
-      "source": "jetsonorinnano-8",
-      "target": "vh109-38",
-      "sourceHandle": "jetsonorinnano-p-3",
-      "targetHandle": "vh109-p-36",
+      "id": "e-240",
+      "source": "jetsonorinnano-165",
+      "target": "vh109-157",
+      "sourceHandle": "jetsonorinnano-p-160",
+      "targetHandle": "vh109-p-155",
       "type": "wire",
       "data": {
         "type": "ETH",
@@ -4152,11 +4430,11 @@
       }
     },
     {
-      "id": "e-230",
-      "source": "roborio2-32",
-      "target": "canivore-42",
-      "sourceHandle": "roborio2-p-29",
-      "targetHandle": "canivore-p-39",
+      "id": "e-241",
+      "source": "roborio2-151",
+      "target": "canivore-131",
+      "sourceHandle": "roborio2-p-149",
+      "targetHandle": "canivore-p-127",
       "type": "wire",
       "data": {
         "type": "USB",
@@ -4175,11 +4453,11 @@
       }
     },
     {
-      "id": "e-231",
-      "source": "jetsonorinnano-8",
-      "target": "thriftycam-10",
-      "sourceHandle": "jetsonorinnano-p-4",
-      "targetHandle": "thriftycam-p-9",
+      "id": "e-242",
+      "source": "jetsonorinnano-165",
+      "target": "thriftycam-167",
+      "sourceHandle": "jetsonorinnano-p-161",
+      "targetHandle": "thriftycam-p-166",
       "type": "wire",
       "data": {
         "type": "USB",
@@ -4198,11 +4476,11 @@
       }
     },
     {
-      "id": "e-232",
-      "source": "jetsonorinnano-8",
-      "target": "thriftycam-12",
-      "sourceHandle": "jetsonorinnano-p-5",
-      "targetHandle": "thriftycam-p-11",
+      "id": "e-243",
+      "source": "jetsonorinnano-165",
+      "target": "thriftycam-169",
+      "sourceHandle": "jetsonorinnano-p-162",
+      "targetHandle": "thriftycam-p-168",
       "type": "wire",
       "data": {
         "type": "USB",
@@ -4221,11 +4499,11 @@
       }
     },
     {
-      "id": "e-233",
-      "source": "jetsonorinnano-8",
-      "target": "thriftycam-14",
-      "sourceHandle": "jetsonorinnano-p-6",
-      "targetHandle": "thriftycam-p-13",
+      "id": "e-244",
+      "source": "jetsonorinnano-165",
+      "target": "thriftycam-171",
+      "sourceHandle": "jetsonorinnano-p-163",
+      "targetHandle": "thriftycam-p-170",
       "type": "wire",
       "data": {
         "type": "USB",
@@ -4244,11 +4522,11 @@
       }
     },
     {
-      "id": "e-234",
-      "source": "jetsonorinnano-8",
-      "target": "thriftycam-16",
-      "sourceHandle": "jetsonorinnano-p-7",
-      "targetHandle": "thriftycam-p-15",
+      "id": "e-245",
+      "source": "jetsonorinnano-165",
+      "target": "thriftycam-173",
+      "sourceHandle": "jetsonorinnano-p-164",
+      "targetHandle": "thriftycam-p-172",
       "type": "wire",
       "data": {
         "type": "USB",

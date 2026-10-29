@@ -24,6 +24,7 @@ const JUNCTION   = STEP * 60;   // bending on, or ending at, another wire's cell
 const OVERLAP    = STEP * 400;  // running along another wire's lattice edge
 const PORT_FRONT = STEP * 80;   // passing directly in front of another port
 const PORT_NEAR  = STEP * 1.5;  // ...or one lane further out
+const KEEP_OUT   = STEP * 40;   // each cell of a soft keep-out box (zone titles)
 const MAX_CELLS = 240000;       // grid-size guard (coarsen step if exceeded)
 const SEARCH_MARGIN = 16;       // cells a route may stray outside its endpoints' box
 
@@ -148,6 +149,19 @@ export function reservePortFronts(grid, ports, sign = 1) {
       if (i < 0 || j < 0 || i >= grid.cols || j >= grid.rows) break;
       grid.front[j * grid.cols + i] += sign * costs[k];
     }
+  }
+}
+
+// Price every lattice cell inside each box (e.g. a zone's title strip) so wires
+// detour around it — soft, so a wire with no way round can still cross.
+export function reserveKeepOuts(grid, boxes) {
+  if (!grid) return;
+  for (const r of boxes) {
+    const i0 = Math.max(0, Math.floor((r.x - grid.origin.x) / grid.step));
+    const i1 = Math.min(grid.cols - 1, Math.ceil((r.x + r.w - grid.origin.x) / grid.step));
+    const j0 = Math.max(0, Math.floor((r.y - grid.origin.y) / grid.step));
+    const j1 = Math.min(grid.rows - 1, Math.ceil((r.y + r.h - grid.origin.y) / grid.step));
+    for (let j = j0; j <= j1; j++) for (let i = i0; i <= i1; i++) grid.front[j * grid.cols + i] += KEEP_OUT;
   }
 }
 

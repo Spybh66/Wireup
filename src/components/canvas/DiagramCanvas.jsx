@@ -167,6 +167,8 @@ export function Flow({ onOpenNodeConfig }) {
         .map(
           (n) =>
             `${n.id}:${n.position.x},${n.position.y}:${n.data.definitionId}:${n.data.rotation ?? 0}:` +
+            // a zone's title strip is a routing keep-out sized by its text
+            (n.type === 'zone' ? `${n.data.width}:${n.data.text?.length ?? 0}:` : '') +
             (n.data.ports ?? []).map((p) => p.id + p.side + p.order).join('|')
         )
         .join(';'),

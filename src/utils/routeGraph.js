@@ -11,6 +11,7 @@ import {
   labelAnchor,
   buildRoutingGrid,
   reservePortFronts,
+  reserveKeepOuts,
   routeOnGrid,
   markPath,
   pathToPoints,
@@ -32,12 +33,13 @@ const SHARED_CELLS = 3;
 const REROUTE_MIN_PENALTY = 161; // > one CROSS (160) — see REROUTE_PASSES // lattice cells two wires on one port may share past its stub
 
 // Route every auto wire on one shared lattice, filling job.points/fallback.
-function routeJobs(jobs, obstacles, allPorts) {
+function routeJobs(jobs, obstacles, allPorts, keepOuts) {
   const auto = jobs.filter((j) => !j.edge.data.manual);
   if (!auto.length) return;
 
   const grid = buildRoutingGrid(obstacles, auto.flatMap((j) => [stubTip(j.source), stubTip(j.target)]));
   reservePortFronts(grid, allPorts);
+  reserveKeepOuts(grid, keepOuts);
 
   // Wires sharing a port (a daisy-chained CAN device, a split power tap) share
   // its stub and may merge for a few cells beside it before they must split
@@ -114,6 +116,22 @@ function routeJobs(jobs, obstacles, allPorts) {
   }
 }
 
+// Zone title strip (ZoneNode: uppercase text-xs, tracking-wide, inset 4px) —
+// wires keep off it so the zone's name stays readable.
+const ZONE_TITLE_H = 24;
+const ZONE_TITLE_CHAR_W = 8;
+export function zoneTitleBox(zone) {
+  const text = zone.data?.text ?? '';
+  if (!text.trim()) return null;
+  const width = zone.data.width ?? 240;
+  return {
+    x: zone.position.x,
+    y: zone.position.y,
+    w: Math.min(width, 16 + text.length * ZONE_TITLE_CHAR_W),
+    h: ZONE_TITLE_H,
+  };
+}
+
 const LABEL_H = 15;       // approx label box height (px)
 const LABEL_CHAR_W = 6;   // approx per-character width at fontSize 10 (px)
 
@@ -135,9 +153,56 @@ function segHitsBox(ax, ay, bx, by, cx, cy, hw, hh) {
   return false;
 }
 
-// Greedy label placement: anchor at each wire's midpoint, then nudge along the
-// wire's perpendicular to find a spot clear of component bodies, other labels,
-// AND wire bundles (so labels don't sit on top of the wires).
+// Candidate label anchors along a wire: points every few px over its middle
+// stretch (clear of the ends, where labels would crowd the ports), each with
+// the wire's unit normal there and its distance from the midpoint.
+const ANCHOR_STEP = 12;
+function anchorsAlong(points) {
+  const segs = [];
+  let total = 0;
+  for (let i = 0; i < points.length - 1; i++) {
+    const a = points[i], b = points[i + 1];
+    const len = Math.hypot(b.x - a.x, b.y - a.y);
+    if (len > 0) segs.push({ a, b, len, at: total });
+    total += len;
+  }
+  if (!segs.length) return [{ x: points[0]?.x ?? 0, y: points[0]?.y ?? 0, nx: 0, ny: -1, d: 0 }];
+  const out = [];
+  const lo = Math.min(total / 2, 24), hi = Math.max(total / 2, total - 24);
+  for (let t = lo; t <= hi + 1e-6; t += ANCHOR_STEP) {
+    const s = segs.find((g) => t <= g.at + g.len) ?? segs[segs.length - 1];
+    const f = Math.min(1, (t - s.at) / s.len);
+    const ux = (s.b.x - s.a.x) / s.len, uy = (s.b.y - s.a.y) / s.len;
+    out.push({ x: s.a.x + (s.b.x - s.a.x) * f, y: s.a.y + (s.b.y - s.a.y) * f, nx: -uy, ny: ux, d: Math.abs(t - total / 2) });
+  }
+  return out;
+}
+
+// Distance from a point to a polyline.
+function distToPoly(x, y, poly) {
+  let best = Infinity;
+  for (let i = 0; i < poly.length - 1; i++) {
+    const a = poly[i], b = poly[i + 1];
+    const dx = b.x - a.x, dy = b.y - a.y;
+    const len2 = dx * dx + dy * dy;
+    const t = len2 ? Math.max(0, Math.min(1, ((x - a.x) * dx + (y - a.y) * dy) / len2)) : 0;
+    best = Math.min(best, Math.hypot(x - (a.x + t * dx), y - (a.y + t * dy)));
+  }
+  return best;
+}
+
+// Greedy label placement. Each label tries spots beside its own wire — at
+// points all along the wire's middle stretch, a step or a few off to either
+// side — and takes the nearest one clear of component bodies (and zone
+// titles), other labels and other wires, so a crowded midpoint slides the
+// label along its wire rather than far away from it. A spot must also be
+// plainly closer to its own wire than to any other, so a label between two
+// parallel wires can't be misread; where no spot beside the wire qualifies,
+// the label sits on the wire itself. Failing all that, the nearest spot that
+// only overlaps a wire; failing that, the midpoint.
+const MAX_STEPS = 4; // perpendicular steps tried each side of the wire
+const OWN_MARGIN = 10; // px a label must be nearer its own wire than any other
+const ON_WIRE_COST = 60; // sitting on the wire is the last resort
 function layoutLabels(labelItems, nodeRects, wirePolys) {
   const placed = [];
   const result = new Map();
@@ -152,9 +217,10 @@ function layoutLabels(labelItems, nodeRects, wirePolys) {
         box.y + box.h / 2 > r.y &&
         box.y - box.h / 2 < r.y + r.h
     );
-  const overWire = (box) => {
+  const overWire = (box, skip) => {
     const hw = box.w / 2 + 2, hh = box.h / 2 + 2;
     for (const poly of wirePolys) {
+      if (poly === skip) continue;
       for (let i = 0; i < poly.length - 1; i++) {
         if (segHitsBox(poly[i].x, poly[i].y, poly[i + 1].x, poly[i + 1].y, box.x, box.y, hw, hh)) return true;
       }
@@ -163,30 +229,38 @@ function layoutLabels(labelItems, nodeRects, wirePolys) {
   };
 
   for (const item of labelItems) {
-    const { id, anchor, text } = item;
+    const { id, points, text } = item;
     const w = Math.max(14, text.length * LABEL_CHAR_W + 8);
     const h = LABEL_H;
-    // perpendicular nudge axis (fall back to vertical for purely diagonal runs)
-    let nx = anchor.nx, ny = anchor.ny;
-    const nlen = Math.hypot(nx, ny) || 1;
-    nx /= nlen; ny /= nlen;
-
-    const step = h - 2;
-    let best = null;
-    let fallback = null; // best spot clear of nodes+labels even if over a wire
-    for (let k = 1; k <= 14 && !best; k++) {
-      for (const sign of [1, -1]) {
-        const off = sign * k * step;
-        const box = { x: anchor.x + nx * off, y: anchor.y + ny * off, w, h };
-        if (overNode(box)) continue;
-        if (placed.some((p) => overlaps(box, p))) continue;
-        if (!fallback) fallback = box;
-        if (overWire(box)) continue;
-        best = box;
-        break;
+    // Cheapest first: distance off the wire, then distance along it.
+    const candidates = [];
+    for (const a of anchorsAlong(points)) {
+      candidates.push({ x: a.x, y: a.y, w, h, cost: ON_WIRE_COST + a.d * 0.5, onWire: true });
+      for (let k = 1; k <= MAX_STEPS; k++) {
+        for (const sign of [1, -1]) {
+          // just clear of the wire: half the box's extent across it, plus a gap
+          const reach = Math.abs(a.nx) * (w / 2) + Math.abs(a.ny) * (h / 2) + 3 + (k - 1) * (h - 2);
+          candidates.push({ x: a.x + a.nx * reach * sign, y: a.y + a.ny * reach * sign, w, h, cost: reach + a.d * 0.5 });
+        }
       }
     }
-    best = best || fallback || { x: anchor.x + nx * step, y: anchor.y + ny * step, w, h };
+    candidates.sort((p, q) => p.cost - q.cost);
+    const others = wirePolys.filter((p) => p !== points);
+    const unambiguous = (box) => {
+      const own = distToPoly(box.x, box.y, points);
+      return others.every((p) => distToPoly(box.x, box.y, p) >= own + OWN_MARGIN);
+    };
+    let best = null;
+    let fallback = null; // nearest spot clear of nodes+labels even if over a wire
+    for (const box of candidates) {
+      if (overNode(box) || placed.some((p) => overlaps(box, p))) continue;
+      if (!fallback && !box.onWire) fallback = box;
+      if (overWire(box, box.onWire ? points : null) || !unambiguous(box)) continue;
+      best = box;
+      break;
+    }
+    const mid = labelAnchor(points);
+    best = best || fallback || { x: mid.x + mid.nx * (h - 2), y: mid.y + mid.ny * (h - 2), w, h };
     placed.push(best);
     result.set(id, { x: best.x, y: best.y });
   }
@@ -208,7 +282,8 @@ export function computeAllRoutes({
   const dragging = new Set(draggingIds);
 
   // Only real components are obstacles / get rectangles; annotation nodes
-  // (notes, zones) carry no definition and must not deflect wires.
+  // (notes, zones) carry no definition and must not deflect wires — only a
+  // zone's title strip is kept clear (a soft cost, see zoneTitleBox).
   const nodeRects = [];
   const allPorts = []; // every port, so wires keep clear of ones they don't use
   for (const n of nodes) {
@@ -218,6 +293,7 @@ export function computeAllRoutes({
     for (const p of n.data.ports ?? []) allPorts.push(portPosition(n, p, def));
   }
   const obstacles = nodeRects.map((r) => inflate(r, PAD));
+  const keepOuts = nodes.filter((n) => n.type === 'zone').map(zoneTitleBox).filter(Boolean);
 
   // Resolve EVERY edge's endpoints (not just visible ones). Routing all wires —
   // regardless of layer visibility — keeps the occupancy lattice (and therefore
@@ -258,7 +334,7 @@ export function computeAllRoutes({
       j.points = moving || !prev ? elbowRoute(j.source, j.target) : prev.points;
     }
   } else {
-    routeJobs(jobs, obstacles, allPorts);
+    routeJobs(jobs, obstacles, allPorts, keepOuts);
   }
 
   const ordered = []; // visible edges only — used for hops/labels/render
@@ -282,8 +358,8 @@ export function computeAllRoutes({
   // Label collision layout across all visible labelled wires.
   const labelItems = ordered
     .filter((o) => meta.get(o.id).label)
-    .map((o) => ({ id: o.id, anchor: labelAnchor(o.points), text: meta.get(o.id).label }));
-  const labelPos = layoutLabels(labelItems, nodeRects, ordered.map((o) => o.points));
+    .map((o) => ({ id: o.id, points: o.points, text: meta.get(o.id).label }));
+  const labelPos = layoutLabels(labelItems, [...nodeRects, ...keepOuts], ordered.map((o) => o.points));
 
   const result = new Map();
   for (const o of ordered) {

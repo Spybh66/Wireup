@@ -5,7 +5,8 @@ import { Lock, CircleAlert, TriangleAlert, Info } from 'lucide-react';
 import { getDefinition } from '../../data/componentLibrary';
 import { getIcon } from '../../assets/icons';
 import { typeColor, typeHasGaugeFitting } from '../../data/wireTypes';
-import { portSnappedFraction, sidePitch, nodeRotation, nodeSize, orientedPorts } from '../../utils/geometry';
+import { portSnappedFraction, nodeRotation, nodeSize, orientedPorts } from '../../utils/geometry';
+import { nameLayout, PORT_FONT, LABEL_INSET, LABEL_MAX_W } from '../../utils/nodeLabels';
 import useDiagramStore from '../../store/diagramStore';
 import { useDrcMarks } from './DrcContext';
 import { useConnectType } from './ConnectContext';
@@ -46,50 +47,6 @@ function handleStyle(port, f) {
   return { ...base, bottom: -4, left: pct };
 }
 
-const CHAR_W = 5.6; // approx glyph width at the 10px label font
-const LABEL_CHARS = 9; // longer port labels are ellipsized
-const ampsText = (p) => (p.type === 'PWR' && p.breaker != null ? `${p.breaker}A` : '');
-
-// Per-side font scale so neighbouring port labels never overlap. Left/right
-// labels stack vertically, so only the pitch vs line height matters; top/bottom
-// labels sit side by side, so the widest label (or its amp readout, stacked
-// under it) must fit within one pitch.
-function sideLabelScale(ports, def) {
-  const bySide = { top: [], right: [], bottom: [], left: [] };
-  for (const p of ports) bySide[p.side].push(p);
-  const scaleFor = (side) => {
-    const list = bySide[side];
-    if (list.length <= 1) return 1;
-    const vertical = side === 'left' || side === 'right';
-    const spacing = sidePitch(ports, side, vertical ? def.height : def.width);
-    if (vertical) return Math.max(0.55, Math.min(1, spacing / 11));
-    const chars = Math.max(...list.map((p) => Math.max(Math.min(p.label.length, LABEL_CHARS), ampsText(p).length)));
-    return Math.max(0.55, Math.min(1, (spacing - 4) / (chars * CHAR_W)));
-  };
-  return { top: scaleFor('top'), right: scaleFor('right'), bottom: scaleFor('bottom'), left: scaleFor('left') };
-}
-
-// Vertical room the labels on a top/bottom side take (one line, or two when a
-// channel shows its amp rating under its name).
-function sideLabelDepth(ports, side, scale) {
-  const list = ports.filter((p) => p.side === side);
-  if (!list.length) return 4;
-  const lines = list.some((p) => ampsText(p)) ? 2 : 1;
-  return Math.ceil(lines * 11 * scale) + 6;
-}
-
-// Horizontal room the port labels on a left/right side take up, so the centred
-// name can be padded clear of them instead of running into "CAN OUT".
-function sideLabelWidth(ports, side, scale) {
-  let chars = 0;
-  for (const p of ports) {
-    if (p.side !== side) continue;
-    const amps = ampsText(p) ? ampsText(p).length + 1 : 0;
-    chars = Math.max(chars, Math.min(p.label.length, LABEL_CHARS) + amps);
-  }
-  return chars ? Math.ceil(chars * CHAR_W * scale) + 10 : 8;
-}
-
 // Port label container anchored just inside the body. The port label is the
 // outermost child (toward the node edge); an optional breaker readout follows
 // it toward the node centre — beside it on left/right sides (row, reversed on
@@ -97,7 +54,7 @@ function sideLabelWidth(ports, side, scale) {
 // sides, where neighbours are too close for a row.
 function labelStyle(port, f, scale = 1) {
   const pct = `${f * 100}%`;
-  const fs = 10 * scale;
+  const fs = PORT_FONT * scale;
   const common = {
     position: 'absolute',
     display: 'flex',
@@ -113,9 +70,9 @@ function labelStyle(port, f, scale = 1) {
     zIndex: 3,
   };
   if (port.side === 'left')
-    return { ...common, left: 6, top: pct, transform: 'translateY(-50%)', flexDirection: 'row' };
+    return { ...common, left: LABEL_INSET, top: pct, transform: 'translateY(-50%)', flexDirection: 'row' };
   if (port.side === 'right')
-    return { ...common, right: 6, top: pct, transform: 'translateY(-50%)', flexDirection: 'row-reverse' };
+    return { ...common, right: LABEL_INSET, top: pct, transform: 'translateY(-50%)', flexDirection: 'row-reverse' };
   if (port.side === 'top')
     return { ...common, top: 4, left: pct, transform: 'translateX(-50%)', flexDirection: 'column', gap: 1 };
   return { ...common, bottom: 4, left: pct, transform: 'translateX(-50%)', flexDirection: 'column-reverse', gap: 1 };
@@ -147,17 +104,10 @@ function ComponentNode({ id, data, selected }) {
       port.side === 'left' || port.side === 'right' ? def.height : def.width
     );
 
-  // Keep the centered icon/name clear of the port labels that sit just inside
-  // each side that carries ports (only matters when port labels are visible).
-  const labelScale = sideLabelScale(ports, def);
-  const namePad = showPortLabels
-    ? {
-        paddingLeft: sideLabelWidth(ports, 'left', labelScale.left),
-        paddingRight: sideLabelWidth(ports, 'right', labelScale.right),
-        paddingTop: sideLabelDepth(ports, 'top', labelScale.top),
-        paddingBottom: sideLabelDepth(ports, 'bottom', labelScale.bottom),
-      }
-    : { padding: 8 };
+  // Name placement (clear of the port labels on every side, moved above/below
+  // the side labels when they leave the middle too narrow) — see nodeLabels.
+  const name = nameLayout(ports, def, { name: data.label, sub: partType, showPortLabels });
+  const labelScale = name.scale;
 
   return (
     <div
@@ -169,18 +119,29 @@ function ComponentNode({ id, data, selected }) {
         boxShadow: selected ? '0 0 0 2px #ffffff55' : 'none',
       }}
     >
-      {/* centered icon + label */}
+      {/* icon + name, wrapped between words (never mid-word) */}
       <div
-        className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-0.5"
-        style={namePad}
+        className="pointer-events-none absolute flex flex-col items-center justify-center gap-0.5"
+        style={{ left: name.box.x, top: name.box.y, width: name.box.w, height: name.box.h }}
       >
-        <Icon size={20} />
-        <span className="line-clamp-2 w-full break-words text-center font-heading text-[11px] font-semibold leading-tight tracking-wide text-silver">
-          {data.label}
+        {name.showIcon && <Icon size={20} />}
+        <span
+          className="w-full text-center font-heading font-semibold leading-tight tracking-wide text-silver"
+          style={{ fontSize: name.fontSize }}
+        >
+          {name.lines.map((line, i) => (
+            <span key={i} className="block whitespace-nowrap">
+              {line}
+            </span>
+          ))}
         </span>
-        {partType && (
-          <span className="w-full truncate text-center text-[9px] leading-tight text-neutral-400" title={partType}>
-            {partType}
+        {name.showSub && (
+          <span className="w-full text-center text-[9px] leading-tight text-neutral-400" title={partType}>
+            {name.subLines.map((line, i) => (
+              <span key={i} className="block whitespace-nowrap">
+                {line}
+              </span>
+            ))}
           </span>
         )}
       </div>
@@ -210,7 +171,7 @@ function ComponentNode({ id, data, selected }) {
       {showPortLabels &&
         ports.map((p) => (
           <div key={`l-${p.id}`} style={labelStyle(p, snapFrac(p), labelScale[p.side])}>
-            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 56 * labelScale[p.side] }}>
+            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: LABEL_MAX_W * labelScale[p.side] }}>
               {p.label}
             </span>
             {p.type === 'PWR' && p.breaker != null &&

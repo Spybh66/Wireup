@@ -310,16 +310,19 @@ export const COMPONENT_LIBRARY = [
   ]),
 
   // ---------------- Sensors ----------------
-  // CTRE CANcoder — flying leads: a separate power pair plus a CAN pair (newer
-  // units use a keyed 6-pin Molex SL). Power and CAN are separate conductors.
+  // CTRE CANcoder — flying leads: a separate power pair plus two CAN pairs (in
+  // and out, so it daisy-chains); newer units use a keyed 6-pin Molex SL.
   def('cancoder', 'CANcoder', 'Sensors', 'canSensor', 100, 60, ['canId'], [
     ...pwr('PWR', 'left', '22 AWG', BARE, [FERRULE, BARE, MOLEX_SL]),
-    ...can('CAN', 'bottom', CAN_MOLEX),
+    ...can('CAN IN', 'bottom', CAN_MOLEX),
+    ...can('CAN OUT', 'bottom', CAN_MOLEX),
   ]),
-  // CTRE Pigeon 2.0 IMU — separate power and CAN flying leads (22 AWG).
+  // CTRE Pigeon 2.0 IMU — separate power and CAN flying leads (22 AWG); two
+  // CAN pairs so it daisy-chains in and out like a motor controller.
   def('pigeon2', 'Pigeon 2', 'Sensors', 'canSensor', 100, 60, ['canId'], [
     ...pwr('PWR', 'left', '22 AWG', BARE, [FERRULE, BARE]),
-    ...can('CAN', 'bottom', CAN_CTRE),
+    ...can('CAN IN', 'bottom', CAN_CTRE),
+    ...can('CAN OUT', 'bottom', CAN_CTRE),
   ]),
   // CTRE CANdle — Weidmuller push-in for VBat power + CAN; LED data out on a
   // 3-pin JST. The power feed is the heavy lead (it drives the LED strip).
@@ -390,9 +393,11 @@ export const COMPONENT_LIBRARY = [
     ...eth('4', 'top'),
     ...eth('5', 'top'),
   ]),
+  // CTRE CANivore — two CAN connections (pass-through), so it can sit mid-bus.
   def('canivore', 'CANivore (CTRE)', 'Networking', 'canjunction', 120, 80, [], [
     ...usbA('USB-A', 'left'),
-    ...can('CAN', 'right', CAN_CTRE),
+    ...can('CAN IN', 'right', CAN_CTRE),
+    ...can('CAN OUT', 'right', CAN_CTRE),
     ...pwr('V+/V-', 'bottom', '22 AWG', FERRULE, WEID),
   ]),
 
