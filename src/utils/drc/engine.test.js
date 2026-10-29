@@ -1,5 +1,6 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { runDrc } from './engine';
+import { DRC_RULES } from './rules';
 
 // Minimal node/edge builders using real built-in definitions.
 let pid = 0;
@@ -30,6 +31,27 @@ describe('DRC engine', () => {
     const dups = findIds(res, 'duplicate-can-id');
     expect(dups).toHaveLength(1);
     expect(dups[0].nodes.sort()).toEqual([a.id, b.id].sort());
+  });
+
+  it('treats each SystemCore CAN port as its own terminated bus', () => {
+    const sc = node('systemcore', 'SC', {
+      ports: [port('sc-c0', 'CAN', 'CAN 0'), port('sc-c1', 'CAN', 'CAN 1')],
+    });
+    // two buses, each SystemCore → device → terminator; same CAN ID on each
+    const a = node('krakenx60', 'A', { canId: 1, ports: [port('a-in', 'CAN'), port('a-out', 'CAN')] });
+    const b = node('krakenx60', 'B', { canId: 1, ports: [port('b-in', 'CAN'), port('b-out', 'CAN')] });
+    const t1 = node('canterminator', 'T1', { ports: [port('t1', 'CAN')] });
+    const t2 = node('canterminator', 'T2', { ports: [port('t2', 'CAN')] });
+    const edges = [
+      edge('e1', sc.id, 'sc-c0', a.id, 'a-in', 'CAN'),
+      edge('e2', a.id, 'a-out', t1.id, 't1', 'CAN'),
+      edge('e3', sc.id, 'sc-c1', b.id, 'b-in', 'CAN'),
+      edge('e4', b.id, 'b-out', t2.id, 't2', 'CAN'),
+    ];
+    const res = runDrc({ nodes: [sc, a, b, t1, t2], edges });
+    expect(findIds(res, 'can-termination')).toHaveLength(0); // not a 4-way stub
+    expect(findIds(res, 'can-bus-fragmented')).toHaveLength(0);
+    expect(findIds(res, 'duplicate-can-id')).toHaveLength(0); // separate buses
   });
 
   it('flags duplicate IPs across any devices', () => {
@@ -251,5 +273,102 @@ describe('DRC engine', () => {
     const res2 = runDrc({ nodes: [k], edges: [] }, ['missing-can-id', 'unconnected-can', 'floating-component']);
     expect(findIds(res2, 'missing-can-id')).toHaveLength(0);
     expect(findIds(res2, 'unconnected-can')).toHaveLength(0);
+  });
+
+  it('duplicate CAN IDs: same device class collides; separate buses do not', () => {
+    const k = node('krakenx60', 'K', { canId: 5, ports: [port('k', 'CAN')] });
+    const ka = node('krakenx44_adapted', 'KA', { canId: 5, ports: [port('ka', 'CAN')] }); // also a Talon FX
+    const sm = node('sparkmax', 'SM', { canId: 7, ports: [port('sm', 'CAN')] });
+    const sf = node('sparkflex', 'SF', { canId: 7, ports: [port('sf', 'CAN')] }); // both REV SPARK
+    expect(findIds(runDrc({ nodes: [k, ka, sm, sf], edges: [] }), 'duplicate-can-id')).toHaveLength(2);
+
+    // K on the roboRIO bus, KA on a CANivore bus → legal
+    const rio = node('roborio2', 'RIO', { ports: [port('r', 'CAN')] });
+    const cv = node('canivore', 'CV', { ports: [port('c', 'CAN')] });
+    const edges = [edge('e1', rio.id, 'r', k.id, 'k', 'CAN'), edge('e2', cv.id, 'c', ka.id, 'ka', 'CAN')];
+    expect(findIds(runDrc({ nodes: [rio, cv, k, ka], edges }), 'duplicate-can-id')).toHaveLength(0);
+  });
+
+  it('fragmented CAN: a CANivore bus is legitimate, a controller-less group is not', () => {
+    const rio = node('roborio2', 'RIO', { ports: [port('r', 'CAN')] });
+    const pdh = node('pdh', 'PDH', { ports: [port('p', 'CAN')] });
+    const cv = node('canivore', 'CV', { ports: [port('c', 'CAN')] });
+    const k = node('krakenx60', 'K', { canId: 1, ports: [port('k', 'CAN')] });
+    const edges = [edge('e1', rio.id, 'r', pdh.id, 'p', 'CAN'), edge('e2', cv.id, 'c', k.id, 'k', 'CAN')];
+    expect(findIds(runDrc({ nodes: [rio, pdh, cv, k], edges }), 'can-bus-fragmented')).toHaveLength(0);
+
+    const a = node('cancoder', 'A', { ports: [port('a', 'CAN')] });
+    const b = node('cancoder', 'B', { ports: [port('b', 'CAN')] });
+    const f = findIds(
+      runDrc({ nodes: [rio, pdh, cv, k, a, b], edges: [...edges, edge('e3', a.id, 'a', b.id, 'b', 'CAN')] }),
+      'can-bus-fragmented'
+    );
+    expect(f).toHaveLength(1);
+    expect(f[0].nodes.sort()).toEqual([a.id, b.id].sort());
+  });
+
+  it('CAN termination: mid-chain roboRIO, stubs, and termination count', () => {
+    const term = (l) => node('canterminator', l, { ports: [port(`${l}-t`, 'CAN')] });
+    const rio = node('roborio2', 'RIO', { ports: [port('r', 'CAN')] });
+    const t1 = term('T1');
+    const t2 = term('T2');
+    // T1 — RIO — T2: roboRIO mid-chain, 3 terminations
+    let res = runDrc({
+      nodes: [rio, t1, t2],
+      edges: [edge('e1', t1.id, 'T1-t', rio.id, 'r', 'CAN'), edge('e2', rio.id, 'r', t2.id, 'T2-t', 'CAN')],
+    });
+    let t = findIds(res, 'can-termination');
+    expect(t.some((v) => /mid-chain/.test(v.message) && v.nodes[0] === rio.id)).toBe(true);
+    expect(t.some((v) => /3 terminations/.test(v.message))).toBe(true);
+
+    // RIO — K (one CAN port used twice, in + out) — PDH: clean daisy chain
+    const k = node('cancoder', 'K', { ports: [port('k', 'CAN')] });
+    const pdh = node('pdh', 'PDH', { ports: [port('p', 'CAN')] });
+    const chain = [edge('c1', rio.id, 'r', k.id, 'k', 'CAN'), edge('c2', k.id, 'k', pdh.id, 'p', 'CAN')];
+    expect(findIds(runDrc({ nodes: [rio, k, pdh], edges: chain }), 'can-termination')).toHaveLength(0);
+
+    // Branch a third device off K → stub
+    const s = node('pigeon2', 'S', { ports: [port('s', 'CAN')] });
+    res = runDrc({ nodes: [rio, k, pdh, s], edges: [...chain, edge('c3', k.id, 'k', s.id, 's', 'CAN')] });
+    t = findIds(res, 'can-termination');
+    expect(t.some((v) => /3 CAN links/.test(v.message) && v.nodes[0] === k.id)).toBe(true);
+  });
+
+  it('roboRIO power: must come from a PD; RSL output is not a power input', () => {
+    // RSL port renamed — still recognized by its definition port id
+    const rioPorts = [port('roborio2-p0', 'PWR', 'PWR', 'top'), port('roborio2-p5', 'PWR', 'Status', 'bottom')];
+    const rio = node('roborio2', 'RIO', { ports: rioPorts });
+    const rsl = node('rsl', 'RSL', { ports: [port('l', 'PWR')] });
+    const rslWire = edge('e1', rio.id, 'roborio2-p5', rsl.id, 'l', 'PWR');
+    let res = runDrc({ nodes: [rio, rsl], edges: [rslWire] });
+    expect(findIds(res, 'unpowered-device').some((v) => v.nodes[0] === rio.id)).toBe(true);
+    expect(findIds(res, 'roborio-power-source')).toHaveLength(0);
+
+    const vrm = node('vrm', 'VRM', { ports: [port('v', 'PWR', '12V', 'right')] });
+    res = runDrc({ nodes: [rio, rsl, vrm], edges: [rslWire, edge('e2', vrm.id, 'v', rio.id, 'roborio2-p0', 'PWR')] });
+    expect(findIds(res, 'roborio-power-source')).toHaveLength(1);
+    expect(findIds(res, 'unpowered-device').some((v) => v.nodes[0] === rio.id)).toBe(false);
+  });
+
+  it('roborio-channel checks the PDH channel by port index even when renamed', () => {
+    const pdh = node('pdh', 'PDH', { ports: [port('pdh-p8', 'PWR', 'Drive FL', 'right')] }); // CH5, renamed
+    const rio = node('roborio2', 'RIO', { ports: [port('r', 'PWR', 'PWR', 'top')] });
+    const e = edge('e1', pdh.id, 'pdh-p8', rio.id, 'r', 'PWR');
+    expect(findIds(runDrc({ nodes: [pdh, rio], edges: [e] }), 'roborio-channel')).toHaveLength(1);
+  });
+
+  it('reports a crashing rule as an info result instead of hiding it', () => {
+    const broken = { id: 'test-broken', label: 'Broken', severity: 'error', run() { throw new Error('boom'); } };
+    DRC_RULES.push(broken);
+    const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    try {
+      const v = findIds(runDrc({ nodes: [], edges: [] }), 'test-broken');
+      expect(v).toHaveLength(1);
+      expect(v[0].severity).toBe('info');
+      expect(spy).toHaveBeenCalled();
+    } finally {
+      DRC_RULES.splice(DRC_RULES.indexOf(broken), 1);
+      spy.mockRestore();
+    }
   });
 });

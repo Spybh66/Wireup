@@ -49,19 +49,27 @@ export default function App() {
 
   // ---- load a shared project from the URL hash, else restore-from-autosave ----
   useEffect(() => {
+    const store = useDiagramStore.getState();
+    const autosave = readAutosave();
+    // Offer the previous session back. Set AFTER a shared project loads (load
+    // clears it), so opening a share link never silently replaces the autosave
+    // — autosave writes are held while the offer is pending.
+    const offerRestore = () => {
+      if (autosave) useDiagramStore.getState().setRestoreData(autosave);
+    };
     const m = window.location.hash.match(/[#&]p=([^&]+)/);
-    if (m) {
-      decodeProjectFromHash(m[1])
-        .then((project) => {
-          if (useDiagramStore.getState().loadProject(project))
-            useDiagramStore.getState().addToast('Loaded shared project');
-          else useDiagramStore.getState().addToast('Shared link is invalid');
-        })
-        .catch(() => useDiagramStore.getState().addToast('Shared link is invalid'));
-      return;
-    }
-    const data = readAutosave();
-    if (data) useDiagramStore.getState().setRestoreData(data);
+    if (!m) return offerRestore();
+    // Drop the payload from the address bar so a reload doesn't reload the
+    // (now stale) shared snapshot over newer work.
+    window.history.replaceState(null, '', window.location.pathname + window.location.search);
+    if (autosave) store.setRestoreData(autosave); // hold autosave while decoding
+    decodeProjectFromHash(m[1])
+      .then((project) => {
+        if (useDiagramStore.getState().loadProject(project)) store.addToast('Loaded shared project');
+        else store.addToast('Shared link is invalid');
+      })
+      .catch(() => store.addToast('Shared link is invalid'))
+      .finally(offerRestore);
   }, []);
 
   // Warn before leaving with unsaved changes (autosave is a safety net, not a
@@ -111,14 +119,23 @@ export default function App() {
       const mod = e.ctrlKey || e.metaKey;
       // Escape: close modal/panel first, otherwise clear selection
       if (e.key === 'Escape') {
+        if (useDiagramStore.getState().confirmState) return; // handled by dialog
         if (settingsOpen) return setSettingsOpen(false);
         if (configNodeId) return setConfigNodeId(null);
-        if (useDiagramStore.getState().confirmState) return; // handled by dialog
         const sel = useDiagramStore.getState().selection;
         if (sel.nodes.length || sel.edges.length) clearSelection();
         return;
       }
       if (isTypingTarget(e.target)) return;
+      // Diagram shortcuts never act behind an open dialog (a focused button in
+      // the config modal + Backspace would otherwise delete the component).
+      if (
+        settingsOpen ||
+        configNodeId ||
+        useDiagramStore.getState().confirmState ||
+        document.querySelector('[role="dialog"],[role="alertdialog"]')
+      )
+        return;
 
       if (mod && (e.key === 'z' || e.key === 'Z')) {
         e.preventDefault();
@@ -136,7 +153,16 @@ export default function App() {
         return;
       }
       if (mod && (e.key === 'v' || e.key === 'V')) {
-        doPaste();
+        if (activeTab === 'diagram') doPaste();
+        return;
+      }
+      // R / Shift+R: rotate the selected components clockwise / counter-clockwise
+      if (!mod && !e.altKey && (e.key === 'r' || e.key === 'R') && activeTab === 'diagram') {
+        const sel = useDiagramStore.getState().selection.nodes;
+        if (sel.length) {
+          e.preventDefault();
+          useDiagramStore.getState().rotateNodes(sel, e.shiftKey ? -90 : 90);
+        }
         return;
       }
       if (e.key === 'Delete' || e.key === 'Backspace') {

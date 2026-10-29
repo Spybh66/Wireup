@@ -5,7 +5,7 @@ import { Lock, CircleAlert, TriangleAlert, Info } from 'lucide-react';
 import { getDefinition } from '../../data/componentLibrary';
 import { getIcon } from '../../assets/icons';
 import { typeColor, typeHasGaugeFitting } from '../../data/wireTypes';
-import { portSnappedFraction } from '../../utils/geometry';
+import { portSnappedFraction, sidePitch, nodeRotation, nodeSize, orientedPorts } from '../../utils/geometry';
 import useDiagramStore from '../../store/diagramStore';
 import { useDrcMarks } from './DrcContext';
 import { useConnectType } from './ConnectContext';
@@ -46,27 +46,55 @@ function handleStyle(port, f) {
   return { ...base, bottom: -4, left: pct };
 }
 
-// Per-side font scale so crowded port labels don't stack on top of each other.
-// Shrinks the label font when the spacing between ports on a side gets tight.
+const CHAR_W = 5.6; // approx glyph width at the 10px label font
+const LABEL_CHARS = 9; // longer port labels are ellipsized
+const ampsText = (p) => (p.type === 'PWR' && p.breaker != null ? `${p.breaker}A` : '');
+
+// Per-side font scale so neighbouring port labels never overlap. Left/right
+// labels stack vertically, so only the pitch vs line height matters; top/bottom
+// labels sit side by side, so the widest label (or its amp readout, stacked
+// under it) must fit within one pitch.
 function sideLabelScale(ports, def) {
-  const counts = { top: 0, right: 0, bottom: 0, left: 0 };
-  for (const p of ports) counts[p.side] += 1;
+  const bySide = { top: [], right: [], bottom: [], left: [] };
+  for (const p of ports) bySide[p.side].push(p);
   const scaleFor = (side) => {
-    const n = counts[side];
-    if (n <= 1) return 1;
+    const list = bySide[side];
+    if (list.length <= 1) return 1;
     const vertical = side === 'left' || side === 'right';
-    const span = vertical ? def.height : def.width;
-    const spacing = span / (n + 1);
-    const need = vertical ? 11 : 24; // px of room one label wants
-    return Math.max(0.55, Math.min(1, spacing / need));
+    const spacing = sidePitch(ports, side, vertical ? def.height : def.width);
+    if (vertical) return Math.max(0.55, Math.min(1, spacing / 11));
+    const chars = Math.max(...list.map((p) => Math.max(Math.min(p.label.length, LABEL_CHARS), ampsText(p).length)));
+    return Math.max(0.55, Math.min(1, (spacing - 4) / (chars * CHAR_W)));
   };
   return { top: scaleFor('top'), right: scaleFor('right'), bottom: scaleFor('bottom'), left: scaleFor('left') };
 }
 
-// Port label container — a flex row anchored just inside the body. The port
-// label is the outermost child (toward the node edge); an optional breaker
-// readout follows it toward the node centre. For right-side ports the row is
-// reversed so the label still hugs the outer (right) edge with the amps inboard.
+// Vertical room the labels on a top/bottom side take (one line, or two when a
+// channel shows its amp rating under its name).
+function sideLabelDepth(ports, side, scale) {
+  const list = ports.filter((p) => p.side === side);
+  if (!list.length) return 4;
+  const lines = list.some((p) => ampsText(p)) ? 2 : 1;
+  return Math.ceil(lines * 11 * scale) + 6;
+}
+
+// Horizontal room the port labels on a left/right side take up, so the centred
+// name can be padded clear of them instead of running into "CAN OUT".
+function sideLabelWidth(ports, side, scale) {
+  let chars = 0;
+  for (const p of ports) {
+    if (p.side !== side) continue;
+    const amps = ampsText(p) ? ampsText(p).length + 1 : 0;
+    chars = Math.max(chars, Math.min(p.label.length, LABEL_CHARS) + amps);
+  }
+  return chars ? Math.ceil(chars * CHAR_W * scale) + 10 : 8;
+}
+
+// Port label container anchored just inside the body. The port label is the
+// outermost child (toward the node edge); an optional breaker readout follows
+// it toward the node centre — beside it on left/right sides (row, reversed on
+// the right so the label still hugs the edge), and under/over it on top/bottom
+// sides, where neighbours are too close for a row.
 function labelStyle(port, f, scale = 1) {
   const pct = `${f * 100}%`;
   const fs = 10 * scale;
@@ -89,8 +117,8 @@ function labelStyle(port, f, scale = 1) {
   if (port.side === 'right')
     return { ...common, right: 6, top: pct, transform: 'translateY(-50%)', flexDirection: 'row-reverse' };
   if (port.side === 'top')
-    return { ...common, top: 4, left: pct, transform: 'translateX(-50%)', flexDirection: 'row' };
-  return { ...common, bottom: 4, left: pct, transform: 'translateX(-50%)', flexDirection: 'row' };
+    return { ...common, top: 4, left: pct, transform: 'translateX(-50%)', flexDirection: 'column', gap: 1 };
+  return { ...common, bottom: 4, left: pct, transform: 'translateX(-50%)', flexDirection: 'column-reverse', gap: 1 };
 }
 
 function ComponentNode({ id, data, selected }) {
@@ -99,8 +127,14 @@ function ComponentNode({ id, data, selected }) {
   const drcMarks = useDrcMarks();
   const drcSeverity = drcMarks.nodes.get(id);
   const connectType = useConnectType();
-  const def = getDefinition(data.definitionId, customDefinitions);
-  if (!def) return null;
+  const definition = getDefinition(data.definitionId, customDefinitions);
+  if (!definition) return null;
+  // Rotated view: box size and port sides after the node's rotation.
+  const rotation = nodeRotation({ data });
+  const def = { ...definition, ...nodeSize({ data }, definition) };
+  const ports = orientedPorts(data.ports, rotation);
+  // Show the part type under the name whenever the user has renamed it.
+  const partType = data.label && data.label !== definition.name ? definition.name : null;
   const Icon = getIcon(def.icon);
   const border = data.color ?? '#d4d4d8';
 
@@ -108,21 +142,20 @@ function ComponentNode({ id, data, selected }) {
   // actually connects, so dots/labels line up with the routed wire.
   const snapFrac = (port) =>
     portSnappedFraction(
-      data.ports,
+      ports,
       port,
       port.side === 'left' || port.side === 'right' ? def.height : def.width
     );
 
   // Keep the centered icon/name clear of the port labels that sit just inside
   // each side that carries ports (only matters when port labels are visible).
-  const labelScale = sideLabelScale(data.ports, def);
-  const sides = new Set(data.ports.map((p) => p.side));
+  const labelScale = sideLabelScale(ports, def);
   const namePad = showPortLabels
     ? {
-        paddingLeft: sides.has('left') ? 30 : 8,
-        paddingRight: sides.has('right') ? 30 : 8,
-        paddingTop: sides.has('top') ? 14 : 4,
-        paddingBottom: sides.has('bottom') ? 14 : 4,
+        paddingLeft: sideLabelWidth(ports, 'left', labelScale.left),
+        paddingRight: sideLabelWidth(ports, 'right', labelScale.right),
+        paddingTop: sideLabelDepth(ports, 'top', labelScale.top),
+        paddingBottom: sideLabelDepth(ports, 'bottom', labelScale.bottom),
       }
     : { padding: 8 };
 
@@ -145,6 +178,11 @@ function ComponentNode({ id, data, selected }) {
         <span className="line-clamp-2 w-full break-words text-center font-heading text-[11px] font-semibold leading-tight tracking-wide text-silver">
           {data.label}
         </span>
+        {partType && (
+          <span className="w-full truncate text-center text-[9px] leading-tight text-neutral-400" title={partType}>
+            {partType}
+          </span>
+        )}
       </div>
 
       {/* lock indicator — top-right corner */}
@@ -170,7 +208,7 @@ function ComponentNode({ id, data, selected }) {
       {/* port labels (+ fuse/breaker readout for power ports). Label hugs the
           outer edge; the colour-coded amp readout sits just inboard of it. */}
       {showPortLabels &&
-        data.ports.map((p) => (
+        ports.map((p) => (
           <div key={`l-${p.id}`} style={labelStyle(p, snapFrac(p), labelScale[p.side])}>
             <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 56 * labelScale[p.side] }}>
               {p.label}
@@ -201,7 +239,7 @@ function ComponentNode({ id, data, selected }) {
       {/* handles — every port is both source & target. React Flow needs a
           target-type handle to render an incoming edge, so we render both a
           source and a target handle (same id/position) per port. */}
-      {data.ports.map((p) => {
+      {ports.map((p) => {
         const style = handleStyle(p, snapFrac(p));
         const fit = typeHasGaugeFitting(p.type) && p.fitting ? ` · ${p.fitting}` : '';
         const gauge = typeHasGaugeFitting(p.type) && p.gauge ? ` · ${p.gauge}` : '';

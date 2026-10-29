@@ -1,13 +1,25 @@
 // Multi-selection editor — bulk-edit several selected wires and/or components.
-import { X, Lock, Unlock, Trash2 } from 'lucide-react';
+import { X, Lock, Unlock, Trash2, RotateCw, RotateCcw } from 'lucide-react';
 import useDiagramStore from '../../store/diagramStore';
-import { GAUGE_OPTIONS } from '../../data/wireTypes';
+import { GAUGE_OPTIONS, typeHasGaugeFitting } from '../../data/wireTypes';
+
+// Defined at module level: a component created during render remounts its
+// children every render (resetting the selects mid-interaction).
+function Field({ label, children }) {
+  return (
+    <label className="block">
+      <span className="mb-1 block text-neutral-400">{label}</span>
+      {children}
+    </label>
+  );
+}
 
 export default function MultiSelectPanel({ onClose }) {
   const selection = useDiagramStore((s) => s.selection);
   const updateEdgesData = useDiagramStore((s) => s.updateEdgesData);
   const updateNodesData = useDiagramStore((s) => s.updateNodesData);
   const deleteSelection = useDiagramStore((s) => s.deleteSelection);
+  const rotateNodes = useDiagramStore((s) => s.rotateNodes);
   const layers = useDiagramStore((s) => s.layers);
 
   const nIds = selection.nodes;
@@ -15,12 +27,14 @@ export default function MultiSelectPanel({ onClose }) {
   const nCount = nIds.length;
   const eCount = eIds.length;
 
-  const Field = ({ label, children }) => (
-    <label className="block">
-      <span className="mb-1 block text-neutral-400">{label}</span>
-      {children}
-    </label>
-  );
+  // Gauge only means something on wires that carry one (PWR/CAN).
+  const gaugeIds = () => {
+    const ids = new Set(eIds);
+    return useDiagramStore
+      .getState()
+      .edges.filter((e) => ids.has(e.id) && typeHasGaugeFitting(e.data.type))
+      .map((e) => e.id);
+  };
 
   return (
     <div className="pointer-events-auto absolute left-4 top-4 z-10 w-64 rounded-lg border border-edge bg-surface-1 shadow-xl">
@@ -54,7 +68,7 @@ export default function MultiSelectPanel({ onClose }) {
             <Field label="Gauge">
               <select
                 defaultValue=""
-                onChange={(e) => updateEdgesData(eIds, { wireGauge: e.target.value || null })}
+                onChange={(e) => e.target.value && updateEdgesData(gaugeIds(), { wireGauge: e.target.value })}
                 className="w-full rounded border border-edge bg-surface-0 px-2 py-1 text-silver"
               >
                 <option value="">Set gauge…</option>
@@ -125,6 +139,22 @@ export default function MultiSelectPanel({ onClose }) {
                 className="flex flex-1 items-center justify-center gap-1 rounded border border-edge bg-surface-2 py-1 text-xs text-silver hover:bg-surface-0"
               >
                 <Unlock size={13} /> Unlock
+              </button>
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={() => rotateNodes(nIds, -90)}
+                title="Rotate counter-clockwise (Shift+R)"
+                className="flex flex-1 items-center justify-center gap-1 rounded border border-edge bg-surface-2 py-1 text-xs text-silver hover:bg-surface-0"
+              >
+                <RotateCcw size={13} /> Rotate
+              </button>
+              <button
+                onClick={() => rotateNodes(nIds, 90)}
+                title="Rotate clockwise (R)"
+                className="flex flex-1 items-center justify-center gap-1 rounded border border-edge bg-surface-2 py-1 text-xs text-silver hover:bg-surface-0"
+              >
+                <RotateCw size={13} /> Rotate
               </button>
             </div>
           </>

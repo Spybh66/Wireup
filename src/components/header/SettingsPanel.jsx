@@ -1,7 +1,10 @@
-// §12 Settings drawer — exactly five settings (§2.7). No label template here.
+// §12 Settings drawer — canvas/display settings plus default wire fittings.
 import { useEffect } from 'react';
 import { X } from 'lucide-react';
 import useDiagramStore from '../../store/diagramStore';
+import { FITTING_OPTIONS, FITTING_TYPES } from '../../data/wireTypes';
+
+const FITTING_TYPE_LABEL = { PWR: 'Power wires', CAN: 'CAN wires' };
 
 function Toggle({ label, checked, onChange }) {
   return (
@@ -27,6 +30,9 @@ function Toggle({ label, checked, onChange }) {
 export default function SettingsPanel({ onClose }) {
   const settings = useDiagramStore((s) => s.settings);
   const updateSettings = useDiagramStore((s) => s.updateSettings);
+  const applyDefaultFittings = useDiagramStore((s) => s.applyDefaultFittings);
+  const addToast = useDiagramStore((s) => s.addToast);
+  const fittings = settings.defaultFittings ?? {};
 
   useEffect(() => {
     const onKey = (e) => e.key === 'Escape' && onClose();
@@ -86,6 +92,42 @@ export default function SettingsPanel({ onClose }) {
             checked={settings.showWireLabels}
             onChange={(v) => updateSettings({ showWireLabels: v })}
           />
+
+          <div className="mt-4 border-t border-edge pt-4">
+            <h3 className="mb-1 text-sm font-semibold text-silver">Default wire fittings</h3>
+            <p className="mb-2 text-xs text-neutral-400">
+              Used for both ends of new wires. A port with an installed connector, or one that
+              can&apos;t take the chosen fitting, keeps its own.
+            </p>
+            {FITTING_TYPES.map((type) => (
+              <div key={type} className="py-1.5">
+                <label className="block text-sm">
+                  <span className="mb-1 block text-neutral-300">{FITTING_TYPE_LABEL[type] ?? type}</span>
+                  <select
+                    value={fittings[type] ?? ''}
+                    onChange={(e) =>
+                      updateSettings({ defaultFittings: { ...fittings, [type]: e.target.value || null } })
+                    }
+                    className="w-full rounded border border-edge bg-surface-0 px-2 py-1.5 text-silver outline-none focus:border-silver"
+                  >
+                    <option value="">Component default</option>
+                    {FITTING_OPTIONS.map((f) => (
+                      <option key={f} value={f}>{f}</option>
+                    ))}
+                  </select>
+                </label>
+                <button
+                  onClick={() => {
+                    const n = applyDefaultFittings(type);
+                    addToast(n ? `Updated fittings on ${n} wire${n === 1 ? '' : 's'}` : 'All wires already match');
+                  }}
+                  className="mt-1 text-xs text-neutral-400 underline-offset-2 hover:text-silver hover:underline"
+                >
+                  Apply to existing {type === 'PWR' ? 'power' : type} wires
+                </button>
+              </div>
+            ))}
+          </div>
         </div>
       </aside>
     </div>

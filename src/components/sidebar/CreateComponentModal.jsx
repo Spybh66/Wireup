@@ -7,6 +7,7 @@ import {
   defaultGaugeForType,
   defaultFittingForType,
 } from '../../data/wireTypes';
+import { snapDim } from '../../utils/geometry';
 
 const SIDES = ['top', 'right', 'bottom', 'left'];
 const uuid = () => crypto.randomUUID();
@@ -39,7 +40,7 @@ export default function CreateComponentModal({ onClose }) {
 
   // Clamp to range and round to the wire grid (8px) so ports land on the
   // routing lattice for clean straight wires.
-  const clampSize = (v) => Math.round(Math.max(60, Math.min(400, Number(v) || 60)) / 8) * 8;
+  const clampSize = (v) => snapDim(Math.max(60, Math.min(400, Number(v) || 60)));
 
   const save = () => {
     if (!name.trim()) {

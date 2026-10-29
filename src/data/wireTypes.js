@@ -56,6 +56,7 @@ export const FITTING_OPTIONS = [
   'Anderson Powerpole',
   'Anderson SB50',
   'Molex SL',
+  'Molex Micro-Fit+',
   'Ring Terminal',
   'Ferrule',
   'Wago Lever Nut',
@@ -141,6 +142,22 @@ export function defaultFittingForType(type) {
   if (type === 'CAN') return 'Wago Lever Nut';
   if (type === 'PWR') return 'Ferrule';
   return null;
+}
+
+// Types whose wire ends carry a fitting the user can set a default for.
+export const FITTING_TYPES = ['PWR', 'CAN'];
+
+// Fitting for one end of a new wire at `port`. Priority: the connector the
+// user installed on that port → the team's default for this wire type (when
+// the port accepts it) → the port's own default → the first fitting the port
+// accepts → the built-in type default. Never picks something the port rejects
+// when it has an allowed list (that would trip the connector-type DRC).
+export function endFitting(port, type, defaults = {}) {
+  if (port?.installedConnector) return port.installedConnector;
+  const allowed = port?.requiredFittings?.length ? port.requiredFittings : null;
+  const pref = defaults?.[type];
+  if (pref && (!allowed || allowed.includes(pref))) return pref;
+  return port?.fitting ?? allowed?.[0] ?? pref ?? defaultFittingForType(type);
 }
 
 // §2.5 — five built-in layers (order matters for display).

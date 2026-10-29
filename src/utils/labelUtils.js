@@ -40,11 +40,18 @@ export function regenerateLabels(edges, template, nodeLabelById) {
 }
 
 // Count edges in the same label group (used to seed per-group counters on load).
+// Seeds each group's counter past every index already used, so after wires
+// are deleted (PWR001, PWR003 left) the next one doesn't reuse PWR003. The
+// index of an auto label is taken as the last number in it.
 export function groupCounts(edges) {
   const counts = {};
+  const seen = {};
   for (const e of edges) {
     const g = typeGroup(e.data.type);
-    counts[g] = (counts[g] ?? 0) + 1;
+    seen[g] = (seen[g] ?? 0) + 1;
+    const nums = !e.data.labelEdited && String(e.data.label ?? '').match(/\d+/g);
+    const idx = nums ? parseInt(nums[nums.length - 1], 10) : 0;
+    counts[g] = Math.max(counts[g] ?? 0, seen[g], idx);
   }
   return counts;
 }

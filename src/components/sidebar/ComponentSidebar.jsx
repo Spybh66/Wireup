@@ -155,7 +155,12 @@ export default function ComponentSidebar() {
                       <span className="shrink-0 text-xs text-neutral-600">{t.nodes.length}</span>
                     )}
                     <button
-                      onClick={() => removeTemplate(t.id)}
+                      onClick={async () => {
+                        const ok = await useDiagramStore
+                          .getState()
+                          .requestConfirm(`Delete the subsystem "${t.name}"? This can't be undone.`);
+                        if (ok) removeTemplate(t.id);
+                      }}
                       aria-label={`Delete ${t.name}`}
                       className="shrink-0 text-neutral-500 opacity-0 hover:text-red-400 group-hover:opacity-100"
                     >

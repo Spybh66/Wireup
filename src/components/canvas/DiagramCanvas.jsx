@@ -65,7 +65,8 @@ export function Flow({ onOpenNodeConfig }) {
   useEffect(() => {
     let cancelled = false;
     let tries = 0;
-    const sigOf = (n) => (n.data.ports ?? []).map((p) => p.id + p.side + p.order).join(',');
+    const sigOf = (n) =>
+      `${n.data.rotation ?? 0}:` + (n.data.ports ?? []).map((p) => p.id + p.side + p.order).join(',');
     const attempt = () => {
       if (cancelled) return;
       const updates = new Map();
@@ -96,11 +97,13 @@ export function Flow({ onOpenNodeConfig }) {
     // Selection lives in React Flow, so chrome outside the canvas (DRC panel,
     // panel close buttons, Escape) drives it imperatively through the bridge.
     canvasBridge.clearSelection = () => rfStore.getState().unselectNodesAndEdges();
+    // Set both at once through the controlled arrays — RF's addSelectedEdges
+    // would deselect the nodes again outside multi-select mode.
     canvasBridge.selectElements = (nodeIds = [], edgeIds = []) => {
-      const s = rfStore.getState();
-      s.unselectNodesAndEdges();
-      s.addSelectedNodes(nodeIds);
-      if (edgeIds.length) s.addSelectedEdges(edgeIds);
+      const ns = new Set(nodeIds);
+      const es = new Set(edgeIds);
+      setRfNodes((prev) => prev.map((n) => (n.selected === ns.has(n.id) ? n : { ...n, selected: ns.has(n.id) })));
+      setRfEdges((prev) => prev.map((e) => (e.selected === es.has(e.id) ? e : { ...e, selected: es.has(e.id) })));
     };
     return () => {
       canvasBridge.fitView = null;
@@ -108,12 +111,19 @@ export function Flow({ onOpenNodeConfig }) {
       canvasBridge.clearSelection = null;
       canvasBridge.selectElements = null;
     };
-  }, [fitView, rfStore]);
+  }, [fitView, rfStore, setRfNodes, setRfEdges]);
 
   // ---- sync store → RF nodes (structure only; preserve RF's selection +
   // measured dimensions). Selection lives in React Flow, never in our store, so
   // we carry the previous `selected` forward across structural syncs. ----
+  // Nodes the store creates already selected (paste, new note/zone) take over
+  // the selection, so what's highlighted is what Delete/panels act on.
+  const prevStoreIds = useRef(new Set());
   useEffect(() => {
+    const storeSel = new Set(useDiagramStore.getState().selection.nodes);
+    const seen = prevStoreIds.current;
+    const takeover = storeNodes.some((n) => !seen.has(n.id) && storeSel.has(n.id));
+    prevStoreIds.current = new Set(storeNodes.map((n) => n.id));
     setRfNodes((prev) => {
       const byId = new Map(prev.map((n) => [n.id, n]));
       return storeNodes.map((n) => {
@@ -122,7 +132,7 @@ export function Flow({ onOpenNodeConfig }) {
         return {
           ...n,
           draggable: !n.data.locked,
-          selected: old?.selected ?? false,
+          selected: old && !takeover ? old.selected : storeSel.has(n.id),
           hidden: isAnnotation && !settings.annotationsVisible,
           measured: old?.measured,
           width: old?.width,
@@ -130,7 +140,8 @@ export function Flow({ onOpenNodeConfig }) {
         };
       });
     });
-  }, [storeNodes, settings.annotationsVisible, setRfNodes]);
+    if (takeover) setRfEdges((prev) => prev.map((e) => (e.selected ? { ...e, selected: false } : e)));
+  }, [storeNodes, settings.annotationsVisible, setRfNodes, setRfEdges]);
 
   // ---- sync store → RF edges (structure only; preserve RF's selection) ----
   useEffect(() => {
@@ -155,7 +166,7 @@ export function Flow({ onOpenNodeConfig }) {
       rfNodes
         .map(
           (n) =>
-            `${n.id}:${n.position.x},${n.position.y}:${n.data.definitionId}:` +
+            `${n.id}:${n.position.x},${n.position.y}:${n.data.definitionId}:${n.data.rotation ?? 0}:` +
             (n.data.ports ?? []).map((p) => p.id + p.side + p.order).join('|')
         )
         .join(';'),
@@ -163,19 +174,38 @@ export function Flow({ onOpenNodeConfig }) {
   );
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const routeNodes = useMemo(() => rfNodes, [routeSig]);
-
-  const { routes, fallbacks } = useMemo(
+  // Same for wires: only what moves a wire (ends, layer visibility, manual
+  // shape, label text for label placement) re-routes — editing a gauge,
+  // colour, fitting or note must not re-run the router for the whole diagram.
+  const edgeSig = useMemo(
     () =>
-      computeAllRoutes({
-        nodes: routeNodes,
-        edges,
-        layers,
-        gridSize: settings.gridSize,
-        draggingIds: draggingNodeIds,
-        customDefinitions,
-      }),
-    [routeNodes, edges, layers, settings.gridSize, draggingNodeIds, customDefinitions]
+      edges
+        .map(
+          (e) =>
+            `${e.id}:${e.source}.${e.sourceHandle}>${e.target}.${e.targetHandle}:${e.data.type}:${e.data.layerId}:` +
+            `${e.data.manual ? JSON.stringify(e.data.waypoints ?? []) : ''}:${e.data.label ?? ''}`
+        )
+        .join(';'),
+    [edges]
   );
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const routeEdges = useMemo(() => edges, [edgeSig]);
+
+  // Last fully-routed result: during a drag, wires not attached to the moving
+  // nodes are drawn from it instead of being re-routed every frame.
+  const settledRoutes = useRef(null);
+  const { routes, fallbacks } = useMemo(() => {
+    const out = computeAllRoutes({
+      nodes: routeNodes,
+      edges: routeEdges,
+      layers,
+      draggingIds: draggingNodeIds,
+      customDefinitions,
+      previous: settledRoutes.current,
+    });
+    if (!draggingNodeIds.length) settledRoutes.current = out.routes;
+    return out;
+  }, [routeNodes, routeEdges, layers, draggingNodeIds, customDefinitions]);
 
   useEffect(() => {
     for (const f of fallbacks) {
@@ -314,6 +344,9 @@ export function Flow({ onOpenNodeConfig }) {
           snapToGrid={settings.snapToGrid}
           snapGrid={[settings.gridSize, settings.gridSize]}
           deleteKeyCode={null}
+          // arrow-key nudging would move nodes in React Flow only, never in
+          // the store (no save/undo, and the next sync snaps them back)
+          disableKeyboardA11y
           multiSelectionKeyCode={['Shift', 'Meta', 'Control']}
           selectionOnDrag={!isTouch}
           panOnDrag={isTouch ? true : [1, 2]}

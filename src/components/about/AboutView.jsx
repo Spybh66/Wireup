@@ -42,6 +42,8 @@ const KEYBINDS = [
   { keys: ['Ctrl', 'V'], action: 'Paste (offset from original)' },
   { keys: ['Delete'], action: 'Delete selection (wires + unlocked components)' },
   { keys: ['Backspace'], action: 'Delete selection' },
+  { keys: ['R'], action: 'Rotate selected components 90° clockwise' },
+  { keys: ['Shift', 'R'], action: 'Rotate selected components 90° counter-clockwise' },
   { keys: ['Esc'], action: 'Close panel / clear selection' },
   { keys: ['Double-click'], action: 'Open a component’s config modal' },
   { keys: ['Drag wire'], action: 'Bend a selected wire (adds a waypoint)' },
@@ -62,7 +64,7 @@ const STACK = [
   ['html-to-image', 'PNG / JPEG / SVG canvas export'],
   ['jsPDF + jspdf-autotable', 'PDF export'],
   ['SheetJS (xlsx)', 'Excel / CSV export'],
-  ['Custom octilinear router', '45° auto-routing with lane bundling & jump-overs'],
+  ['Custom orthogonal router', 'Grid-aligned auto-routing with lane bundling, rip-up-and-reroute & jump-overs'],
   ['Custom DRC engine', 'Live FRC electrical rule checks'],
   ['CompressionStream + URL hash', 'Backend-free shareable project links'],
 ];

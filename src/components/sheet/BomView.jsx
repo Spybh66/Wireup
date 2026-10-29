@@ -6,8 +6,12 @@ import { buildBom } from '../../utils/sheetData';
 export default function BomView() {
   const nodes = useDiagramStore((s) => s.nodes);
   const edges = useDiagramStore((s) => s.edges);
+  const customDefinitions = useDiagramStore((s) => s.customDefinitions);
   // recompute when wiring changes
-  const { wires, connectors, installedConnectors } = useMemo(() => buildBom({ nodes, edges }), [nodes, edges]);
+  const { wires, connectors, installedConnectors } = useMemo(
+    () => buildBom({ nodes, edges, customDefinitions }),
+    [nodes, edges, customDefinitions]
+  );
 
   if (!wires.length && !connectors.length && !installedConnectors.length) {
     return <p className="text-sm text-neutral-500">No wires with a length or connector set yet.</p>;

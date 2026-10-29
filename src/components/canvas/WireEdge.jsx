@@ -1,7 +1,7 @@
 // §6.4 Edge renderer — routed path + hops, selection glow, optional label, and
 // manual waypoint editing (drag corners, insert on segments, double-click to
 // delete). Editing any wire converts it to a manual route through its waypoints.
-import { memo, useRef, useState } from 'react';
+import { memo, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { BaseEdge, EdgeLabelRenderer, useReactFlow } from '@xyflow/react';
 import { useRouting } from './RoutingContext';
@@ -10,11 +10,13 @@ import useDiagramStore from '../../store/diagramStore';
 import { buildSvgPath } from '../../utils/routingUtils';
 import { portPosition } from '../../utils/geometry';
 import { getDefinition } from '../../data/componentLibrary';
+import { typeColor, typeColor2 } from '../../data/wireTypes';
 
 const MIN_SEG = 26; // only show an insert dot on segments at least this long (px)
 const DRC_HALO = { error: '#f87171', warning: '#fbbf24', info: '#38bdf8' };
 const ALIGN_TOL = 10; // flow-px capture radius for locking a waypoint onto a port/waypoint axis
 const GUIDE_LEN = 5000; // half-length of an alignment guide line (px)
+const DRAG_SLOP = 3; // screen px a waypoint must move before a drag counts (a click doesn't edit)
 
 // Distance from point p to segment a–b.
 function distToSeg(p, a, b) {
@@ -27,11 +29,13 @@ function distToSeg(p, a, b) {
   return Math.hypot(p.x - (a.x + t * dx), p.y - (a.y + t * dy));
 }
 
-function WireEdge({ id, selected }) {
+function WireEdge({ id, selected, data }) {
   const routing = useRouting();
   const drcSeverity = useDrcMarks().edges.get(id);
   const showWireLabels = useDiagramStore((s) => s.settings.showWireLabels);
-  const edge = useDiagramStore((s) => s.edges.find((e) => e.id === id));
+  // The edge's data arrives as a prop (synced from the store) — selecting it
+  // from the store here would scan every edge on every store update.
+  const edge = data ? { data } : null;
   const setEdgeWaypoints = useDiagramStore((s) => s.setEdgeWaypoints);
   const clearEdgeWaypoints = useDiagramStore((s) => s.clearEdgeWaypoints);
   const { screenToFlowPosition } = useReactFlow();
@@ -39,12 +43,16 @@ function WireEdge({ id, selected }) {
   const [guides, setGuides] = useState(null); // alignment guide lines during a drag
   const [menu, setMenu] = useState(null); // right-click context menu {x,y} in flow coords
   const dragRef = useRef(null);
+  const detachRef = useRef(null); // removes the window drag listeners
+  useEffect(() => () => detachRef.current?.(), []);
 
   const route = routing.get(id);
   if (!route || !edge) return null; // hidden layer or missing route
 
-  const color = route.color;
-  const color2 = route.color2;
+  // Colours come from the wire's own (live) data: routes are only recomputed
+  // when geometry changes, so route.color can lag a colour edit.
+  const color = edge.data.color ?? typeColor(edge.data.type);
+  const color2 = edge.data.color2 ?? typeColor2(edge.data.type);
   const showLabel = showWireLabels || selected;
   const labelPos = route.labelPos ?? route.midpoint;
   const strokeW = selected ? 3 : 2;
@@ -70,7 +78,7 @@ function WireEdge({ id, selected }) {
   const beginDrag = (base, idx, ev) => {
     ev.stopPropagation();
     ev.preventDefault();
-    dragRef.current = { idx, pts: base };
+    dragRef.current = { idx, pts: base, x0: ev.clientX, y0: ev.clientY, moved: false };
     setDraft(base);
     // Axis-lock candidates: this wire's other control points + every port in the
     // diagram. Collected once at drag-start (getState, non-reactive) so the per-
@@ -83,6 +91,10 @@ function WireEdge({ id, selected }) {
     });
     const others = [...base.filter((_, k) => k !== idx), ...allPortPts];
     const onMove = (e) => {
+      const d = dragRef.current;
+      if (!d) return;
+      if (!d.moved && Math.hypot(e.clientX - d.x0, e.clientY - d.y0) < DRAG_SLOP) return;
+      d.moved = true;
       // Work from the RAW cursor position and axis-lock onto a nearby
       // port/waypoint. Manual waypoints ignore the grid-snap setting entirely —
       // axis-locking (capture radius ALIGN_TOL) is what produces clean straight
@@ -106,17 +118,30 @@ function WireEdge({ id, selected }) {
       setDraft(pts);
       setGuides(g.length ? { lines: g, at: fp } : null);
     };
-    const onUp = () => {
+    const detach = () => {
       window.removeEventListener('pointermove', onMove);
       window.removeEventListener('pointerup', onUp);
-      const pts = dragRef.current.pts;
+      window.removeEventListener('pointercancel', onCancel);
+      detachRef.current = null;
+    };
+    const finish = (commit) => {
+      const d = dragRef.current;
+      detach();
       dragRef.current = null;
       setDraft(null);
       setGuides(null);
-      setEdgeWaypoints(id, pts.slice(1, -1)); // strip endpoints → waypoints
+      // only a real drag edits the wire (a click must not make it manual), and
+      // only if the wire still exists (undo can remove it mid-drag)
+      const stillThere = useDiagramStore.getState().edges.some((e) => e.id === id);
+      if (commit && d?.moved && stillThere) setEdgeWaypoints(id, d.pts.slice(1, -1)); // strip endpoints → waypoints
     };
+    const onUp = () => finish(true);
+    const onCancel = () => finish(false);
+    detachRef.current?.();
+    detachRef.current = detach;
     window.addEventListener('pointermove', onMove);
     window.addEventListener('pointerup', onUp);
+    window.addEventListener('pointercancel', onCancel);
   };
 
   const onWaypointDown = (i, ev) => beginDrag([src, ...interior, tgt], i, ev);

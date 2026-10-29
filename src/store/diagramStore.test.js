@@ -74,8 +74,10 @@ describe('diagramStore', () => {
     expect(edge.data.type).toBe('CAN');
     expect(edge.data.label).toBe('CAN001');
     expect(edge.data.wireGauge).toBe('22 AWG');
-    expect(edge.data.wireFittingFrom).toBe('Wago Lever Nut');
-    expect(edge.data.wireFittingTo).toBe('Wago Lever Nut');
+    // CAN ports with no own fitting take their first allowed one (a generic
+    // default outside that list would trip the connector-type check)
+    expect(edge.data.wireFittingFrom).toBe('Ferrule');
+    expect(edge.data.wireFittingTo).toBe('Ferrule');
     const layers = useDiagramStore.getState().layers;
     expect(edge.data.layerId).toBe(layers.find((l) => l.name === 'CAN Bus').id);
   });
@@ -137,7 +139,7 @@ describe('diagramStore', () => {
           data: { definitionId: 'pdh', label: 'PDH', ports: [{ id: 'p', type: 'CANH', label: 'CAN H', side: 'bottom' }] },
         },
       ],
-      edges: [{ id: 'e', source: 'n', target: 'n', data: { type: 'PWR+' } }],
+      edges: [{ id: 'e', source: 'n', target: 'n', sourceHandle: 'p', targetHandle: 'p', data: { type: 'PWR+' } }],
       layers: [],
     };
     const r = validateProject(legacy);
@@ -173,6 +175,61 @@ describe('diagramStore', () => {
     expect(okAnno.ok).toBe(true);
   });
 
+  it('snaps pre-v3 component nodes onto the port grid, leaving zones alone', () => {
+    const r = validateProject({
+      app: 'wireup', version: 2, layers: [], edges: [],
+      nodes: [
+        { id: 'n', type: 'component', position: { x: 970, y: 612 }, data: { definitionId: 'cancoder', label: 'x', ports: [] } },
+        { id: 'z', type: 'zone', position: { x: 13, y: 7 }, data: { text: 'Z', color: '#fff', width: 10, height: 10 } },
+      ],
+    });
+    expect(r.ok).toBe(true);
+    expect(r.data.nodes[0].position).toEqual({ x: 976, y: 608 });
+    expect(r.data.nodes[1].position).toEqual({ x: 13, y: 7 });
+  });
+
+  it('rejects a duplicate wire between the same two ports', () => {
+    const s = useDiagramStore.getState();
+    const a = s.addNode('roborio2', { x: 0, y: 0 });
+    const b = s.addNode('pdh', { x: 400, y: 0 });
+    const st = useDiagramStore.getState();
+    const sp = st.nodes.find((n) => n.id === a).data.ports.find((p) => p.type === 'CAN');
+    const tp = st.nodes.find((n) => n.id === b).data.ports.find((p) => p.type === 'CAN');
+    st.addEdge({ source: a, target: b, sourceHandle: sp.id, targetHandle: tp.id });
+    st.addEdge({ source: b, target: a, sourceHandle: tp.id, targetHandle: sp.id });
+    expect(useDiagramStore.getState().edges).toHaveLength(1);
+  });
+
+  it('rotates about the centre and keeps the node on the port grid', () => {
+    const s = useDiagramStore.getState();
+    const id = s.addNode('krakenx60', { x: 160, y: 160 }); // 160 × 64
+    useDiagramStore.getState().rotateNodes([id], 90);
+    const n = useDiagramStore.getState().nodes.find((x) => x.id === id);
+    expect(n.data.rotation).toBe(90);
+    expect(n.position.x % 16).toBe(0);
+    expect(n.position.y % 16).toBe(0);
+    useDiagramStore.getState().rotateNodes([id], -90);
+    const back = useDiagramStore.getState().nodes.find((x) => x.id === id);
+    expect(back.data.rotation).toBe(0);
+    expect(n.position).toEqual({ x: 208, y: 112 }); // centre (240, 192) kept
+    expect(back.position).toEqual({ x: 160, y: 160 });
+  });
+
+  it('applies the default fitting only where the port accepts it', () => {
+    const s = useDiagramStore.getState();
+    s.updateSettings({ defaultFittings: { PWR: null, CAN: 'Molex SL' } });
+    const rio = s.addNode('roborio2', { x: 0, y: 0 });
+    const enc = s.addNode('cancoder', { x: 400, y: 0 });
+    const st = useDiagramStore.getState();
+    const sp = st.nodes.find((n) => n.id === rio).data.ports.find((p) => p.type === 'CAN');
+    const tp = st.nodes.find((n) => n.id === enc).data.ports.find((p) => p.type === 'CAN');
+    st.addEdge({ source: rio, target: enc, sourceHandle: sp.id, targetHandle: tp.id });
+    const e = useDiagramStore.getState().edges[0];
+    expect(e.data.wireFittingFrom).toBe('Ferrule'); // roboRIO CAN is Weidmuller-only
+    expect(e.data.wireFittingTo).toBe('Molex SL'); // CANcoder accepts Molex SL
+    s.updateSettings({ defaultFittings: { PWR: null, CAN: null } });
+  });
+
   it('rejects a type-mismatched connection (no wire created)', () => {
     const s = useDiagramStore.getState();
     const rio = s.addNode('roborio2', { x: 0, y: 0 });
@@ -197,10 +254,12 @@ describe('diagramStore', () => {
     st.addEdge({ source: a, target: b, sourceHandle: sp.id, targetHandle: tp.id });
     expect(useDiagramStore.getState().edges[0].data.manual).toBe(false);
 
-    // switch to manual mode → next wire is manual
+    // switch to manual mode → next wire is manual (to the other PDH CAN port —
+    // a second wire between the same two ports is rejected)
     useDiagramStore.getState().updateSettings({ routingMode: 'manual' });
     st = useDiagramStore.getState();
-    st.addEdge({ source: a, target: b, sourceHandle: sp.id, targetHandle: tp.id });
+    const tp2 = st.nodes.find((n) => n.id === b).data.ports.filter((p) => p.type === 'CAN')[1];
+    st.addEdge({ source: a, target: b, sourceHandle: sp.id, targetHandle: tp2.id });
     expect(useDiagramStore.getState().edges[1].data.manual).toBe(true);
 
     // setEdgeWaypoints marks any wire manual; clearEdgeWaypoints reverts to auto

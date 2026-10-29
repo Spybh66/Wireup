@@ -21,7 +21,9 @@ function EditableCell({ value, nodeId, field, placeholder, multiline = false }) 
 
   const commit = () => {
     const trimmed = draft.trim();
-    updateNodeData(nodeId, { [field]: trimmed === '' ? null : trimmed });
+    const next = trimmed === '' ? null : trimmed;
+    // Skip no-op writes (they'd add an undo step and clobber concurrent changes).
+    if (next !== (value == null || value === '' ? null : String(value))) updateNodeData(nodeId, { [field]: next });
     setEditing(false);
   };
 

@@ -19,25 +19,50 @@ export function colorName(hex) {
   return COLOR_NAMES[(hex ?? '').toLowerCase()] ?? hex ?? '—';
 }
 
-// Connectors needed to terminate one END of a wire, accounting for combined
-// wires: a CAN wire is one connector; a PWR wire is two conductors, so it takes
-// one of each polarity (Powerpole → Red + Black) or two of a single-pole part.
-// Anderson SB50 is a 2-pole housing (one per end). Bare Wire = no connector.
-function connectorUnits(type, fitting) {
+// Single-conductor fittings: one per conductor, so a 2-conductor CAN pair
+// takes two per end. Everything else on CAN is a multi-pole housing.
+const PER_CONDUCTOR = new Set(['Ferrule', 'Ring Terminal', 'Bullet']);
+// Multi-pole housings: one per end however many conductors.
+const MULTI_POLE = new Set(['Anderson SB50', 'Molex SL', 'Molex Micro-Fit+', 'JST', 'Barrel Jack', 'USB-A', 'USB-C']);
+
+// Motor phase leads (A/B/C or U/V/W on a motor controller or motor) are a
+// single conductor, unlike a PWR supply run which is a red+black pair.
+const PHASE_LABEL = /^\s*[ABCUVW]\s*$/i;
+const PHASE_CATEGORIES = new Set(['Motors', 'Motor Controllers']);
+const isPhaseLead = (end) => !!end?.port && PHASE_CATEGORIES.has(end.category) && PHASE_LABEL.test(end.port.label ?? '');
+
+// Number of conductors in a wire. `ends` = the [{ port, category }] it connects
+// (either may be missing). CAN = H/L pair; PWR = +/− pair unless either end is a
+// motor phase lead; everything else is counted as one.
+export function conductorsFor(edge, ends = []) {
+  const t = edge.data.type;
+  if (t === 'CAN') return 2;
+  if (t === 'PWR') return ends.some(isPhaseLead) ? 1 : 2;
+  return 1;
+}
+
+// Connectors needed to terminate one END of a wire with `conductors` wires.
+// Two-conductor PWR takes one of each polarity (Powerpole → Red + Black) or two
+// of a single-pole part; two-conductor CAN takes two single-conductor fittings
+// (ferrule/ring/bullet) or one multi-pole housing. Multi-pole housings (SB50,
+// Molex SL, …) are one per end. Bare Wire = no connector.
+function connectorUnits(type, fitting, conductors) {
   if (!fitting || fitting === 'Bare Wire') return [];
-  if (fitting === 'Anderson SB50') return [{ name: 'Anderson SB50', qty: 1 }];
+  if (conductors < 2 || MULTI_POLE.has(fitting)) return [{ name: fitting, qty: 1 }];
   if (fitting === 'Anderson Powerpole') {
     return type === 'PWR'
       ? [{ name: 'Anderson Powerpole (Red)', qty: 1 }, { name: 'Anderson Powerpole (Black)', qty: 1 }]
       : [{ name: 'Anderson Powerpole', qty: 1 }];
   }
-  return type === 'PWR' ? [{ name: fitting, qty: 2 }] : [{ name: fitting, qty: 1 }];
+  if (type === 'PWR' || PER_CONDUCTOR.has(fitting)) return [{ name: fitting, qty: conductors }];
+  return [{ name: fitting, qty: 1 }];
 }
 
 // Returns { wires: [{gauge, hex, color, lengthIn, lengthFt}], connectors: [{name, qty}], installedConnectors: [{name, qty}] }.
-// PWR contributes its length to two conductors (color + color2); so does CAN.
+// Two-conductor wires (PWR pair, CAN) contribute their length to both colors
+// (color + color2); a single-conductor phase lead only to its own color.
 export function buildBom(state) {
-  const { edges, nodes } = state;
+  const { edges, nodes, customDefinitions } = state;
   const wireMap = new Map(); // `${gauge}|${hex}` -> { gauge, hex, lengthIn }
   const connMap = new Map(); // name -> qty
   const instMap = new Map(); // name -> qty (installed connectors / pigtails)
@@ -51,27 +76,38 @@ export function buildBom(state) {
   const addConn = (name, qty) => connMap.set(name, (connMap.get(name) ?? 0) + qty);
   const addInst = (name, qty) => instMap.set(name, (instMap.get(name) ?? 0) + qty);
 
+  const nodeById = new Map((nodes ?? []).map((n) => [n.id, n]));
+  const categoryOf = (n) =>
+    n?.data?.definitionId ? getDefinition(n.data.definitionId, customDefinitions ?? [])?.category : undefined;
+  const endOf = (nodeId, handleId) => {
+    const n = nodeById.get(nodeId);
+    const port = n?.data?.ports?.find((p) => p.id === handleId);
+    return port ? { port, category: categoryOf(n) } : null;
+  };
+
   for (const e of edges) {
     const t = e.data.type;
     const len = Number(e.data.length) || 0;
     const gauge = e.data.wireGauge;
     const c1 = e.data.color ?? typeColor(t);
     const c2 = e.data.color2 ?? typeColor2(t);
+    const conductors = conductorsFor(e, [endOf(e.source, e.sourceHandle), endOf(e.target, e.targetHandle)]);
     if (typeHasGaugeFitting(t) && len > 0 && gauge) {
-      addWire(gauge, c1, len); // + / CAN H
-      if (c2) addWire(gauge, c2, len); // − / CAN L (second conductor of the pair)
+      addWire(gauge, c1, len); // + / CAN H / phase lead
+      if (c2 && conductors > 1) addWire(gauge, c2, len); // − / CAN L (second conductor of the pair)
     }
     for (const fit of [e.data.wireFittingFrom ?? e.data.wireFitting, e.data.wireFittingTo ?? e.data.wireFitting]) {
-      for (const u of connectorUnits(t, fit)) addConn(u.name, u.qty);
+      for (const u of connectorUnits(t, fit, conductors)) addConn(u.name, u.qty);
     }
   }
 
   // Installed connectors/pigtails added to device ports by the builder.
   for (const n of (nodes ?? [])) {
     for (const p of (n.data?.ports ?? [])) {
-      if (p.installedConnector && p.installedConnector !== 'Bare Wire') {
-        addInst(p.installedConnector, 1);
-      }
+      // Counted like one wire end on this port (a PWR pair's Powerpole pigtail
+      // is a red + black housing; a phase lead's is a single one).
+      const conductors = conductorsFor({ data: { type: p.type } }, [{ port: p, category: categoryOf(n) }]);
+      for (const u of connectorUnits(p.type, p.installedConnector, conductors)) addInst(u.name, u.qty);
     }
   }
 

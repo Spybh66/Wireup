@@ -1,5 +1,5 @@
 // §10 Table 2 — Wires (sortable, filterable, inline-editable) + §4.2 template editor.
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { ArrowUp, ArrowDown } from 'lucide-react';
 import useDiagramStore from '../../store/diagramStore';
 import { buildWireRows } from '../../utils/sheetData';
@@ -65,9 +65,23 @@ function TemplateEditor() {
   );
 }
 
+// Draft follows the store value while not focused (so undo/redo show through)
+// and is committed on blur only if it actually changed — otherwise a blur after
+// Ctrl+Z would write the stale draft back.
 function EditableCell({ value, onCommit, type = 'text', multiline = false }) {
-  const [draft, setDraft] = useState(value ?? '');
-  const commit = () => onCommit(draft);
+  const current = String(value ?? '');
+  const [draft, setDraft] = useState(current);
+  const focused = useRef(false);
+  useEffect(() => {
+    if (!focused.current) setDraft(current);
+  }, [current]);
+  const onFocus = () => {
+    focused.current = true;
+  };
+  const commit = () => {
+    focused.current = false;
+    if (String(draft) !== current) onCommit(draft);
+  };
   const cls =
     'block w-full min-w-0 box-border rounded border border-transparent bg-transparent px-1 py-0.5 text-silver hover:border-edge focus:border-silver focus:bg-surface-0 focus:outline-none';
   if (multiline) {
@@ -76,6 +90,7 @@ function EditableCell({ value, onCommit, type = 'text', multiline = false }) {
         rows={2}
         value={draft}
         onChange={(e) => setDraft(e.target.value)}
+        onFocus={onFocus}
         onBlur={commit}
         className={`${cls} resize-none whitespace-pre-wrap break-words`}
       />
@@ -87,6 +102,7 @@ function EditableCell({ value, onCommit, type = 'text', multiline = false }) {
       min={type === 'number' ? 0 : undefined}
       value={draft}
       onChange={(e) => setDraft(e.target.value)}
+      onFocus={onFocus}
       onBlur={commit}
       onKeyDown={(e) => e.key === 'Enter' && e.currentTarget.blur()}
       className={cls}

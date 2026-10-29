@@ -1,4 +1,5 @@
 // §2.1 Project JSON serialize / validate / load helpers + filename sanitizing.
+import { PORT_GRID } from './geometry';
 
 // Wire type aliases for projects saved before the pair→unified refactor.
 const TYPE_ALIASES = { 'PWR+': 'PWR', 'PWR-': 'PWR', CANH: 'CAN', CANL: 'CAN' };
@@ -25,9 +26,46 @@ function migrateTypes(data) {
   };
 }
 
+// v3 put ports on PORT_GRID relative to their node, so a node off that grid
+// would leave its ports off it too (and every wire into them with a jog). Snap
+// component nodes onto the grid once; zones and notes keep their positions.
+function migrateSnapNodes(data) {
+  const snap = (v) => Math.round(v / PORT_GRID) * PORT_GRID;
+  return {
+    ...data,
+    nodes: data.nodes.map((n) =>
+      n.type === 'component' && n.position
+        ? { ...n, position: { x: snap(n.position.x), y: snap(n.position.y) } }
+        : n
+    ),
+  };
+}
+
+// v4 moved the PDH's miniature-fuse channels (CH20–23) from the left bank to
+// the top edge, leaving 10 full-size channels per long side. Ports live in the
+// project file, so existing PDHs are moved to match.
+function migratePdhMiniChannels(data) {
+  return {
+    ...data,
+    nodes: data.nodes.map((n) =>
+      n.data?.definitionId === 'pdh' && Array.isArray(n.data.ports)
+        ? {
+            ...n,
+            data: {
+              ...n.data,
+              ports: n.data.ports.map((p) =>
+                p.slot === 'fuse' && p.side === 'left' ? { ...p, side: 'top' } : p
+              ),
+            },
+          }
+        : n
+    ),
+  };
+}
+
 // Current project schema version. Bump when the on-disk shape changes and add a
 // migration step below so older files keep loading.
-export const SCHEMA_VERSION = 2;
+export const SCHEMA_VERSION = 4;
 
 // Upgrade a validated project object from `fromVersion` to SCHEMA_VERSION by
 // applying each step in order. Steps must be idempotent and pure.
@@ -36,7 +74,11 @@ function migrateProject(data, fromVersion) {
   // v1 → v2: split power/CAN port & wire types were unified (PWR+/PWR-→PWR,
   // CANH/CANL→CAN). Pre-v1 (versionless) files get the same treatment.
   if (fromVersion < 2) d = migrateTypes(d);
-  // (future migrations chain here: `if (fromVersion < 3) d = migrateV3(d);`)
+  // v2 → v3: ports moved onto the 16 px grid; snap nodes to match.
+  if (fromVersion < 3) d = migrateSnapNodes(d);
+  // v3 → v4: PDH mini-fuse channels moved to the top edge.
+  if (fromVersion < 4) d = migratePdhMiniChannels(d);
+  // (future migrations chain here: `if (fromVersion < 5) d = migrateV5(d);`)
   return d;
 }
 
@@ -70,14 +112,21 @@ export function validateProject(obj) {
   }
   // Shape check: malformed nodes/edges would crash on first render otherwise.
   // Component nodes must carry a ports array; annotations (note/zone) need not.
+  const num = (v) => typeof v === 'number' && Number.isFinite(v);
   const nodesOk = obj.nodes.every(
     (n) =>
       n &&
       typeof n.id === 'string' &&
+      n.position &&
+      num(n.position.x) &&
+      num(n.position.y) &&
       n.data &&
       typeof n.data === 'object' &&
-      (n.type === 'note' || n.type === 'zone' || Array.isArray(n.data.ports))
+      (n.type === 'note' ||
+        n.type === 'zone' ||
+        (Array.isArray(n.data.ports) && n.data.ports.every((p) => p && typeof p.id === 'string')))
   );
+  const layersOk = obj.layers.every((l) => l && typeof l.id === 'string');
   const edgesOk = obj.edges.every(
     (e) =>
       e &&
@@ -85,15 +134,26 @@ export function validateProject(obj) {
       typeof e.source === 'string' &&
       typeof e.target === 'string' &&
       e.data &&
-      typeof e.data === 'object'
+      typeof e.data === 'object' &&
+      (e.data.waypoints == null || Array.isArray(e.data.waypoints))
   );
-  if (!nodesOk || !edgesOk) {
+  if (!nodesOk || !edgesOk || !layersOk) {
     return { ok: false, error: 'Invalid or corrupted project file.' };
   }
+  // Drop wires whose ends aren't real ports on component nodes (hand-edited or
+  // truncated files) — everything downstream assumes both ends resolve.
+  const portsOf = new Map(
+    obj.nodes
+      .filter((n) => Array.isArray(n.data.ports))
+      .map((n) => [n.id, new Set(n.data.ports.map((p) => p.id))])
+  );
+  const edges = obj.edges.filter(
+    (e) => portsOf.get(e.source)?.has(e.sourceHandle) && portsOf.get(e.target)?.has(e.targetHandle)
+  );
   const raw = {
     projectName: typeof obj.projectName === 'string' ? obj.projectName : 'Untitled Project',
     nodes: obj.nodes,
-    edges: obj.edges,
+    edges,
     layers: obj.layers,
     wireLabelTemplate:
       typeof obj.wireLabelTemplate === 'string' ? obj.wireLabelTemplate : '{type}{index}',

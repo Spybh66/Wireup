@@ -7,8 +7,13 @@ import {
   simplifyCollinear,
   chamferCorners,
   inflate,
+  buildSvgPath,
+  buildRoutingGrid,
+  reservePortFronts,
   STUB,
 } from './routingUtils';
+import { portPosition, sideLayout, PORT_GRID } from './geometry';
+import { COMPONENT_LIBRARY } from '../data/componentLibrary';
 
 describe('stubTip', () => {
   it('exits perpendicular per side', () => {
@@ -147,17 +152,30 @@ describe('segIntersect', () => {
 });
 
 describe('detectHops', () => {
-  it('assigns a hop to the later (higher-z) edge at a crossing', () => {
+  it('puts the hop on the horizontal wire at a crossing', () => {
     const polys = [
-      { id: 'low', points: [{ x: 0, y: 50 }, { x: 100, y: 50 }] },
-      { id: 'high', points: [{ x: 50, y: 0 }, { x: 50, y: 100 }] },
+      { id: 'h', points: [{ x: 0, y: 50 }, { x: 100, y: 50 }] },
+      { id: 'v', points: [{ x: 50, y: 0 }, { x: 50, y: 100 }] },
+    ];
+    for (const order of [polys, [...polys].reverse()]) {
+      const hops = detectHops(order);
+      expect(hops.has('h')).toBe(true);
+      expect(hops.has('v')).toBe(false);
+      const pt = hops.get('h')[0];
+      expect(pt.x).toBeCloseTo(50);
+      expect(pt.y).toBeCloseTo(50);
+    }
+  });
+
+  it('hops on the vertical wire when the horizontal one turns at the crossing', () => {
+    const polys = [
+      // horizontal run that turns 3px past the crossing — no room for a hop
+      { id: 'h', points: [{ x: 0, y: 50 }, { x: 53, y: 50 }, { x: 53, y: 120 }] },
+      { id: 'v', points: [{ x: 50, y: 0 }, { x: 50, y: 100 }] },
     ];
     const hops = detectHops(polys);
-    expect(hops.has('high')).toBe(true);
-    expect(hops.has('low')).toBe(false);
-    const pt = hops.get('high')[0];
-    expect(pt.x).toBeCloseTo(50);
-    expect(pt.y).toBeCloseTo(50);
+    expect(hops.has('h')).toBe(false);
+    expect(hops.has('v')).toBe(true);
   });
 
   it('ignores crossings near an endpoint', () => {
@@ -167,6 +185,83 @@ describe('detectHops', () => {
     ];
     // crossing is at ~(2,2), within 12px of both starts → skipped
     const hops = detectHops(polys);
-    expect(hops.has('high')).toBe(false);
+    expect(hops.size).toBe(0);
+  });
+});
+
+describe('buildSvgPath hops', () => {
+  it('merges hops over a tight bundle into one bridge arc', () => {
+    const pts = [{ x: 0, y: 0 }, { x: 200, y: 0 }];
+    const hops = [80, 88, 96].map((x) => ({ x, y: 0, seg: 0 }));
+    const d = buildSvgPath(pts, hops);
+    expect(d.match(/ A /g)).toHaveLength(1);
+  });
+});
+
+const isOrthogonal = (pts) =>
+  pts.slice(1).every((p, i) => p.x === pts[i].x || p.y === pts[i].y);
+
+describe('orthogonal routing', () => {
+  it('only produces horizontal/vertical segments', () => {
+    const r = computeRoute({
+      source: { x: 0, y: 0, side: 'right' },
+      target: { x: 240, y: 136, side: 'left' },
+      obstacles: [inflate({ x: 96, y: 32, w: 64, h: 64 }, 12)],
+    });
+    expect(r.fallback).toBe(false);
+    expect(isOrthogonal(r.points)).toBe(true);
+  });
+
+  it('runs dead straight between two level ports', () => {
+    const r = computeRoute({
+      source: { x: 0, y: 48, side: 'right' },
+      target: { x: 320, y: 48, side: 'left' },
+      obstacles: [],
+    });
+    expect(r.points).toEqual([{ x: 0, y: 48 }, { x: 320, y: 48 }]);
+  });
+
+  it('lane-shifts a second wire instead of running on top of the first', () => {
+    const grid = buildRoutingGrid([], [{ x: -32, y: -32 }, { x: 352, y: 96 }]);
+    const a = computeRoute({ source: { x: 0, y: 0, side: 'right' }, target: { x: 320, y: 0, side: 'left' }, grid });
+    const b = computeRoute({ source: { x: 0, y: 16, side: 'right' }, target: { x: 320, y: 0, side: 'left' }, grid });
+    const ys = new Set(a.points.map((p) => p.y));
+    // b's long horizontal run must not share a's y
+    const bRun = b.points.slice(1).find((p, i) => p.y === b.points[i].y && Math.abs(p.x - b.points[i].x) > 100);
+    expect(bRun && ys.has(bRun.y)).toBeFalsy();
+  });
+
+  it('keeps clear of the space directly in front of an unrelated port', () => {
+    const grid = buildRoutingGrid([], [{ x: -32, y: -64 }, { x: 352, y: 64 }]);
+    // a port facing down onto the wire's straight path
+    reservePortFronts(grid, [{ x: 160, y: -16, side: 'bottom' }]);
+    const r = computeRoute({ source: { x: 0, y: 0, side: 'right' }, target: { x: 320, y: 0, side: 'left' }, grid });
+    const passesFront = r.points.slice(1).some(
+      (p, i) => p.y === 0 && r.points[i].y === 0 && Math.min(p.x, r.points[i].x) < 160 && Math.max(p.x, r.points[i].x) > 160
+    );
+    expect(passesFront).toBe(false);
+  });
+});
+
+describe('port geometry', () => {
+  it('puts every port on the port grid with a uniform pitch', () => {
+    for (const def of COMPONENT_LIBRARY) {
+      const node = { position: { x: 0, y: 0 }, data: { ports: def.defaultPorts } };
+      for (const side of ['left', 'right', 'top', 'bottom']) {
+        const offs = def.defaultPorts
+          .filter((p) => p.side === side)
+          .sort((a, b) => a.order - b.order)
+          .map((p) => portPosition(node, p, def))
+          .map((p) => (side === 'left' || side === 'right' ? p.y : p.x));
+        for (const o of offs) expect(o % PORT_GRID).toBe(0);
+        const gaps = new Set(offs.slice(1).map((o, i) => o - offs[i]));
+        expect(gaps.size).toBeLessThanOrEqual(1);
+      }
+    }
+  });
+
+  it('centres a single port on its side', () => {
+    expect(sideLayout(1, 64)).toEqual({ start: 32, pitch: PORT_GRID });
+    expect(sideLayout(1, 96).start).toBe(48);
   });
 });

@@ -2,11 +2,12 @@
 import { create } from 'zustand';
 import { temporal } from 'zundo';
 import { getDefinition } from '../data/componentLibrary';
+import { PORT_GRID } from '../utils/geometry';
 import {
   WIRE_TYPE_INFO,
   defaultLayerNameForType,
   defaultGaugeForType,
-  defaultFittingForType,
+  endFitting,
   typeGroup,
 } from '../data/wireTypes';
 import { buildLabel, regenerateLabels, groupCounts } from '../utils/labelUtils';
@@ -38,6 +39,9 @@ const DEFAULT_SETTINGS = {
   showPortLabels: true,
   showWireLabels: false,
   routingMode: 'auto', // 'auto' = A* route new wires; 'manual' = straight, user-shaped
+  // Preferred fitting per wire type for new wires (null = each port's own
+  // default). Only applied where the port accepts it — see endFitting().
+  defaultFittings: { PWR: null, CAN: null },
   annotationsVisible: true, // notes + zones layer visibility
   // Design Rule Check — disabled rule ids, per-rule severity overrides
   // ('error' | 'warning' | 'info' | 'off'), and dismissed violation keys.
@@ -247,6 +251,45 @@ const useDiagramStore = create(
           dirty: true,
         })),
 
+      // Rotate component nodes by `delta` degrees (clockwise) about their
+      // centre. Locked nodes and annotations are left alone. One undo step.
+      rotateNodes: (ids, delta = 90) => {
+        const turned = new Set();
+        set((s) => {
+          const idSet = new Set(ids);
+          const snap = (v) => Math.round(v / PORT_GRID) * PORT_GRID;
+          const nodes = s.nodes.map((n) => {
+            if (!idSet.has(n.id) || n.data.locked || n.type !== 'component') return n;
+            const def = getDefinition(n.data.definitionId, s.customDefinitions);
+            if (!def) return n;
+            const rotation = ((((n.data.rotation ?? 0) + delta) % 360) + 360) % 360;
+            // a quarter-turn swaps the box's width/height — shift to keep centre
+            const quarter = (((delta / 90) % 2) + 2) % 2 === 1;
+            const before = (n.data.rotation ?? 0) % 180 === 0;
+            const w = before ? def.width : def.height;
+            const h = before ? def.height : def.width;
+            // ...snapped back onto the port grid so its wires stay straight
+            const position = quarter
+              ? { x: snap(n.position.x + (w - h) / 2), y: snap(n.position.y + (h - w) / 2) }
+              : n.position;
+            turned.add(n.id);
+            return { ...n, position, data: { ...n.data, rotation } };
+          });
+          if (!turned.size) return s;
+          // Hand-shaped wires on a turned node no longer fit its new port
+          // positions — hand them back to the auto-router.
+          let rerouted = 0;
+          const edges = s.edges.map((e) => {
+            if (!e.data.manual || !(turned.has(e.source) || turned.has(e.target))) return e;
+            rerouted += 1;
+            return { ...e, data: { ...e.data, manual: false, waypoints: [] } };
+          });
+          if (rerouted)
+            setTimeout(() => get().addToast(`Re-routed ${rerouted} hand-shaped wire${rerouted === 1 ? '' : 's'}`), 0);
+          return { nodes, edges: rerouted ? edges : s.edges, dirty: true };
+        });
+      },
+
       // set draggable when lock toggles; called from updateNodeData consumers
       setNodes: (updater) =>
         set((s) => ({ nodes: typeof updater === 'function' ? updater(s.nodes) : updater })),
@@ -286,7 +329,14 @@ const useDiagramStore = create(
         if (!srcNode || !tgtNode) return;
         const srcPort = srcNode.data.ports.find((p) => p.id === sourceHandle);
         const tgtPort = tgtNode.data.ports.find((p) => p.id === targetHandle);
-        if (!srcPort) return;
+        if (!srcPort || !tgtPort) return;
+        const samePair = (e) =>
+          (e.source === source && e.sourceHandle === sourceHandle && e.target === target && e.targetHandle === targetHandle) ||
+          (e.source === target && e.sourceHandle === targetHandle && e.target === source && e.targetHandle === sourceHandle);
+        if (edges.some(samePair)) {
+          get().addToast('Those ports are already wired together');
+          return;
+        }
 
         const type = srcPort.type; // type inherits from SOURCE port
         // Reject incompatible connections outright (e.g. PWR → CAN) so the user
@@ -318,8 +368,8 @@ const useDiagramStore = create(
             color: null,
             color2: null,
             wireGauge: srcPort.gauge ?? defaultGaugeForType(type),
-            wireFittingFrom: srcPort.installedConnector ?? srcPort.fitting ?? defaultFittingForType(type),
-            wireFittingTo: tgtPort?.installedConnector ?? tgtPort?.fitting ?? defaultFittingForType(type),
+            wireFittingFrom: endFitting(srcPort, type, settings.defaultFittings),
+            wireFittingTo: endFitting(tgtPort, type, settings.defaultFittings),
             label,
             labelEdited: false,
             length: null,
@@ -423,13 +473,26 @@ const useDiagramStore = create(
       },
 
       // Paste a pre-built clone graph as a single history step.
+      // Auto-labelled wires get fresh labels so copies don't duplicate them.
       pasteGraph: (newNodes, newEdges) =>
-        set((s) => ({
-          nodes: [...s.nodes, ...newNodes],
-          edges: [...s.edges, ...newEdges],
-          selection: { nodes: newNodes.map((n) => n.id), edges: [] },
-          dirty: true,
-        })),
+        set((s) => {
+          const labelOf = new Map([...s.nodes, ...newNodes].map((n) => [n.id, n.data.label]));
+          const counters = { ...s.labelCounters };
+          const edges = newEdges.map((e) => {
+            if (e.data.labelEdited) return e;
+            const group = typeGroup(e.data.type);
+            const index = (counters[group] = (counters[group] ?? 0) + 1);
+            const label = buildLabel(s.wireLabelTemplate, e.data.type, index, labelOf.get(e.source), labelOf.get(e.target));
+            return { ...e, data: { ...e.data, label } };
+          });
+          return {
+            nodes: [...s.nodes, ...newNodes],
+            edges: [...s.edges, ...edges],
+            labelCounters: counters,
+            selection: { nodes: newNodes.map((n) => n.id), edges: [] },
+            dirty: true,
+          };
+        }),
 
       // ---------- subsystem templates ----------
       // Save the current selection (nodes + the edges among them) as a reusable
@@ -448,6 +511,11 @@ const useDiagramStore = create(
         const tpl = {
           id: uuid(),
           name: name?.trim() || `Subsystem ${s.templates.length + 1}`,
+          // Custom component definitions live in the project, templates don't —
+          // carry the ones used so the subsystem still renders in other projects.
+          customDefinitions: deepCopy(
+            s.customDefinitions.filter((d) => nodes.some((n) => n.data.definitionId === d.id))
+          ),
           nodes: nodes.map((n) => ({
             ...deepCopy(n),
             position: { x: n.position.x - minX, y: n.position.y - minY },
@@ -489,28 +557,38 @@ const useDiagramStore = create(
       instantiateTemplate: (id, position = { x: 80, y: 80 }) => {
         const tpl = get().templates.find((t) => t.id === id);
         if (!tpl) return;
+        const missing = (tpl.customDefinitions ?? []).filter(
+          (d) => !get().customDefinitions.some((c) => c.id === d.id)
+        );
+        if (missing.length) set((s) => ({ customDefinitions: [...s.customDefinitions, ...deepCopy(missing)] }));
         const { newNodes, newEdges } = cloneCluster(tpl.nodes, tpl.edges, (p) => ({
           x: p.x + position.x,
           y: p.y + position.y,
         }));
-        // Keep labels unique against what's already on the canvas.
-        const existing = get().nodes;
-        const labeled = newNodes.map((n) => ({
-          ...n,
-          data: {
-            ...n.data,
-            label: dedupeLabel(
-              existing,
-              getDefinition(n.data.definitionId, get().customDefinitions)?.name ?? n.data.label
-            ),
-          },
-        }));
+        // Keep the template's own names ("FL Drive"), made unique against the
+        // canvas AND each other as they're placed.
+        const existing = [...get().nodes];
+        const labeled = newNodes.map((n) => {
+          const base =
+            n.data.label || getDefinition(n.data.definitionId, get().customDefinitions)?.name || 'Component';
+          const placed = { ...n, data: { ...n.data, label: dedupeLabel(existing, base) } };
+          existing.push(placed);
+          return placed;
+        });
         get().pasteGraph(labeled, newEdges);
       },
 
       // Build a small illustrative robot for onboarding (uses the real add logic).
-      loadSample: () => {
-        // Load the bundled swerve-robot example (deep-copied so repeated loads
+      loadSample: async () => {
+        // Don't silently replace unsaved work or a pending session restore.
+        const { dirty, nodes, restoreData } = get();
+        if ((dirty && nodes.length) || restoreData) {
+          const msg = restoreData
+            ? 'Load the sample robot? Your previous session will not be restorable.'
+            : 'Load the sample robot? Unsaved changes will be lost.';
+          if (!(await get().requestConfirm(msg))) return;
+        }
+        // Load the bundled example robot, Perry (deep-copied so repeated loads
         // always start from a clean state). loadProject clears history + dirty.
         get().loadProject(JSON.parse(JSON.stringify(sampleProject)));
         // Frame the robot once the canvas has measured it.
@@ -529,9 +607,9 @@ const useDiagramStore = create(
         const tgtNode = nodes.find((n) => n.id === target);
         const srcPort = srcNode?.data.ports.find((p) => p.id === sourceHandle);
         const tgtPort = tgtNode?.data.ports.find((p) => p.id === targetHandle);
-        if (!srcPort) return;
+        if (!srcPort || !tgtPort) return;
         const type = srcPort.type;
-        if (tgtPort && tgtPort.type !== type) {
+        if (tgtPort.type !== type) {
           get().addToast(`Can't connect ${type} to ${tgtPort.type}`);
           return;
         }
@@ -548,9 +626,23 @@ const useDiagramStore = create(
                     ...e.data,
                     type,
                     layerId: layerIdForType(layers, type),
-                    wireGauge: srcPort.gauge ?? defaultGaugeForType(type),
-                    wireFittingFrom: srcPort.fitting ?? defaultFittingForType(type),
-                    wireFittingTo: tgtPort?.fitting ?? defaultFittingForType(type),
+                    // gauge follows the wire (keep the user's unless the type changed)
+                    wireGauge:
+                      type === e.data.type && e.data.wireGauge
+                        ? e.data.wireGauge
+                        : srcPort.gauge ?? defaultGaugeForType(type),
+                    // only the end that moved gets a new fitting
+                    wireFittingFrom:
+                      e.source === source && e.sourceHandle === sourceHandle && type === e.data.type
+                        ? e.data.wireFittingFrom
+                        : endFitting(srcPort, type, get().settings.defaultFittings),
+                    wireFittingTo:
+                      e.target === target && e.targetHandle === targetHandle && type === e.data.type
+                        ? e.data.wireFittingTo
+                        : endFitting(tgtPort, type, get().settings.defaultFittings),
+                    // hand-placed waypoints were shaped for the old endpoint
+                    manual: false,
+                    waypoints: [],
                   },
                 }
               : e
@@ -565,6 +657,35 @@ const useDiagramStore = create(
           nodes: s.nodes.map((n) =>
             n.id === nodeId
               ? { ...n, data: { ...n.data, ports: n.data.ports.filter((p) => p.id !== portId) } }
+              : n
+          ),
+          edges: s.edges.filter(
+            (e) =>
+              !(
+                (e.source === nodeId && e.sourceHandle === portId) ||
+                (e.target === nodeId && e.targetHandle === portId)
+              )
+          ),
+          dirty: true,
+        })),
+
+      // Change a port's type: its wires (typed by their ports) are removed in
+      // the same step, and type-specific fields reset to the new type's.
+      retypePort: (nodeId, portId, type) =>
+        set((s) => ({
+          nodes: s.nodes.map((n) =>
+            n.id === nodeId
+              ? {
+                  ...n,
+                  data: {
+                    ...n.data,
+                    ports: n.data.ports.map((p) =>
+                      p.id === portId
+                        ? { ...p, type, gauge: defaultGaugeForType(type), fitting: null, installedConnector: null, requiredFittings: null }
+                        : p
+                    ),
+                  },
+                }
               : n
           ),
           edges: s.edges.filter(
@@ -661,7 +782,7 @@ const useDiagramStore = create(
         return true;
       },
 
-      newProject: () =>
+      newProject: () => {
         set({
           nodes: [],
           edges: [],
@@ -672,13 +793,27 @@ const useDiagramStore = create(
           labelCounters: {},
           selection: { nodes: [], edges: [] },
           dirty: false,
-        }),
+        });
+        // like loadProject: undo must not step back into the old project
+        useDiagramStore.temporal.getState().clear();
+      },
 
       markSaved: () => set({ dirty: false }),
 
       // ---------- undo / redo ----------
-      undo: () => useDiagramStore.temporal.getState().undo(),
-      redo: () => useDiagramStore.temporal.getState().redo(),
+      // The document now differs from what was saved, so mark it dirty.
+      undo: () => {
+        const t = useDiagramStore.temporal.getState();
+        if (!t.pastStates.length) return;
+        t.undo();
+        set({ dirty: true });
+      },
+      redo: () => {
+        const t = useDiagramStore.temporal.getState();
+        if (!t.futureStates.length) return;
+        t.redo();
+        set({ dirty: true });
+      },
 
       // ---------- selection / UI ----------
       setActiveTab: (tab) => set({ activeTab: tab }),
@@ -704,6 +839,26 @@ const useDiagramStore = create(
           persistSettings(settings);
           return { settings };
         }),
+
+      // Re-apply the default fitting for `type` to both ends of every existing
+      // wire of that type (respecting each port's installed connector and
+      // allowed fittings, exactly as for a new wire). One undo step.
+      applyDefaultFittings: (type) => {
+        const { nodes, edges, settings } = get();
+        const portOf = (nodeId, portId) =>
+          nodes.find((n) => n.id === nodeId)?.data.ports?.find((p) => p.id === portId);
+        let count = 0;
+        const next = edges.map((e) => {
+          if (e.data.type !== type) return e;
+          const from = endFitting(portOf(e.source, e.sourceHandle), type, settings.defaultFittings);
+          const to = endFitting(portOf(e.target, e.targetHandle), type, settings.defaultFittings);
+          if (from === e.data.wireFittingFrom && to === e.data.wireFittingTo) return e;
+          count += 1;
+          return { ...e, data: { ...e.data, wireFittingFrom: from, wireFittingTo: to } };
+        });
+        if (count) set({ edges: next, dirty: true });
+        return count;
+      },
 
       // Enable/disable a single DRC rule (persisted with settings).
       toggleDrcRule: (ruleId) =>
@@ -858,6 +1013,21 @@ const useDiagramStore = create(
     }),
     {
       limit: 100,
+      // Coalesce bursts of in-place edits: one arriving <400 ms after the
+      // previous one joins its undo step, so typing a note or dragging a colour
+      // picker is one undo, not one per keystroke (which would also flush the
+      // 100-step cap). Adding/removing nodes or wires always gets its own step.
+      handleSet: (handleSet) => {
+        let last = 0;
+        return (pastState, replace, currentState, deltaState) => {
+          const now = Date.now();
+          const structural =
+            pastState?.nodes?.length !== currentState?.nodes?.length ||
+            pastState?.edges?.length !== currentState?.edges?.length;
+          if (structural || now - last > 400) handleSet(pastState, replace, currentState, deltaState);
+          last = now;
+        };
+      },
       partialize: (s) => ({
         nodes: s.nodes,
         edges: s.edges,
@@ -887,21 +1057,41 @@ useDiagramStore.subscribe((state, prev) => {
     state.layers !== prev.layers ||
     state.projectName !== prev.projectName ||
     state.wireLabelTemplate !== prev.wireLabelTemplate ||
-    state.customDefinitions !== prev.customDefinitions;
+    state.customDefinitions !== prev.customDefinitions ||
+    // banner dismissed: edits made while it was up can be saved now
+    (prev.restoreData && !state.restoreData);
   if (!changed) return;
-  clearTimeout(autosaveTimer);
-  autosaveTimer = setTimeout(() => {
-    const ok = writeAutosave(serializeProject(useDiagramStore.getState()));
-    if (!ok && !autosaveFailed) {
-      autosaveFailed = true;
-      useDiagramStore
-        .getState()
-        .addToast('Autosave failed — storage is full or blocked. Save your project manually.');
-    } else if (ok) {
-      autosaveFailed = false;
-    }
-  }, 500);
+  scheduleAutosave();
 });
+
+function flushAutosave() {
+  clearTimeout(autosaveTimer);
+  autosaveTimer = null;
+  // While the "Restore your last session?" banner is up, the autosave slot
+  // still holds that session — don't overwrite it until the user decides.
+  if (useDiagramStore.getState().restoreData) return;
+  const ok = writeAutosave(serializeProject(useDiagramStore.getState()));
+  if (!ok && !autosaveFailed) {
+    autosaveFailed = true;
+    useDiagramStore
+      .getState()
+      .addToast('Autosave failed — storage is full or blocked. Save your project manually.');
+  } else if (ok) {
+    autosaveFailed = false;
+  }
+}
+
+function scheduleAutosave() {
+  clearTimeout(autosaveTimer);
+  autosaveTimer = setTimeout(flushAutosave, 500);
+}
+
+// Don't lose the last half-second of edits when the tab closes.
+if (typeof window !== 'undefined') {
+  window.addEventListener('pagehide', () => {
+    if (autosaveTimer) flushAutosave();
+  });
+}
 
 // Dev-only: expose the store for in-browser debugging / verification.
 if (typeof window !== 'undefined' && import.meta.env?.DEV) {

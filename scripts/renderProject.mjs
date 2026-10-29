@@ -3,7 +3,7 @@ import fs from 'fs';
 import { Resvg } from '@resvg/resvg-js';
 import { computeAllRoutes } from '../src/utils/routeGraph.js';
 import { getDefinition } from '../src/data/componentLibrary.js';
-import { portPosition, nodeRect, portSnappedFraction } from '../src/utils/geometry.js';
+import { portPosition, nodeRect } from '../src/utils/geometry.js';
 import { typeColor } from '../src/data/wireTypes.js';
 
 const file = process.argv[2] || 'examples/test.json';
@@ -16,7 +16,7 @@ const nodes = allNodes.filter((n) => getDefinition(n.data?.definitionId, customD
 const zones = allNodes.filter((n) => n.type === 'zone');
 const notes = allNodes.filter((n) => n.type === 'note');
 
-const { routes } = computeAllRoutes({ nodes, edges, layers, gridSize: 16, customDefinitions });
+const { routes } = computeAllRoutes({ nodes, edges, layers, customDefinitions });
 
 // bounds
 let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
@@ -61,13 +61,13 @@ for (const n of nodes) {
   // ports
   for (const p of n.data.ports) {
     const pos = portPosition(n, p, def);
-    const f = portSnappedFraction(n.data.ports, p, p.side === 'left' || p.side === 'right' ? def.height : def.width);
     body += `<circle cx="${pos.x}" cy="${pos.y}" r="4" fill="${typeColor(p.type)}" stroke="#111113" stroke-width="1"/>`;
     // port label
     let lx = pos.x, ly = pos.y, anchor = 'middle';
-    if (p.side === 'left') { lx = r.x + 6; ly = pos.y + 3; anchor = 'start'; }
-    else if (p.side === 'right') { lx = r.x + r.w - 6; ly = pos.y + 3; anchor = 'end'; }
-    else if (p.side === 'top') { lx = pos.x; ly = r.y + 12; }
+    // pos.side is the side after the node's rotation
+    if (pos.side === 'left') { lx = r.x + 6; ly = pos.y + 3; anchor = 'start'; }
+    else if (pos.side === 'right') { lx = r.x + r.w - 6; ly = pos.y + 3; anchor = 'end'; }
+    else if (pos.side === 'top') { lx = pos.x; ly = r.y + 12; }
     else { lx = pos.x; ly = r.y + r.h - 6; }
     body += `<text x="${lx}" y="${ly}" fill="#c5c5cd" font-size="9" font-family="sans-serif" text-anchor="${anchor}">${esc(p.label)}</text>`;
   }

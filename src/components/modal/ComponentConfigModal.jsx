@@ -1,6 +1,6 @@
 // §8 Component config modal — opens on double-click. Edit all node properties.
 import { useEffect, useMemo, useRef } from 'react';
-import { X, Plus, Trash2, Lock, Unlock } from 'lucide-react';
+import { X, Plus, Trash2, Lock, Unlock, RotateCw } from 'lucide-react';
 import useDiagramStore from '../../store/diagramStore';
 import { getDefinition } from '../../data/componentLibrary';
 import {
@@ -35,7 +35,9 @@ export default function ComponentConfigModal({ nodeId, onClose, onSelectEdge }) 
   const nodes = useDiagramStore((s) => s.nodes);
   const customDefinitions = useDiagramStore((s) => s.customDefinitions);
   const updateNodeData = useDiagramStore((s) => s.updateNodeData);
+  const rotateNodes = useDiagramStore((s) => s.rotateNodes);
   const removePort = useDiagramStore((s) => s.removePort);
+  const retypePort = useDiagramStore((s) => s.retypePort);
   const removeNode = useDiagramStore((s) => s.removeNode);
   const addToast = useDiagramStore((s) => s.addToast);
   const requestConfirm = useDiagramStore((s) => s.requestConfirm);
@@ -75,6 +77,23 @@ export default function ComponentConfigModal({ nodeId, onClose, onSelectEdge }) 
       ...data.ports,
       { id: uuid(), type: 'DATA', label: 'Data', side: 'top', order: 0, gauge: null, fitting: null },
     ]);
+
+  // A wire's type comes from its ports, so retyping a port can't keep wires of
+  // the old type attached — confirm, then drop them with the type change.
+  const onChangePortType = async (p, type) => {
+    const attached = edges.filter(
+      (e) =>
+        (e.source === nodeId && e.sourceHandle === p.id) ||
+        (e.target === nodeId && e.targetHandle === p.id)
+    );
+    if (attached.length) {
+      const ok = await requestConfirm(
+        `Change "${p.label}" to ${type}? Its ${attached.length} ${p.type} wire${attached.length === 1 ? '' : 's'} will be removed.`
+      );
+      if (!ok) return;
+    }
+    retypePort(nodeId, p.id, type);
+  };
 
   // Removing a port cascades its wires — confirm first if any are attached so
   // the user doesn't silently orphan connections.
@@ -141,6 +160,15 @@ export default function ComponentConfigModal({ nodeId, onClose, onSelectEdge }) 
               reset
             </button>
           )}
+          <button
+            onClick={() => rotateNodes([nodeId], 90)}
+            disabled={data.locked}
+            aria-label="Rotate 90° clockwise"
+            title={`Rotate 90° clockwise (R) — now ${data.rotation ?? 0}°`}
+            className="rounded border border-edge bg-surface-0 px-2 py-1.5 text-neutral-300 hover:text-silver disabled:opacity-40"
+          >
+            <RotateCw size={16} />
+          </button>
           <button
             onClick={() => updateNodeData(nodeId, { locked: !data.locked })}
             aria-label={data.locked ? 'Unlock component' : 'Lock component'}
@@ -269,7 +297,7 @@ export default function ComponentConfigModal({ nodeId, onClose, onSelectEdge }) 
                   <div key={p.id} className="flex items-center gap-2">
                     <select
                       value={p.type}
-                      onChange={(e) => updatePort(p.id, { type: e.target.value })}
+                      onChange={(e) => onChangePortType(p, e.target.value)}
                       aria-label="Port type"
                       className="w-20 shrink-0 rounded border border-edge bg-surface-0 px-1 py-1 text-sm text-silver"
                     >
@@ -287,6 +315,7 @@ export default function ComponentConfigModal({ nodeId, onClose, onSelectEdge }) 
                       value={p.side}
                       onChange={(e) => updatePort(p.id, { side: e.target.value })}
                       aria-label="Port side"
+                      title={data.rotation ? `Side before the component's ${data.rotation}° rotation` : undefined}
                       className="w-20 shrink-0 rounded border border-edge bg-surface-0 px-1 py-1 text-sm text-silver"
                     >
                       {SIDES.map((s) => (

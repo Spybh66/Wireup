@@ -1,13 +1,7 @@
 // §5 Component Library — built-in FRC component definitions.
 // Each definition: { id, name, category, width, height, icon, defaultPorts, trackedFields }.
 // Port spec shorthand expands to full Port objects (id/order auto-assigned per side).
-import { STEP } from '../utils/routingUtils';
-
-// Round a component dimension to the wire grid (STEP) so that a node's edges —
-// and therefore its ports — always land on the routing lattice. Combined with
-// node positions snapping to the (coarser) component grid, every port sits on
-// the wire grid, so wires and manual waypoints line up into clean straight runs.
-const snapDim = (v) => Math.max(STEP, Math.round(v / STEP) * STEP);
+import { snapDim } from '../utils/geometry';
 
 // ---- port spec helpers (return arrays of partial port specs) ----
 const SB50 = 'Anderson SB50';
@@ -16,6 +10,7 @@ const WAGO = 'Wago Lever Nut';
 const RING = 'Ring Terminal';
 const APP = 'Anderson Powerpole';
 const MOLEX_SL = 'Molex SL';
+const MICROFIT = 'Molex Micro-Fit+';
 const BARREL = 'Barrel Jack';
 const USB_A = 'USB-A';
 const USB_C = 'USB-C';
@@ -33,6 +28,7 @@ const APP_IN = [APP, FERRULE, BARE];   // controller power input (Powerpole or i
 const CAN_WEID = [FERRULE, BARE];      // REV-style CAN terminal
 const CAN_CTRE = [FERRULE, BARE, 'JST']; // CTRE CAN cable: keyed connector or terminal
 const CAN_MOLEX = [MOLEX_SL, FERRULE, BARE]; // locking Molex SL CAN (MitoCANdria/ThriftyBot)
+const CAN_ADAPTER = [MOLEX_SL, ...CAN_CTRE]; // Kraken Powerpole adapter board (SL, or the Talon FX terminals)
 const PHASE = [RING, BARE];            // brushless 3-phase motor lead
 const PHASE_BULLET = [BULLET, BARE];   // NEO Vortex bullet-connector phases (→ SPARK Flex dock)
 
@@ -85,9 +81,13 @@ function powerDistPorts(numChannels, miniFrom = null) {
     ...can('CAN IN', 'bottom', CAN_WEID),
     ...can('CAN OUT', 'bottom', CAN_WEID),
   ];
+  // Full-size channels run in two banks down the long sides (0.. on the right,
+  // the rest on the left, as on the real boards); miniature channels sit
+  // across the top end.
+  const full = miniFrom ?? numChannels;
   for (let i = 0; i < numChannels; i++) {
-    const side = i <= 9 ? 'right' : 'left';
-    const isMini = miniFrom != null && i >= miniFrom;
+    const isMini = i >= full;
+    const side = isMini ? 'top' : i < full / 2 ? 'right' : 'left';
     ports.push(
       isMini
         ? { type: 'PWR', label: `CH${i}`, side, gauge: '18 AWG', fitting: FERRULE, slot: 'fuse', breaker: 10, requiredFittings: WEID }
@@ -99,13 +99,34 @@ function powerDistPorts(numChannels, miniFrom = null) {
 
 export const COMPONENT_LIBRARY = [
   // ---------------- Controllers ----------------
-  def('roborio2', 'roboRIO 2', 'Controllers', 'controller', 160, 80, ['ipAddress'], [
+  def('roborio2', 'roboRIO 2', 'Controllers', 'controller', 160, 128, ['ipAddress'], [
     ...pwr('PWR', 'top', '12 AWG', FERRULE, WEID),
     ...can('CAN', 'left', CAN_WEID),
     ...eth('ETH', 'top'),
     ...usbA('USB-A', 'right'),
     ...usbA('USB-A', 'right'),
     ...pwr('RSL', 'bottom', '18 AWG', FERRULE, WEID),
+  ]),
+  // SystemCore (FIRST's roboRIO successor, FRC from 2026-27): 135.5 × 71.5 mm.
+  // Powered through the 4-pin Micro-Fit+ "bridge" port (the Weidmuller input was
+  // dropped); 5 independent CAN-FD buses (s0–s4, each with built-in 120 Ω
+  // termination) on 2-pin Molex SL; 6 Smart I/O (3-pin SL) + 2 I2C (4-pin SL);
+  // 4× USB-A host, a USB-C "LINK" device port, 1 GbE, and an RSL output (SL).
+  // Port counts/connectors per FIRST's published spec; which edge each group
+  // sits on is not published, so sides are grouped by function.
+  def('systemcore', 'SystemCore', 'Controllers', 'controller', 320, 160, ['ipAddress'], [
+    { type: 'PWR', label: 'PWR', side: 'left', gauge: '18 AWG', fitting: MICROFIT, requiredFittings: [MICROFIT] },
+    ...eth('ETH', 'top'),
+    ...usbC('LINK', 'top'),
+    ...usbA('USB 1', 'top'),
+    ...usbA('USB 2', 'top'),
+    ...usbA('USB 3', 'top'),
+    ...usbA('USB 4', 'top'),
+    ...[0, 1, 2, 3, 4].flatMap((i) => can(`CAN ${i}`, 'bottom', [MOLEX_SL])),
+    ...pwr('RSL', 'bottom', '22 AWG', MOLEX_SL, [MOLEX_SL]),
+    ...[0, 1, 2, 3, 4, 5].flatMap((i) => data(`IO ${i}`, 'right')),
+    ...data('I2C 0', 'right'),
+    ...data('I2C 1', 'right'),
   ]),
   def('orangepi5', 'Orange Pi 5', 'Controllers', 'pi', 160, 80, ['ipAddress'], [
     ...usbC('USB-C PWR', 'left'),
@@ -121,7 +142,7 @@ export const COMPONENT_LIBRARY = [
   ]),
   // Jetson Orin Nano — primary power is the DC barrel jack (USB-C is an
   // alternate input); 4× USB-A host ports + 1× USB-C + Gigabit Ethernet.
-  def('jetsonorinnano', 'Jetson Orin Nano', 'Controllers', 'pi', 160, 90, ['ipAddress'], [
+  def('jetsonorinnano', 'Jetson Orin Nano', 'Controllers', 'pi', 160, 128, ['ipAddress'], [
     ...pwr('PWR (Barrel)', 'left', null, BARREL, [BARREL]),
     ...usbC('USB-C', 'top'),
     ...eth('ETH', 'top'),
@@ -130,7 +151,7 @@ export const COMPONENT_LIBRARY = [
     ...usbA('USB-A', 'bottom'),
     ...usbA('USB-A', 'bottom'),
   ]),
-  def('beelink', 'Beelink Mini PC', 'Controllers', 'pi', 160, 80, ['ipAddress'], [
+  def('beelink', 'Beelink Mini PC', 'Controllers', 'pi', 128, 128, ['ipAddress'], [
     ...pwr('PWR (Barrel)', 'left', null, BARREL, [BARREL]),
     ...eth('ETH', 'top'),
     ...usbA('USB-A', 'right'),
@@ -146,11 +167,14 @@ export const COMPONENT_LIBRARY = [
     { type: 'PWR', label: 'OUT', side: 'right', gauge: '6 AWG', fitting: RING, requiredFittings: STUD },
   ]),
   // PDH: 20 full-size breaker channels (0–19) + 4 miniature fuse channels (20–23).
-  def('pdh', 'PDH (REV)', 'Power', 'powerdist', 240, 320, ['canId'], powerDistPorts(24, 20)),
-  // PDP 2.0 / legacy PDP: 24 identical full-size channels, all default 40 A.
-  def('pdp2', 'PDP 2.0 (CTRE)', 'Power', 'powerdist', 240, 320, ['canId'], powerDistPorts(24)),
-  def('pdp_legacy', 'PDP (CTRE, legacy)', 'Power', 'powerdist', 240, 320, ['canId'], powerDistPorts(24)),
-  def('vrm', 'VRM', 'Power', 'vrm', 160, 80, [], [
+  // 2:1 like the real 225 × 111 mm hub; 10 channels per long side, inset from
+  // the corners so they clear the top (CH20–23) and bottom (PWR/CAN) labels.
+  def('pdh', 'PDH (REV)', 'Power', 'powerdist', 192, 384, ['canId'], powerDistPorts(24, 20)),
+  // PDP 2.0: 24 identical full-size channels (12 per side), all default 40 A.
+  def('pdp2', 'PDP 2.0 (CTRE)', 'Power', 'powerdist', 192, 416, ['canId'], powerDistPorts(24)),
+  // Original CTRE PDP: 16 channels, 8 per side.
+  def('pdp_legacy', 'PDP (CTRE, legacy)', 'Power', 'powerdist', 192, 288, ['canId'], powerDistPorts(16)),
+  def('vrm', 'VRM', 'Power', 'vrm', 128, 128, [], [
     ...pwr('PWR', 'top', '18 AWG', FERRULE, WEID),
     ...pwr('12V/2A', 'left', '18 AWG', FERRULE, WEID),
     ...pwr('12V/2A', 'left', '18 AWG', FERRULE, WEID),
@@ -164,7 +188,7 @@ export const COMPONENT_LIBRARY = [
   // REV Mini Power Module — fed from one 40 A PDH channel, fans out to 6
   // low-current outputs each protected by an ATM mini blade FUSE (15 A max),
   // sized per peripheral. Same miniature-fuse picker as the PDH mini channels.
-  def('mpm', 'Mini Power Module (REV MPM)', 'Power', 'vrm', 120, 160, [], [
+  def('mpm', 'Mini Power Module (REV MPM)', 'Power', 'vrm', 128, 192, [], [
     ...pwr('PWR', 'bottom', '12 AWG', FERRULE, WEID),
     { type: 'PWR', label: 'CH0', side: 'right', gauge: '18 AWG', fitting: FERRULE, slot: 'fuse', requiredFittings: WEID },
     { type: 'PWR', label: 'CH1', side: 'right', gauge: '18 AWG', fitting: FERRULE, slot: 'fuse', requiredFittings: WEID },
@@ -202,7 +226,7 @@ export const COMPONENT_LIBRARY = [
     { type: 'PWR', label: 'C', side: 'right', gauge: '12 AWG', fitting: BARE, requiredFittings: APP_LEADS },
     ...data('Encoder', 'top'),
   ]),
-  def('sparkflex', 'SPARK Flex', 'Motor Controllers', 'motorController', 160, 100, ['canId'], [
+  def('sparkflex', 'SPARK Flex', 'Motor Controllers', 'motorController', 128, 128, ['canId'], [
     ...pwr('V+/V−', 'left', '12 AWG', APP, APP_IN),
     ...can('CAN', 'bottom', CAN_WEID),
     ...can('CAN', 'bottom', CAN_WEID),
@@ -229,25 +253,27 @@ export const COMPONENT_LIBRARY = [
   ]),
 
   // ---------------- Motors ----------------
-  def('krakenx60', 'Kraken X60', 'Motors', 'krakenMotor', 120, 70, ['canId'], [
+  def('krakenx60', 'Kraken X60', 'Motors', 'krakenMotor', 160, 64, ['canId'], [
     { type: 'PWR', label: 'PWR', side: 'left', gauge: '12 AWG', fitting: RING, requiredFittings: STUD },
     { type: 'CAN', label: 'CAN IN', side: 'right', requiredFittings: CAN_CTRE },
     { type: 'CAN', label: 'CAN OUT', side: 'right', requiredFittings: CAN_CTRE },
   ]),
-  def('krakenx44', 'Kraken X44', 'Motors', 'krakenMotor', 120, 70, ['canId'], [
+  def('krakenx44', 'Kraken X44', 'Motors', 'krakenMotor', 160, 64, ['canId'], [
     { type: 'PWR', label: 'PWR', side: 'left', gauge: '12 AWG', fitting: RING, requiredFittings: STUD },
     { type: 'CAN', label: 'CAN IN', side: 'right', requiredFittings: CAN_CTRE },
     { type: 'CAN', label: 'CAN OUT', side: 'right', requiredFittings: CAN_CTRE },
   ]),
-  def('krakenx60_adapted', 'Kraken X60 + Adapter', 'Motors', 'krakenMotor', 120, 70, ['canId'], [
+  // WCP Powerpole adapter board on the Talon FX terminals: PP45 power in and
+  // 2-pin Molex SL CAN in/out (+ a 4-pin SL CAN+power tap for a CANcoder).
+  def('krakenx60_adapted', 'Kraken X60 + Adapter', 'Motors', 'krakenMotor', 160, 64, ['canId'], [
     { type: 'PWR', label: 'PWR', side: 'left', gauge: '12 AWG', fitting: APP, requiredFittings: [APP, MOLEX_SL] },
-    { type: 'CAN', label: 'CAN IN', side: 'right', requiredFittings: CAN_CTRE },
-    { type: 'CAN', label: 'CAN OUT', side: 'right', requiredFittings: CAN_CTRE },
+    { type: 'CAN', label: 'CAN IN', side: 'right', fitting: MOLEX_SL, requiredFittings: CAN_ADAPTER },
+    { type: 'CAN', label: 'CAN OUT', side: 'right', fitting: MOLEX_SL, requiredFittings: CAN_ADAPTER },
   ]),
-  def('krakenx44_adapted', 'Kraken X44 + Adapter', 'Motors', 'krakenMotor', 120, 70, ['canId'], [
+  def('krakenx44_adapted', 'Kraken X44 + Adapter', 'Motors', 'krakenMotor', 160, 64, ['canId'], [
     { type: 'PWR', label: 'PWR', side: 'left', gauge: '12 AWG', fitting: APP, requiredFittings: [APP, MOLEX_SL] },
-    { type: 'CAN', label: 'CAN IN', side: 'right', requiredFittings: CAN_CTRE },
-    { type: 'CAN', label: 'CAN OUT', side: 'right', requiredFittings: CAN_CTRE },
+    { type: 'CAN', label: 'CAN IN', side: 'right', fitting: MOLEX_SL, requiredFittings: CAN_ADAPTER },
+    { type: 'CAN', label: 'CAN OUT', side: 'right', fitting: MOLEX_SL, requiredFittings: CAN_ADAPTER },
   ]),
   // Minion — bare 3-phase brushless motor driven by a Talon FXS. 3 ring-terminal
   // phase leads (U/V/W) + a 6-pin JST hall/temp sensor cable.
@@ -356,7 +382,7 @@ export const COMPONENT_LIBRARY = [
     ...eth('DS', 'right'),
 
   ]),
-  def('ethswitch', 'Ethernet Switch', 'Networking', 'switch', 140, 80, ['ipAddress'], [
+  def('ethswitch', 'Ethernet Switch', 'Networking', 'switch', 192, 96, ['ipAddress'], [
     ...pwr('PWR', 'left'),
     ...eth('1', 'top'),
     ...eth('2', 'top'),

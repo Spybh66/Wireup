@@ -55,11 +55,22 @@ export function runDrc(state, opts = {}) {
     let found;
     try {
       found = rule.run(ctx) || [];
-    } catch {
-      found = []; // a buggy rule must never break the whole check
+    } catch (err) {
+      // A buggy rule must never break the whole check — but don't hide it.
+      console.error(`DRC rule "${rule.id}" failed:`, err);
+      found = [
+        {
+          ruleId: rule.id,
+          severity: 'info',
+          message: `${rule.label ?? rule.id} check failed to run`,
+          nodes: [],
+          edges: [],
+          failed: true,
+        },
+      ];
     }
     for (const v of found) {
-      v.severity = sev; // effective severity (may be overridden)
+      v.severity = v.failed ? 'info' : sev; // effective severity (may be overridden)
       // stable identity (independent of message text) for dismiss memory
       v.key = `${v.ruleId}|${[...(v.nodes ?? [])].sort().join(',')}|${[...(v.edges ?? [])].sort().join(',')}`;
       if (dismissed.has(v.key)) continue;

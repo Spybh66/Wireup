@@ -5,13 +5,21 @@ export default function RestoreBanner() {
   const restoreData = useDiagramStore((s) => s.restoreData);
   const loadProject = useDiagramStore((s) => s.loadProject);
   const dismissRestore = useDiagramStore((s) => s.dismissRestore);
+  const requestConfirm = useDiagramStore((s) => s.requestConfirm);
   if (!restoreData) return null;
+
+  const restore = async () => {
+    const { dirty, nodes } = useDiagramStore.getState();
+    if (dirty && nodes.length && !(await requestConfirm('Restore your last session? Current changes will be lost.')))
+      return;
+    loadProject(restoreData);
+  };
 
   return (
     <div className="fixed bottom-6 left-1/2 z-40 flex -translate-x-1/2 items-center gap-3 rounded-lg border border-edge bg-surface-2 px-4 py-2 text-sm text-silver shadow-xl">
       <span>Restore your last session?</span>
       <button
-        onClick={() => loadProject(restoreData)}
+        onClick={restore}
         className="rounded bg-silver px-2.5 py-1 text-xs font-semibold text-surface-0 hover:bg-white"
       >
         Restore

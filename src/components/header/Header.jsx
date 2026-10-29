@@ -110,7 +110,6 @@ export default function Header({ onOpenSettings, drcOpen, onToggleDrc }) {
     try {
       const payload = await encodeProjectToHash(serializeProject(useDiagramStore.getState()));
       const url = `${window.location.origin}${window.location.pathname}#p=${payload}`;
-      window.history.replaceState(null, '', `#p=${payload}`);
       await navigator.clipboard.writeText(url);
       addToast('Share link copied to clipboard');
     } catch {
