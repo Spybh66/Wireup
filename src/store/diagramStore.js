@@ -33,7 +33,8 @@ function defaultLayers() {
 }
 
 const DEFAULT_SETTINGS = {
-  gridSize: 16,
+  // Same grid ports sit on, so a snapped node lands every port on a grid line.
+  gridSize: PORT_GRID,
   snapToGrid: true,
   gridVisible: true,
   showPortLabels: true,
